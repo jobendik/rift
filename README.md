@@ -47,3 +47,5 @@ npm run preview
 - Three.js - 3D rendering engine
 - Yuka.js - Game entity management and AI
 - ES modules - Modern JavaScript modules
+
+Deployed with GitHub Actions 🚀
