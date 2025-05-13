@@ -1,0 +1,24 @@
+- Kulehull i vegge, muzzle, partikkeleffekt
+- Printe ut alle script filene, oversikt.md (over strukturen) og planen.md (skrevet av Claude/chat)
+
+- Få en oversikt over alle filene i prosjektet (struktur, hvor finner jeg variabler, etc.)
+- Modernisere mer (React? Etc.)
+- Bruke ammo.js, playcanvas.js eller babylon.js?
+- Push til GIT
+- Forstå hvordan AI-en fungerer. Videreutvikle den slik at den blir enda mer menneskelig.
+- Multiplayer
+- Endre lyd for skyting
+- Endre tekstur på map
+- Endre map
+- Lys, sky, skyboks
+- Bytte ut våpen i hånd
+- Bytte ut helse-kit, våpen å plukke opp
+- Legge til hopp og løping
+- "Puste" når står stille
+- Litt mer "vugging" når han går
+- Crosshair som sprer seg (ulik i forhold til våpentype)
+- Sjekk at våpenet blir holdt riktig av ai
+- HUD (minimap, etc)
+- Oversette kodebasen til typescript
+
+- Gjøre fullscren når man trykker på "PLAY"

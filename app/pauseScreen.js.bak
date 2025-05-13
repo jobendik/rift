@@ -1,0 +1,255 @@
+// Pause screen with 3D soldier model
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+let scene, camera, renderer, soldier;
+let mixer, clock;
+let composer; // For post-processing effects
+let isInitialized = false;
+let animationId = null;
+
+// Initialize the 3D scene for the pause screen
+function init() {
+    if (isInitialized) return;
+    isInitialized = true;
+    
+    // Create scene
+    scene = new THREE.Scene();
+    scene.background = null; // Transparent background instead of black
+    
+    // Create camera with proper aspect ratio for the taller container
+    camera = new THREE.PerspectiveCamera(45, 350/450, 0.1, 1000); // Wider field of view to see more of the model
+    camera.position.set(0, 0.7, 4); // Position camera lower and farther back to see the whole model
+    camera.lookAt(0, 0.7, 0); // Look at the center of the model
+      // Improved lighting setup for better model visibility
+    // Main ambient light - brighter to ensure model is well lit
+    const ambientLight = new THREE.AmbientLight(0x404040, 3); 
+    scene.add(ambientLight);
+
+    // Key light (main light) - from front-top
+    const keyLight = new THREE.DirectionalLight(0xffffff, 5); 
+    keyLight.position.set(0, 5, 5);
+    scene.add(keyLight);
+
+    // Rim light for edge highlighting - from behind
+    const rimLight = new THREE.DirectionalLight(0x4466ff, 4); 
+    rimLight.position.set(0, 2, -5);
+    scene.add(rimLight);
+    
+    // Fill light from the side
+    const fillLight = new THREE.DirectionalLight(0xffaa88, 2); 
+    fillLight.position.set(-5, 0, 2);
+    scene.add(fillLight);// Create renderer with proper settings
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true,
+        preserveDrawingBuffer: true // Important for visibility    });    renderer.setSize(350, 450); // Updated dimensions to match new container size
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x000000, 0); // Set clear color with 0 alpha (transparent)
+      // Setup post-processing
+    try {
+        const renderPass = new RenderPass(scene, camera);
+        renderPass.clearColor = new THREE.Color(0, 0, 0);
+        renderPass.clearAlpha = 0; // Ensure transparent background        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(350, 450), // Updated to match new renderer size
+            0.5,  // strength (adjusted for better visibility)
+            0.4,  // radius (adjusted)
+            0.85  // threshold (adjusted)
+        );
+        
+        composer = new EffectComposer(renderer);
+        composer.addPass(renderPass);
+        composer.addPass(bloomPass);
+    } catch (error) {
+        console.error("Post-processing setup failed:", error);
+        // Continue without post-processing
+    }
+    
+    // Get the pause model container and append renderer
+    const pauseModelContainer = document.getElementById('pauseModelContainer');
+    if (pauseModelContainer) {
+        pauseModelContainer.innerHTML = '';
+        pauseModelContainer.appendChild(renderer.domElement);        // Style the renderer canvas for proper visibility and left positioning        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.bottom = '-50px'; // Move further down to show more of the model
+        renderer.domElement.style.left = '30px'; // Move slightly right from the edge
+        renderer.domElement.style.width = '350px'; // Wider for better visibility
+        renderer.domElement.style.height = '450px'; // Taller to ensure we see the full model
+        renderer.domElement.style.zIndex = '5';
+        renderer.domElement.style.pointerEvents = 'none';
+        renderer.domElement.style.background = 'transparent'; // Ensure transparent background
+    }
+    
+    // Initialize clock for animations
+    clock = new THREE.Clock();
+
+    // Load the soldier model
+    loadSoldierModel();
+
+    // Handle window resize
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function loadSoldierModel() {
+    const loader = new FBXLoader();
+    console.log("Loading soldier model for pause screen from models/soldierFrontPage.fbx");
+    
+    loader.load('models/soldierFrontPage.fbx',
+        // Success callback
+        (fbx) => {            console.log("Soldier model loaded successfully for pause screen");
+            soldier = fbx;            
+            // Calculate the bounding box to properly position the model
+            let boundingBox = new THREE.Box3().setFromObject(soldier);
+            let modelHeight = boundingBox.max.y - boundingBox.min.y;
+            let modelWidth = boundingBox.max.x - boundingBox.min.x;
+            
+            // Scale the model to fit the view (smaller scale for full visibility)
+            const scale = 0.013; // Reduced scale to ensure entire model is visible
+            soldier.scale.set(scale, scale, scale);
+            
+            // Position the model so it's fully visible
+            let yOffset = -boundingBox.min.y * scale;
+            soldier.position.set(0, yOffset + 0.3, 0); // Add a positive offset to lift the model up
+            
+            // Make sure model is facing camera with slight angle for better view
+            soldier.rotation.y = Math.PI * 0.9; // Slight angle for better presentation
+            
+            // Set up animation if the model has animations
+            if (fbx.animations && fbx.animations.length) {
+                console.log(`Found ${fbx.animations.length} animations for pause screen model`);
+                mixer = new THREE.AnimationMixer(fbx);
+                const action = mixer.clipAction(fbx.animations[0]);
+                action.play();
+            } else {
+                console.log("No animations found in the model for pause screen");
+            }
+
+            // Add model to the scene
+            scene.add(soldier);
+            
+            // Start animation loop
+            animate();
+        },
+        // Progress callback
+        (xhr) => {
+            console.log(`Pause screen model loading: ${Math.floor(xhr.loaded / xhr.total * 100)}% loaded`);
+        },
+        // Error callback
+        (error) => {            console.error('Error loading pause screen soldier model:', error);
+            
+            // Try alternate path
+            console.log("Attempting to load from alternate path: /models/soldierFrontPage.fbx");
+            loader.load('/models/soldierFrontPage.fbx',                (fbx) => {                    console.log("Soldier model loaded successfully from alternate path for pause screen");
+                    soldier = fbx;                    // Calculate the bounding box to properly position the model
+                    let boundingBox = new THREE.Box3().setFromObject(soldier);
+                    let modelHeight = boundingBox.max.y - boundingBox.min.y;
+                    let modelWidth = boundingBox.max.x - boundingBox.min.x;
+                    
+                    // Scale the model to fit the view (smaller scale for full visibility)
+                    const scale = 0.013; // Reduced scale to ensure entire model is visible
+                    soldier.scale.set(scale, scale, scale);
+                    
+                    // Position the model so it's fully visible
+                    let yOffset = -boundingBox.min.y * scale;
+                    soldier.position.set(0, yOffset + 0.3, 0); // Add a positive offset to lift the model up
+                    
+                    // Make sure model is facing camera with slight angle for better view
+                    soldier.rotation.y = Math.PI * 0.9; // Slight angle for better presentation
+                    
+                    if (fbx.animations && fbx.animations.length) {
+                        mixer = new THREE.AnimationMixer(fbx);
+                        mixer.clipAction(fbx.animations[0]).play();
+                    }
+                    
+                    scene.add(soldier);
+                    animate();
+                },
+                null,
+                () => {
+                    console.error("All attempts to load the pause screen model failed");
+                    animate(); // Still animate even without model to avoid blank screen
+                }
+            );
+        }
+    );
+}
+
+function animate() {
+    if (!isInitialized) return;
+    
+    animationId = requestAnimationFrame(animate);
+    
+    const delta = clock.getDelta();    const time = clock.getElapsedTime();    // Smooth rotation for the soldier
+    if (soldier) {
+        // Smooth, constant rotation speed - slightly slower for better viewing
+        soldier.rotation.y = (time * 0.15) % (Math.PI * 2) + Math.PI * 0.7; // One full rotation every ~42 seconds, with a better viewing angle
+        
+        // We no longer modify position in the animation loop
+        // This ensures we keep the carefully calculated position from loading
+    }
+    
+    // Update animations
+    if (mixer) {
+        mixer.update(delta);
+    }
+    
+    // Use composer for rendering if available, otherwise use standard renderer
+    if (composer) {
+        composer.render();
+    } else {
+        renderer.render(scene, camera);
+    }
+}
+
+function onWindowResize() {
+    if (!camera || !renderer) return;
+    
+    // Update camera
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    
+    // For the pause screen, we keep a fixed size for the model view    // Update size to ensure model remains visible
+    renderer.setSize(350, 450);
+    
+    // Update composer if available
+    if (composer) {
+        composer.setSize(350, 450);
+    }// Don't adjust the y-position on resize as it was calculated correctly during load
+    // The model should remain at its calculated y-offset position
+}
+
+function cleanup() {
+    if (!isInitialized) return;
+    
+    // Cancel animation frame
+    if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    
+    window.removeEventListener('resize', onWindowResize);
+    
+    // Dispose of resources
+    if (mixer) mixer.stopAllAction();
+    if (renderer) renderer.dispose();
+    if (scene) {
+        scene.traverse((object) => {
+            if (object.isMesh) {
+                object.geometry.dispose();
+                if (object.material) {
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach((material) => material.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                }
+            }
+        });
+    }
+    
+    isInitialized = false;
+}
+
+export { init, cleanup };
