@@ -1,0 +1,68 @@
+<html lang="en">
+	<head>
+		<title>RIFT</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<link rel="icon" href="app/rift_logo.ico" type="image/x-icon">
+<link rel="icon" href="/rift/assets/rift_logo-DfFgek-C.ico" type="image/x-icon">
+
+
+		<script type="module" crossorigin src="/rift/assets/index-C6qDn-MJ.js"></script>
+		<link rel="stylesheet" crossorigin href="/rift/assets/index-BA0AnpWp.css">
+	</head>
+<body>
+
+	<section id="startScreen">
+		<div id="startScreenContent">
+			<div id="logo-container">
+				<img src="/rift/assets/rift_logo-BSnre04M.png" alt="RIFT Logo" id="rift-logo">
+			</div>
+			<button id="start">Play</button>
+		</div>
+	</section>
+
+	<section id="loadingScreen">
+		<div class="spinner">
+			<div class="rect1"></div>
+			<div class="rect2"></div>
+			<div class="rect3"></div>
+			<div class="rect4"></div>
+			<div class="rect5"></div>
+		</div>
+	</section>
+
+	<section id="hudAmmo" class="uiContainer hidden">
+		<div>
+			<span id="roundsLeft"></span>
+			<span>|</span>
+			<span id="ammo"></span>
+		</div>
+	</section>
+
+	<section id="hudHealth" class="uiContainer hidden">
+		<div>
+			<span id="health"></span>
+		</div>
+	</section>
+
+	<section id="hudFragList" class="uiContainer hidden">
+		<div>
+			<ul id="fragList"></ul>
+		</div>
+	</section>
+	
+	<!-- Pointer Lock Overlay - shown when Escape is pressed -->
+	<section id="pointerLockOverlay" class="hidden">
+		<div id="pauseModelContainer"></div>
+		<div class="overlay-content">
+			<h2>Game Paused</h2>
+			<div class="pause-menu">
+				<button id="resumeButton">Resume Game</button>
+				<button id="settingsButton">Settings</button>
+				<button id="quitButton">Quit Game</button>
+			</div>
+		</div>
+	</section>
+
+</body>
+</html>
