@@ -2,43 +2,46 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  // Base public path when served in both development and production
-  base: '/',
-  root: 'app', // Set 'app' as the root directory
+  // 🌐 Base path: viktig for GitHub Pages og korrekt lasting av ressurser
+  base: '/rift/',  // ⚠️ Endre til '/' hvis du bruker custom domain eller InfinityFree
 
-  // Configure the server
+  // 📁 Rotmappe for utvikling (bruker 'app' som hovedmappe)
+  root: 'app',
+
+  // 🧪 Lokalt utviklingsserver-oppsett
   server: {
     port: 3000,
-    open: true, // Auto-open the browser
-    hmr: true,  // Enable hot module replacement
+    open: true, // Åpner automatisk i nettleser
+    hmr: true,  // Hot Module Replacement
   },
 
-  // Build configuration
+  // 🛠️ Bygg-konfigurasjon
   build: {
-    outDir: '../dist', // Output to project_root/dist
+    outDir: '../dist',  // Output havner i prosjektroten sin dist/
     assetsDir: 'assets',
-    emptyOutDir: true,
-    sourcemap: true,
+    emptyOutDir: true,   // Tøm dist/ før bygg
+    sourcemap: true,     // For debugging i prod
   },
 
-  // Resolve configuration
+  // 🔗 Importaliaser for enklere utvikling
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
       '@app': resolve(__dirname, 'app'),
     },
   },
-  // Configure assets handling
+
+  // 🎮 Spesielle asset-typer som skal inkluderes
   assetsInclude: ['**/*.glb', '**/*.json', '**/*.ogg', '**/*.png'],
 
-  // Use ES modules
+  // 📦 Optimalisering av avhengigheter
   optimizeDeps: {
     esbuildOptions: {
       target: 'esnext',
     },
   },
 
-  // Set esbuild target to use modern JS features
+  // 🎯 Bygg med moderne JavaScript
   esbuild: {
     target: 'esnext',
   },
