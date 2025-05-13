@@ -1,29 +1,26 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
-  // 🌐 Base path: viktig for GitHub Pages og korrekt lasting av ressurser
-  base: '/rift/',  // ⚠️ Endre til '/' hvis du bruker custom domain eller InfinityFree
-
-  // 📁 Rotmappe for utvikling (bruker 'app' som hovedmappe)
+  // Viktig: base må matche GitHub Pages URL (brukernavn.github.io/repo)
+  base: '/rift/',
   root: 'app',
 
-  // 🧪 Lokalt utviklingsserver-oppsett
   server: {
     port: 3000,
-    open: true, // Åpner automatisk i nettleser
-    hmr: true,  // Hot Module Replacement
+    open: true,
+    hmr: true,
   },
 
-  // 🛠️ Bygg-konfigurasjon
   build: {
-    outDir: '../dist',  // Output havner i prosjektroten sin dist/
+    outDir: '../dist',
     assetsDir: 'assets',
-    emptyOutDir: true,   // Tøm dist/ før bygg
-    sourcemap: true,     // For debugging i prod
+    emptyOutDir: true,
+    sourcemap: true,
+    copyPublicDir: true,
   },
 
-  // 🔗 Importaliaser for enklere utvikling
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -31,17 +28,16 @@ export default defineConfig({
     },
   },
 
-  // 🎮 Spesielle asset-typer som skal inkluderes
-  assetsInclude: ['**/*.glb', '**/*.json', '**/*.ogg', '**/*.png'],
+  assetsInclude: ['**/*.glb', '**/*.json', '**/*.ogg', '**/*.png', '**/*.fbx', '**/*.gltf', '**/*.bin', '**/*.animation'],  plugins: [
+    // We'll use a separate script for copying assets instead
+  ],
 
-  // 📦 Optimalisering av avhengigheter
   optimizeDeps: {
     esbuildOptions: {
       target: 'esnext',
     },
   },
 
-  // 🎯 Bygg med moderne JavaScript
   esbuild: {
     target: 'esnext',
   },

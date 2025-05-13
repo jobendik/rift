@@ -33,7 +33,7 @@ class Sky extends Mesh {
 const SkyShader = {
 
 	uniforms: {
-		'luminance': { value: 1 },
+		'skyLuminance': { value: 1 }, // Renamed from 'luminance' to avoid conflict
 		'turbidity': { value: 2 },
 		'rayleigh': { value: 1 },
 		'mieCoefficient': { value: 0.005 },
@@ -124,7 +124,8 @@ const SkyShader = {
 		'varying vec3 vBetaM;',
 		'varying float vSunE;',
 
-		'uniform float luminance;',
+		// Renamed uniform to avoid redefinition conflict
+		'uniform float skyLuminance;',
 		'uniform float mieDirectionalG;',
 
 		'const vec3 cameraPos = vec3( 0.0, 0.0, 0.0 );',
@@ -208,12 +209,17 @@ const SkyShader = {
 
 		'	vec3 texColor = ( Lin + L0 ) * 0.04 + vec3( 0.0, 0.0003, 0.00075 );',
 
-		'	vec3 curr = Uncharted2Tonemap( ( log2( 2.0 / pow( luminance, 4.0 ) ) ) * texColor );',
+		// Use the renamed uniform here
+		'	vec3 curr = Uncharted2Tonemap( ( log2( 2.0 / pow( skyLuminance, 4.0 ) ) ) * texColor );',
 		'	vec3 color = curr * whiteScale;',
 
 		'	vec3 retColor = pow( color, vec3( 1.0 / ( 1.2 + ( 1.2 * vSunfade ) ) ) );',
 
 		'	gl_FragColor = vec4( retColor, 1.0 );',
+		
+		// Required includes for modern Three.js - CRITICAL FIX
+		'#include <tonemapping_fragment>',
+		'#include <colorspace_fragment>',
 
 		'}'
 	].join( '\n' )

@@ -1,6 +1,7 @@
 import { LoadingManager, AnimationLoader, AudioLoader, TextureLoader, Mesh } from 'three';
 import { Sprite, SpriteMaterial, DoubleSide, AudioListener, PositionalAudio, SRGBColorSpace } from 'three';
 import { LineSegments, LineBasicMaterial, MeshBasicMaterial, BufferGeometry, Vector3, PlaneGeometry } from 'three';
+import { LinearFilter } from 'three'; // Added LinearFilter import
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { NavMeshLoader, CostTable } from 'yuka';
 import { CONFIG } from './Config.js';
@@ -152,11 +153,12 @@ class AssetManager {
 
 		// Load enemy animations from separate files
 		const gltfLoader = this.gltfLoader;
-
 		// Helper function to extract animation from GLB
 		const loadEnemyAnimation = (file, animName) => {
 			console.info(`AssetManager: Loading enemy animation: ${animName}`);
-			gltfLoader.load(`models/${file}`, (gltf) => {
+			// Use path that will work with GitHub Pages
+			const basePath = window.location.pathname.includes('/rift/') ? '/rift/models/' : 'models/';
+			gltfLoader.load(`${basePath}${file}`, (gltf) => {
 				if (gltf.animations && gltf.animations.length > 0) {
 					const anim = gltf.animations[0];
 					anim.name = animName;
@@ -428,21 +430,40 @@ class AssetManager {
 					console.info('AssetManager: Loading lightmap texture');
 					const mesh = renderComponent.getObjectByName('level');
 					if (mesh) {
-						// removed leading slash
-						mesh.material.lightMap = textureLoader.load('textures/lightmap.png', 
+						// UPDATED LIGHTMAP HANDLING - FIXED CODE
+						textureLoader.load('textures/lightmap.png', 
 							function(texture) {
 								console.info('AssetManager: Lightmap texture loaded successfully');
+								
+								// Proper texture settings for lightmaps
 								texture.colorSpace = SRGBColorSpace;
-								texture.needsUpdate = true;
+								texture.flipY = false;
+								texture.minFilter = LinearFilter;
+								texture.magFilter = LinearFilter;
+								texture.generateMipmaps = false;
+								
+								// Assign to material
+								mesh.material.lightMap = texture;
+								mesh.material.lightMapIntensity = 1.5; // Adjust as needed
+								
+								// In newer Three.js versions, specify UV channel for lightmap
+								// 0 = first UV set, 1 = second UV set (typically used for lightmaps)
+								mesh.material.lightMapUv = 1; 
+								
+								// Apply anisotropy to diffuse texture if available
+								if (mesh.material.map) {
+									mesh.material.map.anisotropy = 4;
+								}
+								
+								mesh.material.needsUpdate = true;
+								
+								console.info('AssetManager: Lightmap applied successfully');
 							},
 							undefined,
 							error => {
 								console.error('AssetManager: Error loading lightmap texture:', error);
 							}
 						);
-						mesh.material.lightMap.flipY = false;
-						mesh.material.map.anisotropy = 4;
-						mesh.material.needsUpdate = true;
 					} else {
 						console.error('AssetManager: Level mesh not found in the loaded model');
 					}

@@ -1,0 +1,7 @@
+{
+  "name": "rift5-copy-script",
+  "version": "1.0.0",
+  "description": "Asset copy script for RIFT game",
+  "main": "copyAssets.js",
+  "type": "commonjs"
+}

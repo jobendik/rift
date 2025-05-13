@@ -15,7 +15,7 @@ import { Enemy } from '../entities/Enemy.js';
 import { Player } from '../entities/Player.js';
 import { Bullet } from '../weapons/Bullet.js';
 import { PathPlanner } from '../etc/PathPlanner.js';
-import { Sky } from '../effects/Sky.js';
+import { EnhancedSky } from '../effects/EnhancedSky.js'; // Updated import
 import { CONFIG } from './Config.js';
 
 const currentIntersectionPoint = new Vector3();
@@ -57,6 +57,7 @@ class World {
 		//
 
 		this.player = null;
+		this.sky = null; // Added sky reference
 
 		//
 
@@ -307,6 +308,53 @@ class World {
 		return result;
 
 	}
+	
+	/**
+	* Sets the time of day for the sky, affecting lighting and atmosphere
+	*
+	* @param {string} timeOfDay - The time of day ('dawn', 'day', 'sunset', 'dusk', 'night')
+	* @return {World} A reference to this world object.
+	*/
+	setTimeOfDay(timeOfDay) {
+		if (this.sky) {
+			console.info(`Setting time of day to: ${timeOfDay}`);
+			this.sky.setTimeOfDay(timeOfDay);
+			
+			// Update directional light to match sun position
+			const dirLight = this.scene.children.find(child => child.isDirectionalLight);
+			if (dirLight) {
+				// Get sun position from sky shader
+				const sunPos = this.sky.material.uniforms.sunPosition.value;
+				dirLight.position.copy(sunPos.clone().multiplyScalar(1000));
+				
+				// Adjust light color based on time of day
+				switch(timeOfDay) {
+					case 'dawn':
+						dirLight.color.setRGB(1.0, 0.8, 0.7);
+						dirLight.intensity = 0.7;
+						break;
+					case 'day':
+						dirLight.color.setRGB(1.0, 1.0, 0.95);
+						dirLight.intensity = 1.0;
+						break;
+					case 'sunset':
+						dirLight.color.setRGB(1.0, 0.6, 0.3);
+						dirLight.intensity = 0.8;
+						break;
+					case 'dusk':
+						dirLight.color.setRGB(0.6, 0.5, 0.8);
+						dirLight.intensity = 0.5;
+						break;
+					case 'night':
+						dirLight.color.setRGB(0.2, 0.2, 0.5);
+						dirLight.intensity = 0.3;
+						break;
+				}
+			}
+		}
+		
+		return this;
+	}
 
 	/**
 	* Inits all basic objects of the scene like the scene graph itself, the camera, lights
@@ -341,27 +389,24 @@ class World {
 			dirLight.position.set( - 700, 1000, - 750 );
 			this.scene.add( dirLight );
 
-			// sky - with error handling
+			// Enhanced sky with error handling
 			try {
-				console.info('Creating sky...');
-				const sky = new Sky();
-				sky.scale.setScalar( 1000 );
-
-				// Safely access uniform values
-				if (sky.material && sky.material.uniforms) {
-					console.info('Setting sky uniforms...');
-					if (sky.material.uniforms.turbidity) sky.material.uniforms.turbidity.value = 5;
-					if (sky.material.uniforms.rayleigh) sky.material.uniforms.rayleigh.value = 1.5;
-					if (sky.material.uniforms.sunPosition) sky.material.uniforms.sunPosition.value.set( - 700, 1000, - 750 );
-				} else {
-					console.warn('Sky material or uniforms not available');
-				}
-
-				this.scene.add( sky );
-				console.info('Sky added to scene');
+				console.info('Creating enhanced sky...');
+				this.sky = new EnhancedSky();
+				this.sky.scale.setScalar(450000);
+				
+				// Set initial time of day - choose one that fits your game's mood
+				this.setTimeOfDay('sunset');
+				
+				this.scene.add(this.sky);
+				console.info('Enhanced sky added to scene');
+				
+				// Clear background color since sky replaces it
+				this.scene.background = null;
 			} catch (skyError) {
-				console.error('Error creating sky:', skyError);
-				// Continue initialization without the sky
+				console.error('Error creating enhanced sky:', skyError);
+				// Continue with a basic color background as fallback
+				this.scene.background = new Color(0x87CEEB); // light blue skybox
 			}
 
 			// renderer

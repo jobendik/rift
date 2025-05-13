@@ -4,6 +4,7 @@ import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { getBasePath, getAssetPath } from './utils/pathHelper.js';
 
 let scene, camera, renderer, soldier;
 let mixer, clock;
@@ -132,9 +133,10 @@ function init() {
 
 function loadSoldierModel() {
     const loader = new FBXLoader();
-    console.log("Loading soldier model for pause screen from models/soldierFrontPage.fbx");
+    const modelPath = getAssetPath('models', 'soldierFrontPage.fbx');
+    console.log(`Loading soldier model for pause screen from ${modelPath}`);
     
-    loader.load("models/soldierFrontPage.fbx",
+    loader.load(modelPath,
         // Success callback
         (fbx) => {
             console.log("Soldier model loaded successfully for pause screen");
@@ -181,8 +183,8 @@ function loadSoldierModel() {
             console.error("Error loading pause screen soldier model:", error);
             
             // Try alternate path
-            console.log("Attempting to load from alternate path: /models/soldierFrontPage.fbx");
-            loader.load("/models/soldierFrontPage.fbx",
+            console.log("Attempting to load from alternate path: /rift/models/soldierFrontPage.fbx");
+            loader.load("/rift/models/soldierFrontPage.fbx",
                 (fbx) => {
                     console.log("Soldier model loaded successfully from alternate path for pause screen");
                     soldier = fbx;

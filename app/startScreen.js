@@ -5,6 +5,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+import { getBasePath, getAssetPath } from './utils/pathHelper.js';
 
 let scene, camera, renderer, soldier;
 let mixer, clock;
@@ -107,7 +108,7 @@ if (logoContainer) {
     // Initialize clock for animations
     clock = new THREE.Clock();
 
-    // Load the soldier model
+  // Load the soldier model
     loadSoldierModel();
 
     // Handle window resize
@@ -121,9 +122,10 @@ if (logoContainer) {
 
 function loadSoldierModel() {
     const loader = new FBXLoader();
+    const modelPath = getAssetPath('models', 'soldierFrontPage.fbx');
       // Create a loading message for debugging
-    console.log("Loading soldier model from ./models/soldierFrontPage.fbx");
-      loader.load('./models/soldierFrontPage.fbx',
+    console.log(`Loading soldier model from ${modelPath}`);
+      loader.load(modelPath,
     // Success callback
     (fbx) => {
         console.log("Soldier model loaded successfully");
@@ -157,9 +159,13 @@ function loadSoldierModel() {
     (error) => {
         console.error('Error loading soldier model:', error);
         
-        // Try alternate path
-        console.log("Attempting to load from alternate path: ../models/soldierFrontPage.fbx");
-        loader.load('../models/soldierFrontPage.fbx',
+        // Try alternate path        console.log("Attempting to load from alternate path with base URL");
+        // Try with explicit GitHub Pages path as fallback
+        const alternatePath = (window.location.hostname.includes('github.io')) 
+            ? '/rift/models/soldierFrontPage.fbx' 
+            : '../models/soldierFrontPage.fbx';
+        console.log(`Loading from: ${alternatePath}`);
+        loader.load(alternatePath,
             // Success callback
             (fbx) => {
                 console.log("Soldier model loaded successfully from alternate path");
