@@ -1,10 +1,9 @@
 - Kulehull i vegge, muzzle, partikkeleffekt
-- Printe ut alle script filene, oversikt.md (over strukturen) og planen.md (skrevet av Claude/chat)
 
 - Få en oversikt over alle filene i prosjektet (struktur, hvor finner jeg variabler, etc.)
 - Modernisere mer (React? Etc.)
 - Bruke ammo.js, playcanvas.js eller babylon.js?
-- Push til GIT
+
 - Forstå hvordan AI-en fungerer. Videreutvikle den slik at den blir enda mer menneskelig.
 - Multiplayer
 - Endre lyd for skyting
@@ -21,4 +20,8 @@
 - HUD (minimap, etc)
 - Oversette kodebasen til typescript
 
+
+GJORT:
 - Gjøre fullscren når man trykker på "PLAY"
+- Push til GIT
+- Printe ut alle script filene, oversikt.md (over strukturen) og planen.md (skrevet av Claude/chat)

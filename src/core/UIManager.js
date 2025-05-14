@@ -42,6 +42,9 @@ class UIManager {
 			health: document.getElementById( 'health' ),
 			hudFragList: document.getElementById( 'hudFragList' ),
 			fragList: document.getElementById( 'fragList' ),
+			hudMinimap: document.getElementById( 'hudMinimap' ),
+			hudCompass: document.getElementById( 'hudCompass' ),
+			hudWeapons: document.getElementById( 'hudWeapons' ),
 		};
 
 		this.sprites = {
@@ -376,6 +379,19 @@ class UIManager {
 			this.html.hudHealth.classList.remove( 'hidden' );
 		}
 
+		// Show the HUD elements
+		if (this.html.hudMinimap) {
+			this.html.hudMinimap.classList.remove( 'hidden' );
+		}
+		
+		if (this.html.hudCompass) {
+			this.html.hudCompass.classList.remove( 'hidden' );
+		}
+		
+		if (this.html.hudWeapons) {
+			this.html.hudWeapons.classList.remove( 'hidden' );
+		}
+
 		this.updateAmmoStatus();
 		this.updateHealthStatus();
 
@@ -396,6 +412,19 @@ class UIManager {
 		
 		if (this.html.hudHealth) {
 			this.html.hudHealth.classList.add( 'hidden' );
+		}
+
+		// Hide the HUD elements
+		if (this.html.hudMinimap) {
+			this.html.hudMinimap.classList.add( 'hidden' );
+		}
+		
+		if (this.html.hudCompass) {
+			this.html.hudCompass.classList.add( 'hidden' );
+		}
+		
+		if (this.html.hudWeapons) {
+			this.html.hudWeapons.classList.add( 'hidden' );
 		}
 
 		if (this.sprites.crosshairs) {

@@ -174,6 +174,44 @@ button#start:hover {
   line-height: 1.2em;
 }
 
+/* HUD Elements Styles */
+#hudMinimap {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 900;
+}
+
+#minimapImage {
+  max-width: 200px;
+  height: auto;
+}
+
+#hudCompass {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+}
+
+#compassImage {
+  max-width: 300px;
+  height: auto;
+}
+
+#hudWeapons {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 900;
+}
+
+#weaponsImage {
+  max-width: 200px;
+  height: auto;
+}
+
 /* Pointer Lock Overlay Styles */
 #pointerLockOverlay {
   position: fixed;

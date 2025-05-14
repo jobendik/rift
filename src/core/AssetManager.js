@@ -156,24 +156,33 @@ class AssetManager {
 		// Helper function to extract animation from GLB
 		const loadEnemyAnimation = (file, animName) => {
 			console.info(`AssetManager: Loading enemy animation: ${animName}`);
-			// Use path that will work with GitHub Pages
-			const basePath = window.location.pathname.includes('/rift/') ? '/rift/models/' : 'models/';
-			gltfLoader.load(`${basePath}${file}`, (gltf) => {
-				if (gltf.animations && gltf.animations.length > 0) {
-					const anim = gltf.animations[0];
-					anim.name = animName;
-					this.animations.set(animName, anim);
-					console.info(`AssetManager: Enemy animation loaded: ${animName}`);
-				} else {
-					console.error(`AssetManager: No animations found in ${file}`);
-				}
-			}, undefined, (error) => {
-				console.error(`AssetManager: Error loading enemy animation ${animName}:`, error);
-			});
+			 // Check if we should try loading external files
+			const loadExternalAnimations = false; // Set to true when animation files are available
+			
+			if (loadExternalAnimations) {
+				// Use path that will work with GitHub Pages
+				const basePath = window.location.pathname.includes('/rift/') ? '/rift/models/' : 'models/';
+				gltfLoader.load(`${basePath}${file}`, (gltf) => {
+					if (gltf.animations && gltf.animations.length > 0) {
+						const anim = gltf.animations[0];
+						anim.name = animName;
+						this.animations.set(animName, anim);
+						console.info(`AssetManager: Enemy animation loaded: ${animName}`);
+					} else {
+						console.error(`AssetManager: No animations found in ${file}`);
+					}
+				}, undefined, (error) => {
+					console.error(`AssetManager: Error loading enemy animation ${animName}:`, error);
+					// Continue loading other assets even if this one fails
+				});
+			} else {
+				console.info(`AssetManager: Skipping external animation file for ${animName}`);
+			}
 		};
 
-		// Load individual enemy animations
-		// Replace these filenames with your actual Mixamo filenames
+		// Comment out individual animation loading since files don't exist yet
+		// Will use animations from the main soldier.glb model instead
+		/*
 		loadEnemyAnimation('enemy_idle.glb', 'soldier_idle');
 		loadEnemyAnimation('enemy_forward.glb', 'soldier_forward');
 		loadEnemyAnimation('enemy_backward.glb', 'soldier_backward');
@@ -181,6 +190,9 @@ class AssetManager {
 		loadEnemyAnimation('enemy_right.glb', 'soldier_right');
 		loadEnemyAnimation('enemy_death1.glb', 'soldier_death1');
 		loadEnemyAnimation('enemy_death2.glb', 'soldier_death2');
+		*/
+
+		// Note: The soldier model loaded later in _loadModels will provide the animations
 
 		return this;
 	}

@@ -652,8 +652,26 @@ class Enemy extends Vehicle {
 		// start death animation
 
 		const index = MathUtils.randInt( 1, 2 );
-		const dying = this.animations.get( 'soldier_death' + index );
-		dying.enabled = true;
+		// Handle the special case of soldier_death1 having a tab character
+		let animName = 'soldier_death' + index;
+		if (index === 1) animName += '\t'; // Add tab character for death1 animation
+		
+		const dying = this.animations.get(animName);
+		
+		// Only enable the animation if it exists
+		if (dying) {
+			dying.enabled = true;
+		} else {
+			console.warn(`RIFT.Enemy: Death animation "${animName}" not found for enemy ${this.uuid}`);
+			// Try to find any death animation as fallback
+			for (const [name, anim] of this.animations.entries()) {
+				if (name.includes('death')) {
+					console.info(`RIFT.Enemy: Using fallback death animation "${name}"`);
+					anim.enabled = true;
+					break;
+				}
+			}
+		}
 
 		return this;
 
