@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Yuka.js CostTable & Debug</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    #debugStatus { margin-top: 20px; white-space: pre-wrap; }
+  </style>
+  <!-- Import map to resolve bare module specifier 'three' -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.1/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Yuka.js CostTable Debugger</h1>
+  <p>Select your files and click <strong>Run Debug</strong> to verify they load correctly with Yuka.js:</p>
+  <label>
+    Model (level.glb):
+    <input type="file" id="modelInput" accept=".glb">
+  </label>
+  <label>
+    NavMesh (navmesh.glb):
+    <input type="file" id="navmeshInput" accept=".glb">
+  </label>
+  <label>
+    CostTable (costTable.json):
+    <input type="file" id="costTableInput" accept=".json">
+  </label>
+  <button id="debugBtn">Run Debug</button>
+  <div id="debugStatus">No debug run yet.</div>
+
+  <script type="module">
+    // Import loaders via CDN with explicit paths
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+    import { NavMeshLoader, CostTable } from 'https://unpkg.com/yuka@latest/build/yuka.module.js';
+
+    const modelInput = document.getElementById('modelInput');
+    const navInput = document.getElementById('navmeshInput');
+    const costInput = document.getElementById('costTableInput');
+    const debugBtn = document.getElementById('debugBtn');
+    const debugStatus = document.getElementById('debugStatus');
+
+    debugBtn.addEventListener('click', async () => {
+      debugStatus.textContent = '';
+      try {
+        const modelFile = modelInput.files[0];
+        const navFile = navInput.files[0];
+        const costFile = costInput.files[0];
+        if (!modelFile || !navFile || !costFile) {
+          throw new Error('Please select all three files.');
+        }
+
+        // Load and parse model.glb
+        debugStatus.textContent += 'Loading model.glb...\n';
+        const modelData = await readFileAsArrayBuffer(modelFile);
+        const gltfLoader = new GLTFLoader();
+        const gltf = await new Promise((resolve, reject) => {
+          gltfLoader.parse(modelData, '', resolve, reject);
+        });
+        const meshCount = gltf.scene?.children.length || 0;
+        debugStatus.textContent += `Model loaded: ${meshCount} mesh(es).\n`;
+
+        // Load and parse navmesh.glb
+        debugStatus.textContent += 'Loading navmesh.glb...\n';
+        const navData = await readFileAsArrayBuffer(navFile);
+        const navMesh = await new Promise((resolve, reject) => {
+          new NavMeshLoader().parse(navData, '', resolve, reject);
+        });
+        debugStatus.textContent += `NavMesh loaded: ${navMesh.polygons.length} polygons.\n`;
+
+        // Load and rebuild costTable
+        debugStatus.textContent += 'Loading costTable.json...\n';
+        const costText = await readFileAsText(costFile);
+        const costJson = JSON.parse(costText);
+        const costTable = new CostTable();
+        costTable.fromJSON(costJson);
+        const size = costTable.size;
+        debugStatus.textContent += `CostTable loaded: size = ${size}.\n`;
+        const sampleCost = costTable.get(0, 1);
+        debugStatus.textContent += `Sample cost [0,1] = ${sampleCost}.\n`;
+
+        debugStatus.textContent += '\n✅ All files loaded and parsed successfully!';
+      } catch (err) {
+        debugStatus.textContent += `Error: ${err.message}`;
+      }
+    });
+
+    function readFileAsArrayBuffer(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function readFileAsText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+    }
+  </script>
+</body>
+</html>

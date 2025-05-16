@@ -25,3 +25,8 @@ GJORT:
 - Gjøre fullscren når man trykker på "PLAY"
 - Push til GIT
 - Printe ut alle script filene, oversikt.md (over strukturen) og planen.md (skrevet av Claude/chat)
+
+
+16.05.25
+- Det går ALT for sakte! Alt er liksom i slow mo, både spilleren og fiendene.
+- Men med en rask mus er kamera lynraskt, og DET liker jeg!

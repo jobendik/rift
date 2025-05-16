@@ -48,6 +48,7 @@ class FirstPersonControls extends EventDispatcher {
 			backward: false,
 			right: false,
 			left: false,
+			run: false, // Nytt: løpe med shift
 			mouseDown: false
 		};
 
@@ -139,6 +140,7 @@ class FirstPersonControls extends EventDispatcher {
 		this.input.backward = false;
 		this.input.right = false;
 		this.input.left = false;
+		this.input.run = false;
 		this.input.mouseDown = false;
 
 		currentSign = 1;
@@ -194,11 +196,17 @@ class FirstPersonControls extends EventDispatcher {
 
 		const input = this.input;
 		const owner = this.owner;
-		
 		// Don't process movement if paused
 		if (this.isPaused) {
 			owner.velocity.set(0, 0, 0);
 			return this;
+		}
+
+		// Handle maxSpeed for running
+		if (input.run) {
+			owner.maxSpeed = CONFIG.PLAYER.MAX_SPEED * 3;
+		} else {
+			owner.maxSpeed = CONFIG.PLAYER.MAX_SPEED;
 		}
 
 		velocity.x -= velocity.x * this.brakingPower * delta;
@@ -208,8 +216,11 @@ class FirstPersonControls extends EventDispatcher {
 		direction.x = Number( input.left ) - Number( input.right );
 		direction.normalize();
 
-		if ( input.forward || input.backward ) velocity.z -= direction.z * CONFIG.CONTROLS.ACCELERATION * delta;
-		if ( input.left || input.right ) velocity.x -= direction.x * CONFIG.CONTROLS.ACCELERATION * delta;
+		let speedMultiplier = 1;
+		if (input.run) speedMultiplier = 3;
+
+		if ( input.forward || input.backward ) velocity.z -= direction.z * CONFIG.CONTROLS.ACCELERATION * delta * speedMultiplier;
+		if ( input.left || input.right ) velocity.x -= direction.x * CONFIG.CONTROLS.ACCELERATION * delta * speedMultiplier;
 
 		owner.velocity.copy( velocity ).applyRotation( owner.rotation );
 
@@ -233,9 +244,11 @@ class FirstPersonControls extends EventDispatcher {
 			return this;
 		}
 
-		// some simple head bobbing
-
-		const motion = Math.sin( elapsed * this.headMovement );
+		 // Hvis vi løper, ikke vugg hodet ekstra
+		let motion = 0;
+		if (!this.input.run) {
+			motion = Math.sin( elapsed * this.headMovement );
+		}
 
 		head.position.y = Math.abs( motion ) * 0.06;
 		head.position.x = motion * 0.08;
@@ -499,6 +512,10 @@ function onKeyDown( event ) {
 				this.input.right = true;
 				break;
 
+			case 16: // Venstre shift
+				this.input.run = true;
+				break;
+
 			case 82: // r
 				this.owner.reload();
 				break;
@@ -552,6 +569,10 @@ function onKeyUp( event ) {
 			case 39: // right
 			case 68: // d
 				this.input.right = false;
+				break;
+
+			case 16: // Venstre shift
+				this.input.run = false;
 				break;
 
 		}
