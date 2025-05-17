@@ -157,8 +157,11 @@ button#start:hover {
 }
 
 #hudFragList {
-  top: 5em;
-  right: 1em;
+  top: 240px;
+  right: 20px;
+  z-index: 890;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
 }
 
 #fragList {
@@ -175,24 +178,13 @@ button#start:hover {
 }
 
 /* HUD Elements Styles */
-#hudMinimap {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 900;
-}
-
-#minimapImage {
-  max-width: 200px;
-  height: auto;
-}
 
 #hudCompass {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 900;
+  z-index: 890; /* Below minimap */
 }
 
 #compassImage {
@@ -204,7 +196,7 @@ button#start:hover {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 900;
+  z-index: 890; /* Below minimap */
 }
 
 #weaponsImage {
@@ -234,6 +226,7 @@ button#start:hover {
   box-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
   position: relative;
   z-index: 10;
+  margin-bottom: 80px;
 }
 
 #pointerLockOverlay h2 {
@@ -305,7 +298,20 @@ button#start:hover {
   background: transparent !important;
 }
 
-/* Optionally add space below the menu */
-#pointerLockOverlay .overlay-content {
-  margin-bottom: 80px;
+/* Advanced Minimap Styles - Moved to bottom left corner */
+#advancedMinimapContainer {
+  position: fixed;
+  bottom: 20px; /* Position at bottom */
+  left: 20px;   /* Position at left */
+  z-index: 900;
+  pointer-events: none; /* Don't intercept mouse events */
+  padding: 0;
+  margin: 0;
+}
+
+/* Make sure the minimap container has proper styling */
+#advancedMinimapContainer > div {
+  border-radius: 50% !important; /* Force circular shape */
+  overflow: hidden !important;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7) !important; /* Stronger shadow for better visibility */
 }

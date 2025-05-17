@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import world from './core/World.js';
+import { AdvancedMinimap } from '../app/minimapClass.js';
 
 // Console color logging for better debugging
 const logStyles = {
@@ -239,6 +240,49 @@ document.addEventListener('DOMContentLoaded', () => {
     log('Warning: Start button not found in the DOM!', 'warning');
   }
 });
+
+// --- ADVANCED MINIMAP INTEGRATION ---
+// This is now handled by the UIManager and MinimapIntegration class
+/*
+let minimap = null;
+function setupAdvancedMinimap() {
+  if (!window.scene || !window.camera || !window.player) {
+    console.warn('Minimap: scene/camera/player not ready');
+    return;
+  }
+  minimap = new AdvancedMinimap(window.scene, window.camera, window.player, {
+    size: 180,
+    position: 'top-right',
+    scale: 25,
+    height: 80,
+    rotateWithPlayer: false,
+    zoomable: true,
+    enemyDetectionRadius: 30,
+    heightIndicator: true,
+    updateFrequency: 2,
+    lowResolutionFactor: 0.8,
+    simplifyGeometry: true,
+    showObjectives: true,
+    fogOfWar: true,
+    radarSweep: true
+  });
+  window.minimap = minimap;
+}
+
+// Example: hook into world/game ready event
+if (window.world && typeof window.world.init === 'function') {
+  const origInit = window.world.init;
+  window.world.init = function(...args) {
+    const result = origInit.apply(this, args);
+    // Expose scene/camera/player globally if not already
+    window.scene = this.scene;
+    window.camera = this.camera;
+    window.player = this.player;
+    setTimeout(setupAdvancedMinimap, 0); // Defer to ensure objects exist
+    return result;
+  };
+}
+*/
 
 // Export the world for debugging
 window.gameWorld = world;

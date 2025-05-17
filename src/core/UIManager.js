@@ -1,6 +1,7 @@
 import { OrthographicCamera, Scene, Sprite, SpriteMaterial } from 'three';
 import { CONFIG } from './Config.js';
 import * as DAT from 'dat.gui';
+import { MinimapIntegration } from '../../app/minimapIntegration.js';
 
 const PI25 = Math.PI * 0.25;
 const PI75 = Math.PI * 0.75;
@@ -43,6 +44,7 @@ class UIManager {
 			hudFragList: document.getElementById( 'hudFragList' ),
 			fragList: document.getElementById( 'fragList' ),
 			hudMinimap: document.getElementById( 'hudMinimap' ),
+			advancedMinimapContainer: document.getElementById('advancedMinimapContainer'),
 			hudCompass: document.getElementById( 'hudCompass' ),
 			hudWeapons: document.getElementById( 'hudWeapons' ),
 		};
@@ -87,6 +89,9 @@ class UIManager {
 			}
 		};
 
+		// Advanced minimap integration
+		this.minimapIntegration = null;
+
 	}
 
 	/**
@@ -97,6 +102,24 @@ class UIManager {
 	init() {
 
 		this._buildFPSInterface();
+
+		 // Minimap overlay setup
+		this.minimapCanvas = document.getElementById('minimapOverlay');
+		this.minimapCtx = this.minimapCanvas ? this.minimapCanvas.getContext('2d') : null;
+		// Get level bounds for coordinate mapping
+		const levelConfig = this.world.assetManager && this.world.assetManager.configs ? this.world.assetManager.configs.get('level') : null;
+		if (levelConfig && levelConfig.spatialIndex) {
+			this.minimapWorldWidth = levelConfig.spatialIndex.width;
+			this.minimapWorldDepth = levelConfig.spatialIndex.depth;
+		} else {
+			// Fallback defaults
+			this.minimapWorldWidth = 125;
+			this.minimapWorldDepth = 125;
+		}
+		this.minimapSize = 200; // px
+
+		// Initialize the advanced minimap integration
+		this.minimapIntegration = new MinimapIntegration(this.world);
 
 		//
 
@@ -274,6 +297,14 @@ class UIManager {
 
 		this._updateFragList();
 
+		 // Minimap update
+		this._updateMinimap();
+
+		// Update advanced minimap if initialized
+		if (this.minimapIntegration && this.minimapIntegration.initialized) {
+			this.minimapIntegration.update();
+		}
+
 		// render UI
 
 		this._render();
@@ -379,11 +410,38 @@ class UIManager {
 			this.html.hudHealth.classList.remove( 'hidden' );
 		}
 
-		// Show the HUD elements
-		if (this.html.hudMinimap) {
-			this.html.hudMinimap.classList.remove( 'hidden' );
+		// Initialize advanced minimap with a proper delay to ensure world is loaded
+		if (this.minimapIntegration && !this.minimapIntegration.initialized) {
+			setTimeout(() => {
+				try {
+					console.log('Initializing minimap...');
+					const success = this.minimapIntegration.init();
+					if (success) {
+						console.log('Minimap initialized successfully');
+						// Call addAllEnemies explicitly to ensure enemies are displayed
+						this.minimapIntegration.addAllEnemies();
+					} else {
+						console.error('Failed to initialize minimap');
+					}
+				} catch (error) {
+					console.error('Error initializing minimap:', error);
+				}
+			}, 1000); // Longer delay to ensure world objects are fully loaded
 		}
 		
+		if (this.minimapIntegration) {
+			this.minimapIntegration.show();
+		}
+
+		// Show the HUD elements
+		if (this.html.hudMinimap) {
+			this.html.hudMinimap.classList.remove('hidden');
+		}
+		
+		if (this.html.advancedMinimapContainer) {
+			this.html.advancedMinimapContainer.classList.remove('hidden');
+		}
+
 		if (this.html.hudCompass) {
 			this.html.hudCompass.classList.remove( 'hidden' );
 		}
@@ -414,11 +472,20 @@ class UIManager {
 			this.html.hudHealth.classList.add( 'hidden' );
 		}
 
+		// Hide minimap
+		if (this.minimapIntegration) {
+			this.minimapIntegration.hide();
+		}
+
 		// Hide the HUD elements
 		if (this.html.hudMinimap) {
-			this.html.hudMinimap.classList.add( 'hidden' );
+			this.html.hudMinimap.classList.add('hidden');
 		}
 		
+		if (this.html.advancedMinimapContainer) {
+			this.html.advancedMinimapContainer.classList.add('hidden');
+		}
+
 		if (this.html.hudCompass) {
 			this.html.hudCompass.classList.add( 'hidden' );
 		}
@@ -754,6 +821,59 @@ class UIManager {
 		} catch (error) {
 			console.error('Error rendering UI:', error);
 		}
+
+		return this;
+	}
+
+	/**
+	* Updates the minimap overlay.
+	*
+	* @return {UIManager} A reference to this UI manager.
+	*/
+	_updateMinimap() {
+		if (!this.minimapCtx || !this.world || !this.world.player) return;
+		const ctx = this.minimapCtx;
+		const size = this.minimapSize;
+		ctx.clearRect(0, 0, size, size);
+
+		// Helper: map world X/Z to minimap X/Y
+		const mapToMinimap = (x, z) => {
+			const mx = ((x + this.minimapWorldWidth / 2) / this.minimapWorldWidth) * size;
+			const my = size - ((z + this.minimapWorldDepth / 2) / this.minimapWorldDepth) * size;
+			return [mx, my];
+		};
+
+		// Draw player
+		const player = this.world.player;
+		const [px, py] = mapToMinimap(player.position.x, player.position.z);
+		// Draw player orientation as a triangle/arrow
+		const angle = Math.atan2(player.forward.x, player.forward.z); // Yaw
+		ctx.save();
+		ctx.translate(px, py);
+		ctx.rotate(-angle); // Canvas Y axis is down
+		ctx.fillStyle = '#00ff00';
+		ctx.beginPath();
+		ctx.moveTo(0, -8); // tip
+		ctx.lineTo(5, 6);
+		ctx.lineTo(-5, 6);
+		ctx.closePath();
+		ctx.fill();
+		ctx.restore();
+
+		// Draw enemies
+		const competitors = this.world.competitors || [];
+		for (const entity of competitors) {
+			if (entity === player || entity.status !== 1 /* STATUS_ALIVE */) continue;
+			const [ex, ey] = mapToMinimap(entity.position.x, entity.position.z);
+			ctx.save();
+			ctx.translate(ex, ey);
+			ctx.fillStyle = '#ff3333';
+			ctx.beginPath();
+			ctx.arc(0, 0, 5, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.restore();
+		}
+		// Optionally: draw items, etc.
 
 		return this;
 	}
