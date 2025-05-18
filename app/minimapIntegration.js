@@ -32,31 +32,31 @@ class MinimapIntegration {
     }
 
     // Create the minimap instance
-    this.minimap = new AdvancedMinimap(
-      this.world.scene, 
-      this.world.camera, 
-      this.world.player,
-      {
-        size: 180,
-        position: 'none',
-        scale: mapScale,
-        height: 200, // Higher to ensure proper top-down view
-        rotateWithPlayer: false,
-        zoomable: false,
-        enemyDetectionRadius: 100,
-        heightIndicator: false,
-        updateFrequency: 1,
-        lowResolutionFactor: 1.0,
-        simplifyGeometry: true,
-        showObjectives: true,
-        fogOfWar: false,
-        radarSweep: false,
-        border: '2px solid rgba(255, 255, 255, 0.7)',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        // Pass our custom movement detection function
-        getPlayerDirection: () => this.getPlayerMovementDirection()
-      }
-    );
+this.minimap = new AdvancedMinimap(
+  this.world.scene, 
+  this.world.camera, 
+  this.world.player,
+  {
+    size: 180,
+    position: 'none',
+    scale: mapScale,
+    height: 200,
+    rotateWithPlayer: false,
+    zoomable: false,
+    enemyDetectionRadius: 100,
+    heightIndicator: false,
+    updateFrequency: 1,
+    lowResolutionFactor: 1.0,
+    simplifyGeometry: true,
+    showObjectives: true,
+    fogOfWar: false,
+    radarSweep: false,
+    border: '2px solid rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // Use a new function that gets camera direction
+    getPlayerDirection: () => this.getPlayerCameraDirection()
+  }
+);
 
     // Override container to use our prepared DOM element
     if (this.minimapContainer && this.minimap.container) {
@@ -89,8 +89,25 @@ class MinimapIntegration {
     this.addAllItems();
     
     this.initialized = true;
+    // Add debug shapes to verify rendering
+    this.addDebugMarkers();
     return true;
   }
+
+  getPlayerCameraDirection() {
+  // Get direct camera rotation from FPS controls
+  if (this.world.fpsControls && typeof this.world.fpsControls.movementX === 'number') {
+    // This directly uses the camera's horizontal rotation value
+    return this.world.fpsControls.movementX;
+  }
+  
+  // If no FPS controls, fall back to player rotation
+  if (this.world.player && this.world.player.rotation) {
+    return this.world.player.rotation.y;
+  }
+  
+  return 0; // Default direction if nothing else works
+}
   
   // Create a more clear top-down minimap representation
   createSimplifiedLevelMap() {
@@ -236,29 +253,40 @@ class MinimapIntegration {
   }
   
   // Calculate player movement direction based on position changes
-  getPlayerMovementDirection() {
-    if (!this.world.player || !this.lastPlayerPosition) {
-      return 0;
-    }
-    
-    const currentPos = this.world.player.position;
-    
-    // Calculate movement vector since last frame
-    const deltaX = currentPos.x - this.lastPlayerPosition.x;
-    const deltaZ = currentPos.z - this.lastPlayerPosition.z;
-    
-    // Only update direction if player moved enough
-    const movementThreshold = 0.01;
-    if (Math.abs(deltaX) > movementThreshold || Math.abs(deltaZ) > movementThreshold) {
-      this.movementVector = { x: deltaX, z: deltaZ };
-    }
-    
-    // Store current position for next frame
-    this.lastPlayerPosition.copy(currentPos);
-    
-    // Calculate angle from movement vector
-    return Math.atan2(this.movementVector.x, this.movementVector.z);
+getPlayerMovementDirection() {
+  if (!this.world || !this.world.player) {
+    return 0;
   }
+  
+  // First try: Get direction from player's forward vector (most reliable)
+  if (this.world.player.forward) {
+    return Math.atan2(this.world.player.forward.x, this.world.player.forward.z);
+  }
+  
+  // Second try: Get direction from player's rotation
+  if (this.world.player.rotation) {
+    return this.world.player.rotation.y;
+  }
+  
+  // Fallback: Use a movement-based direction
+  if (!this.lastPlayerPosition) {
+    this.lastPlayerPosition = this.world.player.position.clone();
+    this.movementVector = { x: 0, z: 1 }; // Default forward
+    return 0;
+  }
+  
+  const currentPos = this.world.player.position;
+  const deltaX = currentPos.x - this.lastPlayerPosition.x;
+  const deltaZ = currentPos.z - this.lastPlayerPosition.z;
+  
+  // Only update if significant movement
+  if (Math.abs(deltaX) > 0.01 || Math.abs(deltaZ) > 0.01) {
+    this.movementVector = { x: deltaX, z: deltaZ };
+  }
+  
+  this.lastPlayerPosition.copy(currentPos);
+  return Math.atan2(this.movementVector.x, this.movementVector.z);
+}
   
   // Add all enemies to the minimap
   addAllEnemies() {
@@ -277,54 +305,260 @@ class MinimapIntegration {
         this.minimap.addEnemyMarker(enemy);
       });
     }
-  }
+  }  
   
-  // Add all items to the minimap
-  addAllItems() {
-    // Check for various item containers
-    const itemArrays = [
-      this.world.items,
-      this.world.pickups,
-      this.world.pickableItems,
-      this.world.collectibles
-    ];
-    
-    itemArrays.forEach(items => {
-      if (!items || !Array.isArray(items)) return;
-      
-      items.forEach(item => {
-        if (!item || !item.position) return;
-        
-        let itemType = 'generic';
-        
-        // Determine item type
-        if (item.name) {
-          const name = item.name.toLowerCase();
-          if (name.includes('health') || name.includes('med')) {
-            itemType = 'health';
-          } else if (name.includes('ammo') || name.includes('bullet')) {
-            itemType = 'ammo';
-          } else if (name.includes('gun') || name.includes('weapon') || 
-                     name.includes('rifle') || name.includes('pistol')) {
-            itemType = 'weapon';
-          }
-        }
-        
-        // Also check userData
-        if (item.userData && item.userData.type) {
-          itemType = item.userData.type;
-        }
-        
-        this.minimap.addItemMarker(item, itemType);
-      });
-    });
-  }
+// Add all items to the minimap
+addAllItems() {
+  const itemArrays = [
+    this.world.items,
+    this.world.pickups,
+    this.world.pickableItems,
+    this.world.collectibles
+  ];
 
-  update() {
-    if (this.initialized && this.minimap) {
-      this.minimap.update();
+  // Add items from spawning manager if available
+  if (this.world.spawningManager) {
+    const spawner = this.world.spawningManager;
+
+    if (spawner.healthPacks && Array.isArray(spawner.healthPacks)) {
+      console.log("Adding health packs to minimap:", spawner.healthPacks.length);
+      itemArrays.push(spawner.healthPacks);
+    }
+
+    if (spawner.blasters && Array.isArray(spawner.blasters)) {
+      console.log("Adding blasters to minimap:", spawner.blasters.length);
+      itemArrays.push(spawner.blasters);
+    }
+
+    if (spawner.shotguns && Array.isArray(spawner.shotguns)) {
+      console.log("Adding shotguns to minimap:", spawner.shotguns.length);
+      itemArrays.push(spawner.shotguns);
+    }
+
+    if (spawner.assaultRifles && Array.isArray(spawner.assaultRifles)) {
+      console.log("Adding assault rifles to minimap:", spawner.assaultRifles.length);
+      itemArrays.push(spawner.assaultRifles);
     }
   }
+
+  let totalWeaponsAdded = 0;
+  let totalHealthAdded = 0;
+
+  itemArrays.forEach(items => {
+    if (!items || !Array.isArray(items)) return;
+
+    items.forEach(item => {
+      if (!item || !item.position) return;
+
+      let itemType = 'generic';
+
+      // Check render component name
+      if (item._renderComponent) {
+        const model = item._renderComponent;
+        const modelName = model.name?.toLowerCase() || '';
+
+        if (modelName.includes('health')) {
+          itemType = 'health';
+        } else if (modelName.includes('blaster')) {
+          itemType = 'blaster';
+        } else if (modelName.includes('shotgun')) {
+          itemType = 'shotgun';
+        } else if (modelName.includes('assault') || modelName.includes('rifle')) {
+          itemType = 'assaultRifle';
+        }
+      }
+
+      // Check item name
+      if (itemType === 'generic' && item.name) {
+        const name = item.name.toLowerCase();
+        if (name.includes('health') || name.includes('med')) {
+          itemType = 'health';
+        } else if (name.includes('ammo') || name.includes('bullet')) {
+          itemType = 'ammo';
+        } else if (name.includes('blaster')) {
+          itemType = 'blaster';
+        } else if (name.includes('shotgun')) {
+          itemType = 'shotgun';
+        } else if (name.includes('rifle') || name.includes('assault')) {
+          itemType = 'assaultRifle';
+        } else if (name.includes('gun') || name.includes('weapon') || name.includes('pistol')) {
+          itemType = 'weapon';
+        }
+      }
+
+      // Check item type constant
+      if (itemType === 'generic' && item.type !== undefined) {
+        switch (item.type) {
+          case 1: itemType = 'blaster'; break;
+          case 2: itemType = 'shotgun'; break;
+          case 3: itemType = 'assaultRifle'; break;
+          case 15: itemType = 'health'; break;
+        }
+      }
+
+      // Check userData
+      if (itemType === 'generic' && item.userData?.type) {
+        itemType = item.userData.type;
+      }
+
+      // Check file path
+      if (itemType === 'generic' && item.filePath) {
+        const path = item.filePath.toLowerCase();
+        if (path.includes('blaster')) {
+          itemType = 'blaster';
+        } else if (path.includes('shotgun')) {
+          itemType = 'shotgun';
+        } else if (path.includes('assault') || path.includes('rifle')) {
+          itemType = 'assaultRifle';
+        } else if (path.includes('health')) {
+          itemType = 'health';
+        }
+      }
+
+      // Check model path
+      if (itemType === 'generic' && item._modelPath) {
+        const modelPath = item._modelPath.toLowerCase();
+        if (modelPath.includes('blaster')) {
+          itemType = 'blaster';
+        } else if (modelPath.includes('shotgun')) {
+          itemType = 'shotgun';
+        } else if (modelPath.includes('assault') || modelPath.includes('rifle')) {
+          itemType = 'assaultRifle';
+        } else if (modelPath.includes('health')) {
+          itemType = 'health';
+        }
+      }
+
+      // Log item type detection for debugging
+      console.log("Item type detected:", itemType, "for item:", item.name || "unnamed", "at position:", item.position.x.toFixed(2), item.position.y.toFixed(2), item.position.z.toFixed(2));
+
+      // Add to minimap
+      if (this.minimap?.addItemMarker) {
+        const marker = this.minimap.addItemMarker(item, itemType || 'generic');
+        
+        // Ensure marker is initially visible
+        if (marker) {
+          marker.visible = true;
+          
+          // Track item types added for debugging
+          if (itemType === 'health') {
+            totalHealthAdded++;
+          } else if (['blaster', 'shotgun', 'assaultRifle', 'weapon'].includes(itemType)) {
+            totalWeaponsAdded++;
+          }
+        }
+      }
+    });
+  });
+  
+  // Log summary of items added
+  console.log("Minimap items summary - Health packs:", totalHealthAdded, "Weapons:", totalWeaponsAdded);
+}
+
+addDebugMarkers() {
+  if (!this.minimap) return;
+  
+  // REMOVE THIS SECTION TO ELIMINATE THE RED DOT
+  // const centerGeometry = new THREE.CircleGeometry(2, 16);
+  // const centerMaterial = new THREE.MeshBasicMaterial({
+  //   color: 0xff0000,
+  //   transparent: true,
+  //   opacity: 1.0
+  // });
+  
+  // const centerMarker = new THREE.Mesh(centerGeometry, centerMaterial);
+  // centerMarker.rotation.x = -Math.PI / 2;
+  // centerMarker.position.set(0, 0, 0);
+  
+  // this.minimap.minimapScene.add(centerMarker);
+  
+  // Instead, just add weapon position markers without the center marker
+  const positions = [
+    { x: 5.0, z: 45.0, type: 'shotgun' },
+    { x: -7.0, z: -19.0, type: 'shotgun' }
+  ];
+  
+  positions.forEach(pos => {
+    const markerGeometry = new THREE.ConeGeometry(1.5, 3, 8);
+    const markerMaterial = new THREE.MeshBasicMaterial({
+      color: 0xff00ff, // Bright magenta
+      transparent: true,
+      opacity: 1.0
+    });
+    
+    const testMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+    testMarker.rotation.x = -Math.PI / 2;
+    testMarker.position.set(pos.x, 0, pos.z);
+    
+    this.minimap.minimapScene.add(testMarker);
+    
+    console.log(`Added debug marker at ${pos.x}, ${pos.z} for ${pos.type}`);
+  });
+}
+
+
+update() {
+  if (this.initialized && this.minimap) {
+    // Debug visibility states occasionally
+    const debugInterval = 100; // Log every 100 frames
+    const shouldDebug = (this.frameCount % debugInterval === 0);
+    
+    if (!this.frameCount) {
+      this.frameCount = 0;
+    }
+    this.frameCount++;
+    
+    // Update visibility of markers based on whether items are available
+    if (this.minimap.markers && this.minimap.markers.items) {
+      let weaponsVisible = 0;
+      let weaponsHidden = 0;
+      
+      this.minimap.markers.items.children.forEach(marker => {
+        if (marker.userData && marker.userData.item) {
+          const item = marker.userData.item;
+          let shouldBeVisible = true; // Default to visible
+          
+          // Check if this item has a trigger (from spawning manager)
+          if (this.world.spawningManager && this.world.spawningManager.itemTriggerMap) {
+            const trigger = this.world.spawningManager.itemTriggerMap.get(item);
+            
+            // If trigger exists, use its active state
+            if (trigger) {
+              shouldBeVisible = trigger.active;
+            } else if (item.visible !== undefined) {
+              // If no trigger found but item has visible property
+              shouldBeVisible = item.visible;
+            }
+          } else if (item.visible !== undefined) {
+            // If no spawning manager but item has visible property
+            shouldBeVisible = item.visible;
+          }
+          
+          // For weapons, log visibility changes
+          const isWeapon = marker.userData.type && 
+                           ['blaster', 'shotgun', 'assaultRifle', 'weapon'].includes(marker.userData.type);
+          
+          if (isWeapon) {
+            if (shouldBeVisible) {
+              weaponsVisible++;
+            } else {
+              weaponsHidden++;
+            }
+          }
+          
+          marker.visible = shouldBeVisible;
+        }
+      });
+      
+      // Log weapon visibility statistics occasionally
+      if (shouldDebug && (weaponsVisible > 0 || weaponsHidden > 0)) {
+        console.log(`Minimap weapons: ${weaponsVisible} visible, ${weaponsHidden} hidden`);
+      }
+    }
+
+    this.minimap.update();
+  }
+}
 
   show() {
     if (this.minimapContainer) {
