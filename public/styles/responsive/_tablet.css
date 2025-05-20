@@ -1,0 +1,45 @@
+/**
+ * RIFT FPS UI - Tablet Responsive Styles
+ * 
+ * This file contains styles specific to medium-sized screens.
+ * It targets viewport widths from 769px to 1200px.
+ */
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  /* Adjust HUD element positioning */
+  .rift-hud__bottom-left,
+  .rift-hud__bottom-right,
+  .rift-hud__top-left,
+  .rift-hud__top-right {
+    margin: var(--rift-space-md);
+  }
+  
+  /* Adjust element sizes for medium screens */
+  .rift-minimap {
+    width: var(--rift-minimap-size);
+    height: var(--rift-minimap-size);
+  }
+  
+  /* Adjust notification sizes and positions */
+  .rift-kill-feed {
+    width: 400px;
+  }
+  
+  .rift-notification {
+    max-width: 350px;
+  }
+  
+  /* Menu adjustments */
+  .rift-modal {
+    max-width: 80%;
+  }
+  
+  /* Grid adjustments */
+  .rift-grid--cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .rift-grid--cols-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

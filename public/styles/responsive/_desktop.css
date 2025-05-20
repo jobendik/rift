@@ -1,0 +1,35 @@
+/**
+ * RIFT FPS UI - Desktop Responsive Styles
+ * 
+ * This file contains styles specific to desktop/large screen sizes.
+ * It targets viewport widths >= 1201px.
+ */
+
+@media (min-width: 1201px) {
+  /* HUD positioning adjustments for larger screens */
+  .rift-hud__bottom-left,
+  .rift-hud__bottom-right {
+    bottom: var(--rift-space-lg);
+  }
+  
+  .rift-hud__top-left,
+  .rift-hud__top-right {
+    top: var(--rift-space-lg);
+  }
+  
+  /* Scale up some UI elements */
+  .rift-minimap {
+    width: calc(var(--rift-minimap-size) * 1.2);
+    height: calc(var(--rift-minimap-size) * 1.2);
+  }
+  
+  /* Larger text for some elements */
+  .rift-display-text--xl {
+    font-size: calc(var(--rift-font-size-4xl) * 1.2);
+  }
+  
+  /* Wider kill feed */
+  .rift-kill-feed {
+    width: 500px;
+  }
+}

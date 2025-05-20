@@ -1,0 +1,157 @@
+/*
+ * DamageIndicator Component
+ *
+ * Displays visual feedback when the player takes damage, showing the direction
+ * the damage is coming from with customizable intensity based on damage amount.
+ *
+ * Uses the BEM methodology with the 'rift-' prefix.
+ */
+
+/* Damage Indicator Container */
+.rift-damage-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--rift-z-index-damage-indicator, 40);
+  overflow: hidden;
+}
+
+/* Indicator Container (holds all damage indicators) */
+.rift-damage-indicator__container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+}
+
+/* Individual Damage Indicator */
+.rift-damage-indicator__indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  width: var(--rift-damage-indicator-width, 200%);
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease-in;
+  
+  /* The cone shape for the indicator */
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 0, 0, 0.15) 60%,
+    rgba(255, 0, 0, 0.4) 80%,
+    rgba(255, 0, 0, 0.6) 100%
+  );
+  
+  /* Clip to a sector/cone shape */
+  clip-path: polygon(50% 50%, 20% 0%, 80% 0%);
+}
+
+/* Low Damage Indicator (visual styling) */
+.rift-damage-indicator__indicator--low {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 165, 0, 0.1) 60%,
+    rgba(255, 165, 0, 0.25) 80%,
+    rgba(255, 165, 0, 0.4) 100%
+  );
+}
+
+/* Medium Damage Indicator (visual styling) */
+.rift-damage-indicator__indicator--medium {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 60, 0, 0.15) 60%,
+    rgba(255, 60, 0, 0.35) 80%,
+    rgba(255, 60, 0, 0.5) 100%
+  );
+}
+
+/* High Damage Indicator (visual styling) */
+.rift-damage-indicator__indicator--high {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 0, 0, 0.2) 60%,
+    rgba(255, 0, 0, 0.45) 80%,
+    rgba(255, 0, 0, 0.7) 100%
+  );
+  
+  /* Add a subtle pulsing border for critical damage */
+  border: 2px solid transparent;
+  animation: rift-damage-pulse var(--rift-duration-slow, 1s) infinite;
+}
+
+/* Active State (brings the indicator into view) */
+.rift-damage-indicator__indicator--active {
+  opacity: 1;
+}
+
+/* Focused state (for important damage events) */
+.rift-damage-indicator__indicator--focused {
+  z-index: 2; /* Bring above other indicators */
+}
+
+/* Animations */
+@keyframes rift-damage-pulse {
+  0% {
+    border-color: rgba(255, 0, 0, 0);
+  }
+  50% {
+    border-color: rgba(255, 0, 0, 0.5);
+  }
+  100% {
+    border-color: rgba(255, 0, 0, 0);
+  }
+}
+
+/* Damage Flare (flash element for sudden damage) */
+.rift-damage-indicator__flare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-color: transparent;
+  opacity: 0;
+  transition: opacity 0.05s ease-in-out;
+}
+
+/* Active Flare */
+.rift-damage-indicator__flare--active {
+  opacity: 1;
+  animation: rift-damage-flare var(--rift-duration-fast, 0.3s) forwards;
+}
+
+/* Flare Animation */
+@keyframes rift-damage-flare {
+  0% {
+    background-color: rgba(255, 0, 0, 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Media Queries for Responsive Sizing */
+@media (max-width: 768px) {
+  .rift-damage-indicator__indicator {
+    --rift-damage-indicator-width: 180%;
+  }
+}
+
+@media (min-width: 1201px) {
+  .rift-damage-indicator__indicator {
+    --rift-damage-indicator-width: 220%;
+  }
+}

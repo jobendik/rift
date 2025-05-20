@@ -1,0 +1,159 @@
+/**
+ * RIFT FPS UI - Compass Component
+ * 
+ * This file contains styles for the compass component in the HUD.
+ */
+
+/* Compass container */
+.rift-compass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  padding: var(--rift-hud-padding);
+  background-color: var(--rift-ui-background);
+  border: var(--rift-hud-border-width) solid var(--rift-ui-border);
+  border-radius: var(--rift-border-radius);
+  box-shadow: var(--rift-hud-box-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Compass viewport - acts as a window to view just part of the compass strip */
+.rift-compass__viewport {
+  position: relative;
+  height: 100%;
+  width: 350px;
+  overflow: hidden;
+  clip-path: inset(0 0 0 0);
+}
+
+/* Compass strip that rotates based on player orientation */
+.rift-compass__strip {
+  position: absolute;
+  height: 100%;
+  width: 2500px; /* Extra wide to accommodate full 360° */
+  background-image: url('/assets/hud/compass.png');
+  background-repeat: repeat-x;
+  background-size: contain;
+  background-position: center;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: transform var(--rift-duration-fast) linear;
+}
+
+/* Cardinal direction markers */
+.rift-compass__cardinal {
+  position: absolute;
+  top: 4px;
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-lg);
+  font-weight: var(--rift-font-weight-bold);
+  color: var(--rift-text-color);
+  text-shadow: var(--rift-text-shadow);
+  opacity: 0;
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out);
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wide);
+}
+
+/* North marker */
+.rift-compass__cardinal--n {
+  color: var(--rift-primary);
+}
+
+/* East, West markers */
+.rift-compass__cardinal--e,
+.rift-compass__cardinal--w {
+  color: var(--rift-secondary);
+}
+
+/* South marker */
+.rift-compass__cardinal--s {
+  color: var(--rift-text-color);
+}
+
+/* Cardinal direction visible state */
+.rift-compass__cardinal--visible {
+  opacity: 1;
+}
+
+/* Center indicator (player facing direction) */
+.rift-compass__center-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 12px;
+  background-color: var(--rift-primary);
+  transform: translateX(-50%);
+}
+
+/* Degree display */
+.rift-compass__degrees {
+  position: absolute;
+  top: 4px;
+  right: 12px;
+  font-family: var(--rift-font-mono);
+  font-size: var(--rift-font-size-md);
+  font-weight: var(--rift-font-weight-medium);
+  color: var(--rift-text-color);
+  text-shadow: var(--rift-text-shadow);
+}
+
+/* Waypoint markers */
+.rift-compass__waypoint {
+  position: absolute;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--rift-warning);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: transform var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-compass__waypoint--active {
+  transform: translateX(-50%) scale(1.5);
+  animation: rift-compass-waypoint-pulse var(--rift-duration-slow) infinite;
+}
+
+/* Enemy indicators */
+.rift-compass__enemy {
+  position: absolute;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  background-color: var(--rift-danger);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* Animations */
+@keyframes rift-compass-waypoint-pulse {
+  0% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.5); }
+  100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-compass {
+    height: 36px;
+    padding: calc(var(--rift-hud-padding) * 0.75);
+  }
+  
+  .rift-compass__viewport {
+    width: 250px;
+  }
+  
+  .rift-compass__cardinal {
+    font-size: var(--rift-font-size-md);
+  }
+  
+  .rift-compass__degrees {
+    font-size: var(--rift-font-size-sm);
+  }
+}

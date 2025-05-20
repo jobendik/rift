@@ -1,0 +1,140 @@
+/**
+ * RIFT FPS UI - Health Display Component
+ * 
+ * This file contains styles for the health display component in the HUD.
+ */
+
+/* Health container */
+.rift-health {
+  display: flex;
+  align-items: center;
+  padding: var(--rift-hud-padding);
+  background-color: var(--rift-ui-background);
+  border: var(--rift-hud-border-width) solid var(--rift-health);
+  border-radius: var(--rift-border-radius);
+  box-shadow: var(--rift-hud-box-shadow);
+}
+
+/* Health value display */
+.rift-health__value {
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-3xl);
+  font-weight: var(--rift-font-weight-bold);
+  color: var(--rift-health);
+  text-shadow: var(--rift-text-shadow);
+  line-height: 1;
+  margin-right: var(--rift-space-sm);
+}
+
+/* Health bar container */
+.rift-health__bar-container {
+  flex-grow: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Health bar fill */
+.rift-health__bar {
+  height: 100%;
+  background-color: var(--rift-health);
+  transition: width var(--rift-duration-fast) var(--rift-ease-out);
+  border-radius: 5px;
+}
+
+/* Health bar low state */
+.rift-health__bar--low {
+  background-color: var(--rift-health-low);
+}
+
+/* Health bar critical state */
+.rift-health__bar--critical {
+  background-color: var(--rift-health-critical);
+  animation: rift-pulse var(--rift-duration-slow) infinite;
+}
+
+/* Health bar healing state */
+.rift-health__bar--healing {
+  background-color: var(--rift-health-healing);
+}
+
+/* Health icon */
+.rift-health__icon {
+  width: 24px;
+  height: 24px;
+  margin-right: var(--rift-space-sm);
+  opacity: 0.9;
+}
+
+/* Critical health warning overlay */
+.rift-health__critical-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--rift-z-index-overlay);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(255, 0, 0, 0.2) 80%,
+    rgba(255, 0, 0, 0.4) 100%
+  );
+  opacity: 0;
+  transition: opacity var(--rift-duration-normal) var(--rift-ease-in-out);
+}
+
+.rift-health__critical-overlay--active {
+  opacity: 1;
+  animation: rift-pulse var(--rift-duration-slow) infinite;
+}
+
+/* Health damage flash */
+.rift-health__damage-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--rift-z-index-overlay);
+  background-color: var(--rift-damage-flash-color);
+  opacity: 0;
+}
+
+/* Health healing glow */
+.rift-health__healing-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--rift-z-index-overlay);
+  background-color: var(--rift-heal-flash-color);
+  opacity: 0;
+}
+
+/* Damage indicator animations */
+@keyframes rift-health-damage {
+  0% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+@keyframes rift-health-healing {
+  0% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+/* Animation classes */
+.rift-health__damage-flash--active {
+  animation: rift-health-damage 0.3s var(--rift-ease-out) forwards;
+}
+
+.rift-health__healing-glow--active {
+  animation: rift-health-healing 0.5s var(--rift-ease-out) forwards;
+}

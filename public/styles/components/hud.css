@@ -1,189 +1,72 @@
 /**
- * RIFT Game Engine
- * HUD Component Styles
+ * RIFT FPS UI - HUD Components Master File
  * 
- * Styles for heads-up display elements including health, ammo,
- * compass, weapons, score, timer, and other in-game UI elements
+ * This file imports all HUD component stylesheets using the modular BEM approach.
  */
 
-/* UI Container Base Styles */
-.uiContainer {
-  position: absolute;
-  padding: 1em;
-  color: var(--text-color, white);
-  text-shadow: 0 0 5px black;
-  font-family: var(--font-secondary, 'Courier New'), monospace;
-  font-weight: bold;
+/* Import individual component styles */
+@import './hud/_layout.css';
+@import './hud/_health.css';
+@import './hud/_ammo.css';
+@import './hud/_crosshair.css';
+@import './hud/_minimap.css';
+@import './hud/_stamina.css';
+@import './hud/_compass.css';
+
+/* General HUD styles that apply across components */
+.rift-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  z-index: var(--rift-z-index-hud);
 }
 
-/* Health and Ammo Displays */
-#hudAmmo, #hudHealth {
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius, 5px);
-  padding: 8px 12px;
-  font-family: var(--font-main, 'Rajdhani'), 'Roboto', sans-serif;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 2px solid rgba(230, 57, 70, 0.7);
+/* All HUD elements should accept pointer events */
+.rift-hud * {
+  pointer-events: auto;
 }
 
-#hudAmmo {
-  bottom: 20px;
-  right: 20px;
-  font-size: 1.5em;
+/* Custom HUD animations */
+@keyframes rift-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
-#hudHealth {
-  top: 20px;
-  left: 20px;
-  font-size: 1.5em;
+@keyframes rift-glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
 }
 
-/* Icons for health and ammo */
-#hudHealth::before {
-  content: "❤️ ";
-  margin-right: 5px;
+@keyframes rift-damage-flash {
+  0% { opacity: 0.7; }
+  100% { opacity: 0; }
 }
 
-#hudAmmo::before {
-  content: "🔫 ";
-  margin-right: 5px;
+@keyframes rift-heal-flash {
+  0% { opacity: 0.4; }
+  100% { opacity: 0; }
 }
 
-/* Match Timer */
-#hudMatchTimer {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-index-hud, 880);
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius, 4px);
-  padding: 5px 15px;
+/* HUD component transitions */
+.rift-hud-transition-fade-in {
+  animation: rift-fade-in 0.3s forwards;
 }
 
-#hudMatchTimer div {
-  font-family: var(--font-main, 'Rajdhani'), 'Orbitron', sans-serif;
-  font-weight: 600;
-  font-size: 1.1em;
-  letter-spacing: 1px;
+.rift-hud-transition-fade-out {
+  animation: rift-fade-out 0.3s forwards;
 }
 
-/* Score Display */
-#hudScore {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: var(--z-index-hud, 880);
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius, 4px);
-  padding: 5px 15px;
+@keyframes rift-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-#hudScore div {
-  font-family: var(--font-main, 'Rajdhani'), 'Orbitron', sans-serif;
-  font-weight: 600;
-  font-size: 1.1em;
-}
-
-.score-update {
-  animation: scoreFlash 0.5s ease-in-out;
-}
-
-/* Kill Streak Display */
-#hudKillStreak {
-  position: fixed;
-  top: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-index-hud, 890);
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius, 5px);
-  padding: 5px 15px;
-  border-bottom: 2px solid var(--danger-color, #e63946);
-  box-shadow: var(--shadow-medium, 0 0 10px rgba(0, 0, 0, 0.5));
-}
-
-#hudKillStreak div {
-  font-family: var(--font-main, 'Rajdhani'), 'Orbitron', sans-serif;
-  font-weight: 600;
-  font-size: 1.2em;
-  color: var(--accent-color, #ff9900);
-  text-shadow: 0 0 5px rgba(255, 153, 0, 0.7);
-}
-
-/* Objectives List */
-#hudObjectives {
-  position: fixed;
-  top: 100px;
-  right: 20px;
-  z-index: var(--z-index-hud, 870);
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: var(--border-radius, 5px);
-  padding: 10px;
-  max-width: 300px;
-}
-
-#hudObjectives ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  font-family: var(--font-main, 'Rajdhani'), 'Roboto', sans-serif;
-}
-
-#hudObjectives li {
-  margin-bottom: 5px;
-  padding: 5px;
-  border-radius: var(--border-radius, 3px);
-  transition: background-color var(--transition-fast, 0.3s) ease;
-  display: flex;
-  align-items: center;
-}
-
-#hudObjectives li:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-#hudObjectives li.complete {
-  opacity: 0.7;
-}
-
-.objective-checkbox {
-  margin-right: 8px;
-  font-weight: bold;
-}
-
-.objective-text {
-  font-size: 0.9em;
-}
-
-/* Compass */
-#hudCompass {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-index-hud, 890);
-}
-
-#compassImage {
-  max-width: 300px;
-  height: auto;
-}
-
-/* Weapons Display */
-#hudWeapons {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: var(--z-index-hud, 890);
-}
-
-#weaponsImage {
-  max-width: 200px;
-  height: auto;
+@keyframes rift-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }

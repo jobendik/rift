@@ -1,0 +1,322 @@
+/**
+ * RIFT FPS UI - Layout
+ * 
+ * This file defines the core layout structures and containers for the RIFT UI system.
+ * It handles positioning, grid systems, and reusable layout patterns.
+ */
+
+/* ========== CORE CONTAINERS ========== */
+
+/* Full-screen container */
+.rift-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-overlay);
+  pointer-events: none; /* Allow clicks to pass through by default */
+}
+
+.rift-fullscreen--interactive {
+  pointer-events: auto; /* Enable interaction when needed */
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* HUD container */
+.rift-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* HUD doesn't block interaction with game */
+  z-index: var(--rift-z-index-hud);
+}
+
+/* HUD corners positioning */
+.rift-hud__top-left {
+  position: absolute;
+  top: var(--rift-hud-margin);
+  left: var(--rift-hud-margin);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__top-right {
+  position: absolute;
+  top: var(--rift-hud-margin);
+  right: var(--rift-hud-margin);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__bottom-left {
+  position: absolute;
+  bottom: var(--rift-hud-margin);
+  left: var(--rift-hud-margin);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__bottom-right {
+  position: absolute;
+  bottom: var(--rift-hud-margin);
+  right: var(--rift-hud-margin);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__top-center {
+  position: absolute;
+  top: var(--rift-hud-margin);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--rift-z-index-hud);
+}
+
+.rift-hud__bottom-center {
+  position: absolute;
+  bottom: var(--rift-hud-margin);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--rift-z-index-hud);
+}
+
+/* ========== COMPONENT CONTAINERS ========== */
+
+/* Standard panel container */
+.rift-panel {
+  background-color: var(--rift-ui-background);
+  border: 1px solid var(--rift-ui-border);
+  border-radius: var(--rift-border-radius);
+  padding: var(--rift-hud-padding);
+  pointer-events: auto; /* Make panels interactive by default */
+  box-shadow: var(--rift-shadow-md);
+}
+
+.rift-panel--transparent {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.rift-panel--primary {
+  border-color: var(--rift-primary);
+  box-shadow: 0 0 10px var(--rift-primary-glow);
+}
+
+/* Card container for items */
+.rift-card {
+  background-color: var(--rift-ui-background);
+  border-radius: var(--rift-border-radius);
+  padding: var(--rift-space-sm);
+  margin-bottom: var(--rift-space-sm);
+  box-shadow: var(--rift-shadow-sm);
+  transition: transform var(--rift-duration-fast) var(--rift-ease-out),
+              box-shadow var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rift-shadow-md);
+}
+
+/* Modal container */
+.rift-modal {
+  background-color: var(--rift-ui-background);
+  border: 1px solid var(--rift-ui-border);
+  border-radius: var(--rift-border-radius);
+  padding: var(--rift-space-lg);
+  box-shadow: var(--rift-shadow-xl);
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  z-index: var(--rift-z-index-modal);
+  position: relative;
+}
+
+.rift-modal__header {
+  margin-bottom: var(--rift-space-md);
+  padding-bottom: var(--rift-space-sm);
+  border-bottom: 1px solid var(--rift-ui-border);
+}
+
+.rift-modal__content {
+  margin-bottom: var(--rift-space-md);
+}
+
+.rift-modal__footer {
+  margin-top: var(--rift-space-md);
+  padding-top: var(--rift-space-sm);
+  border-top: 1px solid var(--rift-ui-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ========== FLEXBOX UTILITIES ========== */
+
+.rift-flex {
+  display: flex;
+}
+
+.rift-flex--column {
+  flex-direction: column;
+}
+
+.rift-flex--wrap {
+  flex-wrap: wrap;
+}
+
+.rift-flex--center {
+  justify-content: center;
+  align-items: center;
+}
+
+.rift-flex--between {
+  justify-content: space-between;
+}
+
+.rift-flex--around {
+  justify-content: space-around;
+}
+
+.rift-flex--start {
+  justify-content: flex-start;
+}
+
+.rift-flex--end {
+  justify-content: flex-end;
+}
+
+.rift-flex--align-center {
+  align-items: center;
+}
+
+.rift-flex--align-start {
+  align-items: flex-start;
+}
+
+.rift-flex--align-end {
+  align-items: flex-end;
+}
+
+.rift-flex-grow {
+  flex-grow: 1;
+}
+
+.rift-flex-shrink {
+  flex-shrink: 1;
+}
+
+.rift-flex-no-shrink {
+  flex-shrink: 0;
+}
+
+/* ========== GRID UTILITIES ========== */
+
+.rift-grid {
+  display: grid;
+  gap: var(--rift-space-md);
+}
+
+.rift-grid--compact {
+  gap: var(--rift-space-sm);
+}
+
+.rift-grid--cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.rift-grid--cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.rift-grid--cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ========== SPACING UTILITIES ========== */
+
+.rift-m-0 { margin: 0; }
+.rift-m-xs { margin: var(--rift-space-xs); }
+.rift-m-sm { margin: var(--rift-space-sm); }
+.rift-m-md { margin: var(--rift-space-md); }
+.rift-m-lg { margin: var(--rift-space-lg); }
+.rift-m-xl { margin: var(--rift-space-xl); }
+
+.rift-mx-auto { 
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rift-p-0 { padding: 0; }
+.rift-p-xs { padding: var(--rift-space-xs); }
+.rift-p-sm { padding: var(--rift-space-sm); }
+.rift-p-md { padding: var(--rift-space-md); }
+.rift-p-lg { padding: var(--rift-space-lg); }
+.rift-p-xl { padding: var(--rift-space-xl); }
+
+/* ========== UTILITY CLASSES ========== */
+
+.rift-hidden {
+  display: none !important;
+}
+
+.rift-invisible {
+  visibility: hidden !important;
+}
+
+.rift-clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.rift-center-abs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.rift-contain {
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
+}
+
+/* ========== RESPONSIVE UTILITIES ========== */
+
+/* These are minimal responsive utilities - expand as needed */
+@media (max-width: 768px) {
+  .rift-hide-sm {
+    display: none !important;
+  }
+  
+  .rift-grid--cols-sm-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .rift-grid--cols-sm-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .rift-hide-md {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1201px) {
+  .rift-hide-lg {
+    display: none !important;
+  }
+}

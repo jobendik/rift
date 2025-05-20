@@ -1,0 +1,82 @@
+/**
+ * RIFT FPS UI - Mobile Responsive Styles
+ * 
+ * This file contains styles specific to small screens and mobile devices.
+ * It targets viewport widths up to 768px.
+ */
+
+@media (max-width: 768px) {
+  /* Reduce margin around HUD elements */
+  .rift-hud__bottom-left,
+  .rift-hud__bottom-right,
+  .rift-hud__top-left,
+  .rift-hud__top-right {
+    margin: var(--rift-space-sm);
+  }
+  
+  /* Smaller minimap */
+  .rift-minimap {
+    width: calc(var(--rift-minimap-size) * 0.8);
+    height: calc(var(--rift-minimap-size) * 0.8);
+  }
+  
+  /* Adjust health and ammo displays */
+  .rift-health,
+  .rift-ammo {
+    padding: var(--rift-space-xs);
+  }
+  
+  /* Smaller icons */
+  .rift-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Reduce notification area */
+  .rift-kill-feed {
+    width: 300px;
+    max-height: 150px;
+  }
+  
+  .rift-notification {
+    max-width: 280px;
+    padding: var(--rift-space-xs);
+    margin-bottom: var(--rift-space-xs);
+  }
+  
+  /* Font size adjustments */
+  .rift-hud-text--lg {
+    font-size: var(--rift-font-size-md);
+  }
+  
+  .rift-hud-text--md {
+    font-size: var(--rift-font-size-sm);
+  }
+  
+  /* Menu adjustments */
+  .rift-modal {
+    max-width: 95%;
+    max-height: 95%;
+    padding: var(--rift-space-md);
+  }
+  
+  /* Simplified grid layouts */
+  .rift-grid--cols-2,
+  .rift-grid--cols-3,
+  .rift-grid--cols-4 {
+    grid-template-columns: 1fr;
+    gap: var(--rift-space-sm);
+  }
+  
+  /* Hide non-essential UI elements */
+  .rift-hide-mobile {
+    display: none !important;
+  }
+  
+  /* Mobile-friendly button sizes */
+  .rift-btn {
+    padding: var(--rift-space-xs) var(--rift-space-sm);
+    min-height: 44px; /* Minimum touch target size */
+    min-width: 44px;
+  }
+}

@@ -1,0 +1,170 @@
+/**
+ * RIFT FPS UI - Typography
+ * 
+ * This file defines typography styles for the RIFT UI system.
+ * It handles font family usage, text styles, and variations.
+ */
+
+/* Base Typography */
+body {
+  font-family: var(--rift-font-body);
+  font-size: var(--rift-font-size-md);
+  font-weight: var(--rift-font-weight-normal);
+  line-height: var(--rift-line-height-normal);
+  color: var(--rift-text-color);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.rift-heading-1, .rift-heading-2, .rift-heading-3,
+.rift-heading-4, .rift-heading-5, .rift-heading-6 {
+  font-family: var(--rift-font-display);
+  font-weight: var(--rift-font-weight-bold);
+  line-height: var(--rift-line-height-tight);
+  margin-bottom: var(--rift-space-md);
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wide);
+  color: var(--rift-text-color);
+}
+
+h1, .rift-heading-1 {
+  font-size: var(--rift-font-size-4xl);
+}
+
+h2, .rift-heading-2 {
+  font-size: var(--rift-font-size-3xl);
+}
+
+h3, .rift-heading-3 {
+  font-size: var(--rift-font-size-2xl);
+}
+
+h4, .rift-heading-4 {
+  font-size: var(--rift-font-size-xl);
+}
+
+h5, .rift-heading-5 {
+  font-size: var(--rift-font-size-lg);
+}
+
+h6, .rift-heading-6 {
+  font-size: var(--rift-font-size-md);
+}
+
+/* HUD Text */
+.rift-hud-text {
+  font-family: var(--rift-font-hud);
+  letter-spacing: var(--rift-letter-spacing-wide);
+}
+
+.rift-hud-text--lg {
+  font-size: var(--rift-font-size-xl);
+  font-weight: var(--rift-font-weight-semibold);
+}
+
+.rift-hud-text--md {
+  font-size: var(--rift-font-size-md);
+  font-weight: var(--rift-font-weight-medium);
+}
+
+.rift-hud-text--sm {
+  font-size: var(--rift-font-size-sm);
+  font-weight: var(--rift-font-weight-normal);
+}
+
+/* Display Text (for dramatic moments/achievements) */
+.rift-display-text {
+  font-family: var(--rift-font-display);
+  font-weight: var(--rift-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wider);
+  line-height: var(--rift-line-height-tight);
+}
+
+.rift-display-text--xl {
+  font-size: var(--rift-font-size-4xl);
+}
+
+.rift-display-text--lg {
+  font-size: var(--rift-font-size-3xl);
+}
+
+.rift-display-text--md {
+  font-size: var(--rift-font-size-2xl);
+}
+
+/* Body Text */
+.rift-body-text {
+  font-family: var(--rift-font-body);
+  font-size: var(--rift-font-size-md);
+  line-height: var(--rift-line-height-normal);
+  margin-bottom: var(--rift-space-md);
+}
+
+.rift-body-text--lg {
+  font-size: var(--rift-font-size-lg);
+}
+
+.rift-body-text--sm {
+  font-size: var(--rift-font-size-sm);
+  line-height: var(--rift-line-height-tight);
+}
+
+/* Mono Text (for statistics, technical info) */
+.rift-mono-text {
+  font-family: var(--rift-font-mono);
+  font-size: var(--rift-font-size-md);
+}
+
+/* Text Variations */
+.rift-text-shadow {
+  text-shadow: var(--rift-text-shadow);
+}
+
+.rift-text-glow {
+  text-shadow: 0 0 5px currentColor, 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.rift-text--primary {
+  color: var(--rift-primary);
+}
+
+.rift-text--secondary {
+  color: var(--rift-secondary);
+}
+
+.rift-text--success {
+  color: var(--rift-success);
+}
+
+.rift-text--warning {
+  color: var(--rift-warning);
+}
+
+.rift-text--danger {
+  color: var(--rift-danger);
+}
+
+.rift-text--info {
+  color: var(--rift-info);
+}
+
+/* Text Transformations */
+.rift-text--uppercase {
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wide);
+}
+
+.rift-text--lowercase {
+  text-transform: lowercase;
+}
+
+.rift-text--capitalize {
+  text-transform: capitalize;
+}
+
+.rift-text--truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

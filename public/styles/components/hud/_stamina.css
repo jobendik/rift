@@ -1,0 +1,186 @@
+/**
+ * RIFT FPS UI - Stamina Display Component
+ * 
+ * This file contains styles for the stamina display component in the HUD.
+ */
+
+/* Stamina container */
+.rift-stamina {
+  display: flex;
+  align-items: center;
+  padding: var(--rift-hud-padding);
+  background-color: var(--rift-ui-background);
+  border: var(--rift-hud-border-width) solid var(--rift-stamina);
+  border-radius: var(--rift-border-radius);
+  box-shadow: var(--rift-hud-box-shadow);
+}
+
+/* Stamina icon */
+.rift-stamina__icon {
+  width: 24px;
+  height: 24px;
+  margin-right: var(--rift-space-sm);
+  opacity: 0.9;
+}
+
+/* Stamina bar container */
+.rift-stamina__bar-container {
+  flex-grow: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Stamina bar fill */
+.rift-stamina__bar {
+  height: 100%;
+  background-color: var(--rift-stamina);
+  transition: width var(--rift-duration-fast) var(--rift-ease-out);
+  border-radius: 4px;
+}
+
+/* Stamina bar low state */
+.rift-stamina__bar--low {
+  background-color: var(--rift-stamina-low);
+  animation: rift-stamina-pulse var(--rift-duration-slow) infinite;
+}
+
+/* Stamina bar depleted state */
+.rift-stamina__bar--depleted {
+  background-color: var(--rift-text-disabled);
+  animation: none;
+  opacity: 0.6;
+}
+
+/* Stamina bar regenerating state */
+.rift-stamina__bar--regenerating {
+  background-color: var(--rift-stamina);
+  animation: rift-stamina-regenerating var(--rift-duration-slow) infinite;
+}
+
+/* Stamina value */
+.rift-stamina__value {
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-lg);
+  font-weight: var(--rift-font-weight-medium);
+  color: var(--rift-stamina);
+  text-shadow: var(--rift-text-shadow);
+  line-height: 1;
+  margin-left: var(--rift-space-sm);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+/* Stamina value low state */
+.rift-stamina__value--low {
+  color: var(--rift-stamina-low);
+  animation: rift-stamina-pulse var(--rift-duration-slow) infinite;
+}
+
+/* Stamina value depleted state */
+.rift-stamina__value--depleted {
+  color: var(--rift-text-disabled);
+  animation: none;
+}
+
+/* Stamina drain effect overlay */
+.rift-stamina__drain-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: var(--rift-z-index-overlay);
+  background-color: rgba(0, 53, 102, 0.2);
+  opacity: 0;
+  transition: opacity var(--rift-duration-normal) var(--rift-ease-in-out);
+}
+
+.rift-stamina__drain-effect--active {
+  opacity: 1;
+  animation: rift-stamina-drain 0.3s var(--rift-ease-out) forwards;
+}
+
+/* Cooldown indicator */
+.rift-stamina__cooldown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  transform-origin: left;
+  transform: scaleX(0);
+  z-index: 1;
+}
+
+.rift-stamina__cooldown--active {
+  animation: rift-stamina-cooldown var(--rift-duration-very-slow) var(--rift-ease-out) forwards;
+}
+
+/* Sprint indicator */
+.rift-stamina__sprint-indicator {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--rift-stamina);
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wider);
+  opacity: 0;
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-stamina__sprint-indicator--active {
+  opacity: 0.9;
+}
+
+/* Animations */
+@keyframes rift-stamina-pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes rift-stamina-regenerating {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes rift-stamina-drain {
+  0% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+@keyframes rift-stamina-cooldown {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* Hidden state */
+.rift-stamina--hidden {
+  display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-stamina {
+    padding: calc(var(--rift-hud-padding) * 0.75);
+  }
+  
+  .rift-stamina__value {
+    font-size: var(--rift-font-size-md);
+    min-width: 2rem;
+  }
+  
+  .rift-stamina__icon {
+    width: 20px;
+    height: 20px;
+  }
+}

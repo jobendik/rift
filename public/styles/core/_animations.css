@@ -1,0 +1,222 @@
+/**
+ * RIFT FPS UI - Animations
+ * 
+ * This file defines all animations and transitions used in the RIFT UI system.
+ * It centralizes animation definitions for consistent reuse across components.
+ */
+
+/* ========== PULSE ANIMATIONS ========== */
+
+/* Basic pulse animation - scales element slightly */
+@keyframes rift-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(230, 57, 70, 0.9), 0 0 30px rgba(230, 57, 70, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+}
+
+/* Simple scale pulse without shadow effects */
+@keyframes rift-pulse-scale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Pulse highlight for UI elements */
+@keyframes rift-pulse-highlight {
+  0% { background-color: rgba(0, 0, 0, 0); }
+  50% { background-color: rgba(255, 255, 255, 0.2); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+
+/* Score update flash */
+@keyframes rift-score-flash {
+  0% { background-color: rgba(0, 0, 0, 0.5); }
+  50% { background-color: rgba(230, 57, 70, 0.7); }
+  100% { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+/* ========== GLOW ANIMATIONS ========== */
+
+/* Text glow effect */
+@keyframes rift-glow {
+  from { text-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+  to { text-shadow: 0 0 15px rgba(230, 57, 70, 1), 0 0 30px rgba(230, 57, 70, 0.5); }
+}
+
+/* Logo and icon glow */
+@keyframes rift-logo-glow {
+  from { filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.7)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.5)); }
+  to { filter: drop-shadow(0 0 15px rgba(230, 57, 70, 1)) drop-shadow(0 0 30px rgba(230, 57, 70, 0.5)); }
+}
+
+/* Health critical pulse */
+@keyframes rift-health-critical {
+  0% { opacity: 0.7; box-shadow: 0 0 5px var(--rift-danger), 0 0 10px var(--rift-danger-glow); }
+  50% { opacity: 1; box-shadow: 0 0 10px var(--rift-danger), 0 0 20px var(--rift-danger-glow); }
+  100% { opacity: 0.7; box-shadow: 0 0 5px var(--rift-danger), 0 0 10px var(--rift-danger-glow); }
+}
+
+/* ========== FADE ANIMATIONS ========== */
+
+/* Basic fade in */
+@keyframes rift-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Basic fade out */
+@keyframes rift-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Slide in from the left while fading in */
+@keyframes rift-fade-in-left {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in from the right while fading in */
+@keyframes rift-fade-in-right {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in from the top while fading in */
+@keyframes rift-fade-in-top {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide in from the bottom while fading in */
+@keyframes rift-fade-in-bottom {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== DAMAGE INDICATOR ANIMATIONS ========== */
+
+/* Damage indicator fade */
+@keyframes rift-damage-indicator {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+/* Hit marker flash */
+@keyframes rift-hit-marker {
+  0% { opacity: 1; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* Critical hit marker */
+@keyframes rift-critical-hit {
+  0% { opacity: 1; transform: scale(0.8); filter: drop-shadow(0 0 5px var(--rift-warning)); }
+  50% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 15px var(--rift-warning)); }
+  100% { opacity: 0; transform: scale(1); filter: drop-shadow(0 0 5px var(--rift-warning)); }
+}
+
+/* Screen damage flash */
+@keyframes rift-screen-damage {
+  0% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+/* ========== NOTIFICATION ANIMATIONS ========== */
+
+/* Achievement popup */
+@keyframes rift-achievement-popup {
+  0% { transform: translateY(20px); opacity: 0; }
+  10% { transform: translateY(0); opacity: 1; }
+  90% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+
+/* Kill feed entry */
+@keyframes rift-kill-feed {
+  0% { transform: translateX(-10px); opacity: 0; }
+  10% { transform: translateX(0); opacity: 1; }
+  90% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(10px); opacity: 0; }
+}
+
+/* Floating damage numbers */
+@keyframes rift-damage-number {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  20% { transform: translateY(-15px) scale(1); opacity: 1; }
+  80% { transform: translateY(-30px) scale(1); opacity: 1; }
+  100% { transform: translateY(-40px) scale(0.8); opacity: 0; }
+}
+
+/* ========== SPECIAL EFFECT ANIMATIONS ========== */
+
+/* Screen shake for impacts */
+@keyframes rift-screen-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-5px, -5px); }
+  50% { transform: translate(5px, 5px); }
+  75% { transform: translate(-5px, 5px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Level up starburst */
+@keyframes rift-level-up {
+  0% { transform: scale(0.8) rotate(0deg); opacity: 0; }
+  20% { transform: scale(1.2) rotate(45deg); opacity: 1; }
+  60% { transform: scale(1.2) rotate(45deg); opacity: 1; }
+  100% { transform: scale(1.5) rotate(90deg); opacity: 0; }
+}
+
+/* Radar scan effect */
+@keyframes rift-radar-scan {
+  0% { transform: rotate(0deg); opacity: 0.8; }
+  100% { transform: rotate(360deg); opacity: 0.8; }
+}
+
+/* Loading spinner */
+@keyframes rift-spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========== REUSABLE ANIMATION CLASSES ========== */
+
+/* Pulse animations */
+.rift-animate-pulse {
+  animation: rift-pulse var(--rift-duration-slow) infinite;
+}
+
+.rift-animate-pulse-scale {
+  animation: rift-pulse-scale var(--rift-duration-normal) infinite;
+}
+
+/* Glow animations */
+.rift-animate-glow {
+  animation: rift-glow var(--rift-duration-slow) infinite alternate;
+}
+
+.rift-animate-logo-glow {
+  animation: rift-logo-glow var(--rift-duration-slow) infinite alternate;
+}
+
+/* Fade animations */
+.rift-animate-fade-in {
+  animation: rift-fade-in var(--rift-duration-normal) forwards;
+}
+
+.rift-animate-fade-out {
+  animation: rift-fade-out var(--rift-duration-normal) forwards;
+}
+
+.rift-animate-fade-in-left {
+  animation: rift-fade-in-left var(--rift-duration-normal) forwards;
+}
+
+.rift-animate-fade-in-right {
+  animation: rift-fade-in-right var(--rift-duration-normal) forwards;
+}
+
+/* Spinner */
+.rift-animate-spinner {
+  animation: rift-spinner 1s linear infinite;
+}

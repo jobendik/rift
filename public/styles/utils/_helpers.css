@@ -1,0 +1,154 @@
+/**
+ * RIFT FPS UI - Helpers
+ * 
+ * This file contains helper classes that can be used directly in HTML
+ * to apply common styling patterns.
+ */
+
+/* ========== VISIBILITY HELPERS ========== */
+
+/* Hide element but keep it in the DOM (screen readers can still access) */
+.rift-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Complete hiding (no space, no screen readers) */
+.rift-hidden {
+  display: none !important;
+}
+
+/* Visibility only (keeps space) */
+.rift-invisible {
+  visibility: hidden !important;
+}
+
+/* ========== INTERACTION HELPERS ========== */
+
+/* Make element clickable in HUD (overrides pointer-events: none) */
+.rift-clickable {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Prevent interaction */
+.rift-no-click {
+  pointer-events: none !important;
+}
+
+/* Disabled state */
+.rift-disabled {
+  opacity: var(--rift-opacity-disabled);
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ========== TEXT HELPERS ========== */
+
+/* Text alignment */
+.rift-text-left { text-align: left; }
+.rift-text-center { text-align: center; }
+.rift-text-right { text-align: right; }
+
+/* Text transforms */
+.rift-uppercase { text-transform: uppercase; }
+.rift-lowercase { text-transform: lowercase; }
+.rift-capitalize { text-transform: capitalize; }
+
+/* Font weights */
+.rift-font-normal { font-weight: var(--rift-font-weight-normal); }
+.rift-font-medium { font-weight: var(--rift-font-weight-medium); }
+.rift-font-bold { font-weight: var(--rift-font-weight-bold); }
+
+/* ========== COLOR HELPERS ========== */
+
+/* Text colors */
+.rift-color-primary { color: var(--rift-primary); }
+.rift-color-secondary { color: var(--rift-secondary); }
+.rift-color-success { color: var(--rift-success); }
+.rift-color-warning { color: var(--rift-warning); }
+.rift-color-danger { color: var(--rift-danger); }
+.rift-color-info { color: var(--rift-info); }
+
+/* Background colors */
+.rift-bg-primary { background-color: var(--rift-primary); }
+.rift-bg-secondary { background-color: var(--rift-secondary); }
+.rift-bg-success { background-color: var(--rift-success); }
+.rift-bg-warning { background-color: var(--rift-warning); }
+.rift-bg-danger { background-color: var(--rift-danger); }
+.rift-bg-info { background-color: var(--rift-info); }
+.rift-bg-transparent { background-color: transparent; }
+.rift-bg-ui { background-color: var(--rift-ui-background); }
+
+/* ========== SPACING HELPERS ========== */
+
+/* Margin shortcuts */
+.rift-mt-0 { margin-top: 0; }
+.rift-mt-xs { margin-top: var(--rift-space-xs); }
+.rift-mt-sm { margin-top: var(--rift-space-sm); }
+.rift-mt-md { margin-top: var(--rift-space-md); }
+.rift-mt-lg { margin-top: var(--rift-space-lg); }
+.rift-mt-xl { margin-top: var(--rift-space-xl); }
+
+.rift-mb-0 { margin-bottom: 0; }
+.rift-mb-xs { margin-bottom: var(--rift-space-xs); }
+.rift-mb-sm { margin-bottom: var(--rift-space-sm); }
+.rift-mb-md { margin-bottom: var(--rift-space-md); }
+.rift-mb-lg { margin-bottom: var(--rift-space-lg); }
+.rift-mb-xl { margin-bottom: var(--rift-space-xl); }
+
+/* Padding shortcuts */
+.rift-p-0 { padding: 0; }
+.rift-p-xs { padding: var(--rift-space-xs); }
+.rift-p-sm { padding: var(--rift-space-sm); }
+.rift-p-md { padding: var(--rift-space-md); }
+.rift-p-lg { padding: var(--rift-space-lg); }
+.rift-p-xl { padding: var(--rift-space-xl); }
+
+/* ========== BORDER HELPERS ========== */
+
+/* Border radius */
+.rift-rounded { border-radius: var(--rift-border-radius); }
+.rift-rounded-lg { border-radius: calc(var(--rift-border-radius) * 2); }
+.rift-rounded-full { border-radius: 9999px; }
+
+/* Border styles */
+.rift-border { border: 1px solid var(--rift-ui-border); }
+.rift-border-primary { border: 1px solid var(--rift-primary); }
+.rift-border-secondary { border: 1px solid var(--rift-secondary); }
+
+/* ========== EFFECT HELPERS ========== */
+
+/* Shadows */
+.rift-shadow-sm { box-shadow: var(--rift-shadow-sm); }
+.rift-shadow-md { box-shadow: var(--rift-shadow-md); }
+.rift-shadow-lg { box-shadow: var(--rift-shadow-lg); }
+.rift-shadow-xl { box-shadow: var(--rift-shadow-xl); }
+
+/* Glows */
+.rift-glow-sm { box-shadow: var(--rift-glow-sm); }
+.rift-glow-md { box-shadow: var(--rift-glow-md); }
+.rift-glow-lg { box-shadow: var(--rift-glow-lg); }
+
+.rift-text-glow { text-shadow: 0 0 5px currentColor; }
+
+/* ========== ANIMATION HELPERS ========== */
+
+.rift-animated { animation-duration: var(--rift-duration-normal); }
+
+.rift-animate-once {
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.rift-animate-pulse { animation: rift-pulse var(--rift-duration-slow) infinite; }
+.rift-animate-glow { animation: rift-glow var(--rift-duration-slow) infinite alternate; }
+.rift-animate-fade-in { animation: rift-fade-in var(--rift-duration-normal) forwards; }
+.rift-animate-fade-out { animation: rift-fade-out var(--rift-duration-normal) forwards; }

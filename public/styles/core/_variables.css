@@ -1,0 +1,216 @@
+/**
+ * RIFT FPS UI - CSS Variables
+ * 
+ * This file defines all CSS variables used across the RIFT UI system.
+ * It establishes the design system foundations including colors,
+ * typography, spacing, and timing.
+ */
+
+:root {
+  /* ========== COLOR SCHEME ========== */
+  
+  /* Primary Colors */
+  --rift-primary: #e63946;
+  --rift-primary-glow: rgba(230, 57, 70, 0.7);
+  --rift-primary-light: #ff4d5e;
+  --rift-primary-dark: #c62f3b;
+  
+  /* Secondary Colors */
+  --rift-secondary: #33a8ff;
+  --rift-secondary-glow: rgba(51, 168, 255, 0.7);
+  --rift-secondary-light: #66c4ff;
+  --rift-secondary-dark: #0077cc;
+  
+  /* Status Colors */
+  --rift-success: #4caf50;
+  --rift-success-glow: rgba(76, 175, 80, 0.7);
+  --rift-warning: #ff9800;
+  --rift-warning-glow: rgba(255, 152, 0, 0.7);
+  --rift-danger: #f44336;
+  --rift-danger-glow: rgba(244, 67, 54, 0.7);
+  --rift-info: #2196f3;
+  --rift-info-glow: rgba(33, 150, 243, 0.7);
+  
+  /* UI Elements */
+  --rift-text-color: #ffffff;
+  --rift-text-secondary: #cccccc;
+  --rift-text-disabled: #999999;
+  --rift-text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+  
+  --rift-background: #1a1a1a;
+  --rift-ui-background: rgba(0, 0, 0, 0.6);
+  --rift-ui-background-light: rgba(0, 0, 0, 0.4);
+  --rift-ui-border: rgba(255, 255, 255, 0.2);
+  
+  /* Game-specific colors */
+  --rift-health: #ff3333;
+  --rift-health-critical: #ff0000;
+  --rift-health-low: #ff9900;
+  --rift-health-healing: #00cc00;
+  
+  --rift-ammo: #ffcc00;
+  --rift-ammo-low: #ff9900;
+  
+  --rift-stamina: #33a8ff;
+  --rift-stamina-low: #ff9900;
+  
+  --rift-xp: #4caf50;
+  --rift-xp-glow: rgba(76, 175, 80, 0.4);
+  
+  /* Ranks and levels */
+  --rift-rank-recruit: #8bc34a;
+  --rift-rank-corporal: #03a9f4;
+  --rift-rank-sergeant: #9c27b0;
+  --rift-rank-lieutenant: #ff9800;
+  --rift-rank-captain: #f44336;
+  --rift-rank-major: #e91e63;
+  --rift-rank-colonel: #ffeb3b;
+  
+  /* ========== TYPOGRAPHY ========== */
+  
+  /* Font Families */
+  --rift-font-hud: 'Rajdhani', 'Orbitron', sans-serif;
+  --rift-font-display: 'Orbitron', 'Rajdhani', sans-serif; 
+  --rift-font-body: 'Exo 2', 'Rajdhani', sans-serif;
+  --rift-font-mono: monospace;
+  
+  /* Font Sizes */
+  --rift-font-size-xs: 0.75rem;   /* 12px */
+  --rift-font-size-sm: 0.875rem;  /* 14px */
+  --rift-font-size-md: 1rem;      /* 16px */
+  --rift-font-size-lg: 1.125rem;  /* 18px */
+  --rift-font-size-xl: 1.25rem;   /* 20px */
+  --rift-font-size-2xl: 1.5rem;   /* 24px */
+  --rift-font-size-3xl: 1.875rem; /* 30px */
+  --rift-font-size-4xl: 2.25rem;  /* 36px */
+  
+  /* Font Weights */
+  --rift-font-weight-normal: 400;
+  --rift-font-weight-medium: 500;
+  --rift-font-weight-semibold: 600;
+  --rift-font-weight-bold: 700;
+  
+  /* Line Heights */
+  --rift-line-height-tight: 1.2;
+  --rift-line-height-normal: 1.5;
+  --rift-line-height-loose: 1.8;
+  
+  /* Letter Spacing */
+  --rift-letter-spacing-normal: 0;
+  --rift-letter-spacing-wide: 0.05em;
+  --rift-letter-spacing-wider: 0.1em;
+  
+  /* ========== SPACING ========== */
+  
+  /* Base Spacing */
+  --rift-space-xs: 0.25rem;   /* 4px */
+  --rift-space-sm: 0.5rem;    /* 8px */
+  --rift-space-md: 1rem;      /* 16px */
+  --rift-space-lg: 1.5rem;    /* 24px */
+  --rift-space-xl: 2rem;      /* 32px */
+  --rift-space-2xl: 2.5rem;   /* 40px */
+  --rift-space-3xl: 3rem;     /* 48px */
+  
+  /* UI Element Spacing */
+  --rift-hud-padding: 0.75rem;  /* 12px */
+  --rift-hud-margin: 1.25rem;   /* 20px */
+  --rift-border-radius: 0.3125rem;  /* 5px */
+  
+  /* ========== EFFECTS ========== */
+  
+  /* Shadows */
+  --rift-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --rift-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --rift-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  --rift-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+  
+  /* Glows */
+  --rift-glow-sm: 0 0 5px rgba(255, 255, 255, 0.5);
+  --rift-glow-md: 0 0 10px rgba(255, 255, 255, 0.7);
+  --rift-glow-lg: 0 0 20px rgba(255, 255, 255, 0.9);
+  
+  /* ========== ANIMATIONS ========== */
+  
+  /* Durations */
+  --rift-duration-fast: 0.2s;
+  --rift-duration-normal: 0.3s;
+  --rift-duration-slow: 0.5s;
+  --rift-duration-very-slow: 1s;
+  
+  /* Easing */
+  --rift-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --rift-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --rift-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ========== LAYOUTS ========== */
+  
+  /* Z-Index Layers */
+  --rift-z-index-base: 100;
+  --rift-z-index-hud: 800;
+  --rift-z-index-notifications: 900;
+  --rift-z-index-modal: 950;
+  --rift-z-index-overlay: 980;
+  --rift-z-index-tooltip: 990;
+  --rift-z-index-cursor: 1000;
+  
+  /* Crosshair Settings */
+  --rift-crosshair-size: 24px;
+  --rift-crosshair-thickness: 2px;
+  --rift-crosshair-color: rgba(255, 255, 255, 0.9);
+  --rift-crosshair-enemy: rgba(255, 50, 50, 0.9);
+  --rift-crosshair-headshot: rgba(255, 200, 0, 0.9);
+  --rift-hitmarker-size: 16px;
+  --rift-hitmarker-thickness: 2px;
+  --rift-hitmarker-color: rgba(255, 255, 255, 0.9);
+  --rift-hitmarker-critical: rgba(255, 200, 0, 0.9);
+  --rift-hitmarker-headshot: rgba(255, 50, 50, 0.9);
+  --rift-duration-fast: 0.2s;
+  --rift-duration-normal: 0.3s;
+  --rift-duration-slow: 0.5s;
+  --rift-ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  
+  /* Opacity */
+  --rift-opacity-hover: 0.8;
+  --rift-opacity-active: 0.6;
+  --rift-opacity-disabled: 0.4;
+  
+  /* ========== GAME UI ========== */
+  
+  /* Crosshair */
+  --rift-crosshair-size: 24px;
+  --rift-crosshair-thickness: 2px;
+  --rift-crosshair-color: rgba(255, 255, 255, 0.8);
+  --rift-crosshair-enemy: rgba(255, 0, 0, 0.8);
+  --rift-crosshair-headshot: rgba(255, 215, 0, 0.9);
+  
+  /* Hitmarker */
+  --rift-hitmarker-size: 20px;
+  --rift-hitmarker-thickness: 2px;
+  --rift-hitmarker-color: rgba(255, 255, 255, 0.9);
+  --rift-hitmarker-critical: rgba(255, 50, 50, 0.9);
+  --rift-hitmarker-headshot: rgba(255, 215, 0, 0.9);
+  
+  /* Damage Indicator */
+  --rift-damage-indicator-opacity: 0.7;
+  --rift-damage-indicator-size: 120px;
+  
+  /* Screen Effects */
+  --rift-damage-flash-color: rgba(255, 0, 0, 0.3);
+  --rift-heal-flash-color: rgba(76, 175, 80, 0.3);
+  
+  /* Minimap */
+  --rift-minimap-size: 200px;
+  --rift-minimap-border: 2px;
+  --rift-minimap-border-color: rgba(255, 255, 255, 0.2);
+  --rift-minimap-background: rgba(0, 0, 0, 0.5);
+  --rift-player-color: #4a7bf7;
+  --rift-minimap-enemy-color: var(--rift-danger);
+  --rift-minimap-item-color: var(--rift-success);
+  --rift-minimap-objective-color: var(--rift-warning);
+  --rift-minimap-zoom-speed: 0.3s;
+  --rift-minimap-expanded-border-radius: 10px;
+  
+  /* HUD Element Borders */
+  --rift-hud-border-width: 3px;
+  --rift-hud-box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}

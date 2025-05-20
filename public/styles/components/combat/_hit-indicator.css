@@ -1,0 +1,210 @@
+/*
+ * HitIndicator Component
+ *
+ * Displays visual feedback when the player hits an enemy.
+ * Shows different indicators for:
+ * - Regular hits
+ * - Critical hits
+ * - Headshots
+ *
+ * Uses the BEM methodology with the 'rift-' prefix.
+ */
+
+/* Hit Indicator Container */
+.rift-hit-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: var(--rift-z-index-hit-indicator, 50);
+  width: var(--rift-hit-indicator-size, 64px);
+  height: var(--rift-hit-indicator-size, 64px);
+}
+
+/* Base Hit Marker */
+.rift-hit-indicator__marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--rift-hit-marker-size, 24px);
+  height: var(--rift-hit-marker-size, 24px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease-in, transform 0.15s ease-out;
+}
+
+/* Regular Hit Marker */
+.rift-hit-indicator__marker--hit {
+  background-image: url('../../assets/hud/hit-marker.png'); /* Placeholder - needs actual asset */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(1.2);
+}
+
+/* Critical Hit Marker */
+.rift-hit-indicator__marker--critical {
+  background-image: url('../../assets/hud/hit-marker-critical.png'); /* Placeholder - needs actual asset */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(1.5) hue-rotate(15deg);
+  width: calc(var(--rift-hit-marker-size, 24px) * 1.25);
+  height: calc(var(--rift-hit-marker-size, 24px) * 1.25);
+}
+
+/* Headshot Hit Marker */
+.rift-hit-indicator__marker--headshot {
+  background-image: url('../../assets/hud/hit-marker-headshot.png'); /* Placeholder - needs actual asset */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(1.6) saturate(1.5) hue-rotate(30deg);
+  width: calc(var(--rift-hit-marker-size, 24px) * 1.5);
+  height: calc(var(--rift-hit-marker-size, 24px) * 1.5);
+}
+
+/* Active Hit Marker (Common Animation) */
+.rift-hit-indicator__marker--active {
+  opacity: 1;
+  animation: rift-hit-marker-flash var(--rift-duration-hit, 0.5s) forwards;
+}
+
+/* Animations */
+@keyframes rift-hit-marker-flash {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Damage Direction Container */
+.rift-hit-indicator__direction-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Directional Damage Indicator */
+.rift-hit-indicator__direction {
+  position: absolute;
+  width: var(--rift-direction-indicator-width, 20px);
+  height: var(--rift-direction-indicator-height, 60px);
+  opacity: 0;
+  pointer-events: none;
+  background-color: var(--rift-hit-color, rgba(255, 0, 0, 0.4));
+  transition: opacity 0.1s ease-in;
+}
+
+/* Direction Indicator Positions */
+.rift-hit-indicator__direction--top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rift-hit-indicator__direction--right {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.rift-hit-indicator__direction--bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rift-hit-indicator__direction--left {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+/* Active Direction Indicator */
+.rift-hit-indicator__direction--active {
+  opacity: 1;
+  animation: rift-direction-fade var(--rift-duration-direction, 0.8s) forwards;
+}
+
+/* Direction Indicator Animation */
+@keyframes rift-direction-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Kill Confirmation */
+.rift-hit-indicator__kill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--rift-kill-indicator-size, 80px);
+  height: var(--rift-kill-indicator-size, 80px);
+  opacity: 0;
+  pointer-events: none;
+  background-image: url('../../assets/hud/kill-marker.png'); /* Placeholder - needs actual asset */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Active Kill Confirmation */
+.rift-hit-indicator__kill--active {
+  opacity: 1;
+  animation: rift-kill-flash var(--rift-duration-kill, 1s) forwards;
+}
+
+/* Kill Confirmation Animation */
+@keyframes rift-kill-flash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5) rotate(-15deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3) rotate(5deg);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(-2deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(1deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+  }
+}
+
+/* Media Queries for Responsive Sizing */
+@media (max-width: 768px) {
+  .rift-hit-indicator {
+    --rift-hit-marker-size: 20px;
+    --rift-kill-indicator-size: 60px;
+  }
+}
+
+@media (min-width: 1201px) {
+  .rift-hit-indicator {
+    --rift-hit-marker-size: 28px;
+    --rift-kill-indicator-size: 90px;
+  }
+}

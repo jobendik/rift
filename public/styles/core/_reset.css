@@ -1,0 +1,79 @@
+/**
+ * RIFT FPS UI - CSS Reset
+ * 
+ * This file provides basic resets and base styles for the RIFT UI system.
+ * It ensures consistent rendering across different browsers.
+ */
+
+/* Basic reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Document styles */
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--rift-font-body);
+  font-size: 16px;
+  line-height: var(--rift-line-height-normal);
+  background-color: var(--rift-background);
+  color: var(--rift-text-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus outline for accessibility */
+*:focus {
+  outline: 2px solid var(--rift-secondary);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users, maintain for keyboard navigation */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Basic link styles */
+a {
+  color: var(--rift-primary-light);
+  text-decoration: none;
+  transition: color var(--rift-duration-fast) var(--rift-ease-in-out);
+}
+
+a:hover {
+  color: var(--rift-primary);
+  text-decoration: underline;
+}
+
+/* Remove list styles */
+ul, ol {
+  list-style: none;
+}
+
+/* Normalize button styles */
+button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Image handling */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Make the game container full viewport */
+#app {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}

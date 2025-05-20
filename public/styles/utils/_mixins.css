@@ -1,0 +1,42 @@
+/**
+ * RIFT FPS UI - Mixins
+ * 
+ * This file contains CSS custom properties and utility functions
+ * that can be reused across the application.
+ */
+
+/* Utility custom properties for consistent reuse */
+:root {
+  /* Overlay gradients */
+  --rift-overlay-dark: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
+  --rift-overlay-light: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+  --rift-overlay-danger: linear-gradient(rgba(244, 67, 54, 0.3), transparent);
+  --rift-overlay-warning: linear-gradient(rgba(255, 152, 0, 0.3), transparent);
+  --rift-overlay-success: linear-gradient(rgba(76, 175, 80, 0.3), transparent);
+  
+  /* Border styles */
+  --rift-border-glow: 1px solid var(--rift-ui-border), 0 0 10px var(--rift-primary-glow);
+  --rift-border-inset: inset 0 0 0 1px var(--rift-ui-border);
+  --rift-border-tech: 1px solid var(--rift-ui-border), 0 0 5px var(--rift-secondary-glow);
+
+  /* Truncate text */
+  --rift-truncate: {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Mixin-like classes (can be used with @extend in preprocessors) */
+.rift-text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.rift-center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

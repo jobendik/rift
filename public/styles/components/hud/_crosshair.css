@@ -1,0 +1,195 @@
+/**
+ * RIFT FPS UI - Crosshair Component
+ * 
+ * This file contains styles for the crosshair display component in the HUD.
+ */
+
+/* Crosshair container */
+.rift-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--rift-crosshair-size);
+  height: var(--rift-crosshair-size);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: var(--rift-z-index-hud);
+}
+
+/* Base crosshair lines */
+.rift-crosshair__line {
+  position: absolute;
+  background-color: var(--rift-crosshair-color);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* Horizontal line */
+.rift-crosshair__line--horizontal {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: var(--rift-crosshair-thickness);
+  transform: translateY(-50%);
+}
+
+/* Vertical line */
+.rift-crosshair__line--vertical {
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: var(--rift-crosshair-thickness);
+  transform: translateX(-50%);
+}
+
+/* Dynamic crosshair gap */
+.rift-crosshair--dynamic .rift-crosshair__line--horizontal-left {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  height: var(--rift-crosshair-thickness);
+  transform: translateY(-50%);
+  background-color: var(--rift-crosshair-color);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-crosshair--dynamic .rift-crosshair__line--horizontal-right {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: var(--rift-crosshair-thickness);
+  transform: translateY(-50%);
+  background-color: var(--rift-crosshair-color);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-crosshair--dynamic .rift-crosshair__line--vertical-top {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: var(--rift-crosshair-thickness);
+  transform: translateX(-50%);
+  background-color: var(--rift-crosshair-color);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-crosshair--dynamic .rift-crosshair__line--vertical-bottom {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--rift-crosshair-thickness);
+  transform: translateX(-50%);
+  background-color: var(--rift-crosshair-color);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* Crosshair dot */
+.rift-crosshair__dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--rift-crosshair-thickness) * 2);
+  height: calc(var(--rift-crosshair-thickness) * 2);
+  border-radius: 50%;
+  background-color: var(--rift-crosshair-color);
+  transform: translate(-50%, -50%);
+  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* State modifiers */
+.rift-crosshair--enemy .rift-crosshair__line,
+.rift-crosshair--enemy .rift-crosshair__dot {
+  background-color: var(--rift-crosshair-enemy);
+}
+
+.rift-crosshair--headshot .rift-crosshair__line,
+.rift-crosshair--headshot .rift-crosshair__dot {
+  background-color: var(--rift-crosshair-headshot);
+}
+
+/* Hit markers */
+.rift-crosshair__hit-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--rift-hitmarker-size);
+  height: var(--rift-hitmarker-size);
+  transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.rift-crosshair__hit-marker-line {
+  position: absolute;
+  background-color: var(--rift-hitmarker-color);
+}
+
+/* Hit marker horizontal lines */
+.rift-crosshair__hit-marker-line--horizontal {
+  top: 50%;
+  width: 50%;
+  height: var(--rift-hitmarker-thickness);
+  transform: translateY(-50%);
+}
+
+.rift-crosshair__hit-marker-line--horizontal-left {
+  left: 0;
+}
+
+.rift-crosshair__hit-marker-line--horizontal-right {
+  right: 0;
+}
+
+/* Hit marker vertical lines */
+.rift-crosshair__hit-marker-line--vertical {
+  left: 50%;
+  height: 50%;
+  width: var(--rift-hitmarker-thickness);
+  transform: translateX(-50%);
+}
+
+.rift-crosshair__hit-marker-line--vertical-top {
+  top: 0;
+}
+
+.rift-crosshair__hit-marker-line--vertical-bottom {
+  bottom: 0;
+}
+
+/* Hit marker states */
+.rift-crosshair__hit-marker--active {
+  animation: rift-hit-marker var(--rift-duration-normal) var(--rift-ease-out) forwards;
+}
+
+.rift-crosshair__hit-marker--critical .rift-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-critical);
+}
+
+.rift-crosshair__hit-marker--critical.rift-crosshair__hit-marker--active {
+  animation: rift-critical-hit var(--rift-duration-normal) var(--rift-ease-out) forwards;
+}
+
+.rift-crosshair__hit-marker--headshot .rift-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-headshot);
+}
+
+/* Weapon type modifiers */
+.rift-crosshair--pistol {
+  --crosshair-gap: 5px;
+}
+
+.rift-crosshair--rifle {
+  --crosshair-gap: 8px;
+}
+
+.rift-crosshair--shotgun {
+  --crosshair-gap: 10px;
+}
+
+.rift-crosshair--sniper .rift-crosshair__line {
+  opacity: 0.6;
+}
+
+.rift-crosshair--sniper .rift-crosshair__dot {
+  width: calc(var(--rift-crosshair-thickness) * 0.5);
+  height: calc(var(--rift-crosshair-thickness) * 0.5);
+}

@@ -2,7 +2,7 @@
 
 ## System Architecture
 
-The redesigned RIFT FPS UI system employs a component-based architecture with clear separation of concerns and well-defined communication patterns. The architecture consists of these major elements:
+The RIFT FPS UI system employs a component-based architecture with clear separation of concerns and well-defined communication patterns. The architecture has now been implemented with these core elements:
 
 ### Core Components
 ```mermaid
@@ -61,60 +61,94 @@ flowchart TD
     Feedback --> DamageNumbers[DamageNumbers]
 ```
 
-## Key Design Patterns
+## Implemented Design Patterns
 
 ### Component Pattern
 
-All UI elements extend a common `UIComponent` base class that provides:
+The implemented `UIComponent` base class provides:
 - Standard lifecycle methods (init, update, render, dispose)
-- Event subscription management
+- Event subscription management with automatic cleanup
 - DOM element creation and management
 - Consistent API for state changes
+- Component hierarchies with parent-child relationships
+- Animation system with easing functions
+- State management with setState method
+- Visibility controls (show/hide)
+
+The actual implementation is robust and feature-rich:
 
 ```javascript
 class UIComponent {
     constructor(options = {}) {
+        this.id = options.id || `ui-component-${Math.floor(Math.random() * 10000)}`;
+        this.className = options.className || '';
+        this.template = options.template || '';
+        this.container = options.container || null;
+        this.isVisible = options.visible !== false;
         this.isInitialized = false;
-        this.isVisible = false;
-        this.options = options;
-        this.elements = {};
-        this._eventSubscriptions = [];
+        this.isActive = false;
+        this.element = null;
+        this.children = [];
+        this.eventSubscriptions = [];
+        this.animations = {};
+        this.config = UIConfig;
+        this.state = {};
+        
+        // ... bind methods, register events, auto-initialize
     }
     
     // Lifecycle methods
-    init() { this.isInitialized = true; return this; }
-    update(delta) { return this; }
-    render() { return this; }
-    dispose() { this._cleanupEvents(); return this; }
-    
-    // Event handling
-    subscribe(eventType, handler) {
-        const subscription = EventManager.subscribe(eventType, handler);
-        this._eventSubscriptions.push(subscription);
-        return subscription;
-    }
-    
-    _cleanupEvents() {
-        this._eventSubscriptions.forEach(sub => EventManager.unsubscribe(sub));
-        this._eventSubscriptions = [];
-    }
+    init() { /* ... */ }
+    update(delta) { /* ... */ }
+    render() { /* ... */ }
+    dispose() { /* ... */ }
     
     // Visibility
-    show() { this.isVisible = true; return this; }
-    hide() { this.isVisible = false; return this; }
+    show() { /* ... */ }
+    hide() { /* ... */ }
+    toggle() { /* ... */ }
+    
+    // State management
+    setState(newState, render = true) { /* ... */ }
+    
+    // Child management
+    addChild(child) { /* ... */ }
+    removeChild(child) { /* ... */ }
+    
+    // Event handling
+    registerEvents(events) { /* ... */ }
+    unregisterEvent(eventName) { /* ... */ }
+    unregisterAllEvents() { /* ... */ }
+    
+    // Animation
+    addAnimation(name, options) { /* ... */ }
+    startAnimation(name) { /* ... */ }
+    stopAnimation(name, complete = false) { /* ... */ }
+    
+    // DOM creation
+    createElement(type, options = {}) { /* ... */ }
+    createBEMElement(blockName, elementName, options = {}) { /* ... */ }
+    
+    // Private methods
+    _createRootElement() { /* ... */ }
+    _updateAnimations(delta) { /* ... */ }
+    _applyEasing(t, easingName) { /* ... */ }
 }
 ```
 
 ### Observer Pattern (Event System)
 
-The event system facilitates communication between components without creating tight coupling:
+The `EventManager` implementation provides a robust pub/sub system:
 
 ```javascript
 class EventManager {
-    static _events = new Map();
-    static _subscriptionId = 0;
+    constructor() {
+        this._events = new Map();
+        this._subscriptionId = 0;
+        this._debugMode = false;
+    }
     
-    static subscribe(eventType, handler) {
+    subscribe(eventType, handler) {
         const id = this._subscriptionId++;
         
         if (!this._events.has(eventType)) {
@@ -123,37 +157,46 @@ class EventManager {
         
         this._events.get(eventType).set(id, handler);
         
+        if (this._debugMode) {
+            console.log(`[EventManager] New subscription #${id} to '${eventType}'`);
+        }
+        
         return { id, eventType };
     }
     
-    static unsubscribe(subscription) {
-        if (!subscription || !subscription.eventType) return false;
-        
-        const eventHandlers = this._events.get(subscription.eventType);
-        if (eventHandlers) {
-            return eventHandlers.delete(subscription.id);
-        }
-        return false;
-    }
+    unsubscribe(subscription) { /* ... */ }
     
-    static emit(eventType, data) {
-        const eventHandlers = this._events.get(eventType);
-        if (!eventHandlers) return;
+    emit(eventType, data = {}) {
+        // ...
+        // Create a standard event object
+        const eventObject = {
+            type: eventType,  // Event type (redundant but helpful)
+            timestamp: performance.now(),  // Time of event
+            ...data  // Spread the event data
+        };
         
-        eventHandlers.forEach(handler => {
+        eventHandlers.forEach((handler, id) => {
             try {
-                handler(data);
+                handler(eventObject);
             } catch (error) {
-                console.error(`Error in event handler for ${eventType}:`, error);
+                console.error(`[EventManager] Error in handler #${id} for '${eventType}':`, error);
             }
         });
     }
+    
+    // Additional utility methods
+    hasSubscribers(eventType) { /* ... */ }
+    subscriberCount(eventType) { /* ... */ }
+    setDebugMode(enabled) { /* ... */ }
+    clear() { /* ... */ }
+    getEventTypes() { /* ... */ }
+    getStats() { /* ... */ }
 }
 ```
 
 ### Factory Pattern
 
-The `DOMFactory` creates DOM elements with consistent styling and structure:
+The `DOMFactory` implementation creates DOM elements with consistent styling and structure:
 
 ```javascript
 class DOMFactory {
@@ -167,59 +210,148 @@ class DOMFactory {
             element.classList.add(...classNames);
         }
         
-        if (options.id) element.id = options.id;
-        if (options.text) element.textContent = options.text;
-        if (options.html) element.innerHTML = options.html;
+        // ... set id, text, html, attributes, styles
         
-        if (options.attributes) {
-            Object.entries(options.attributes).forEach(([key, value]) => {
-                element.setAttribute(key, value);
-            });
+        if (options.parent) {
+            options.parent.appendChild(element);
+        } else if (options.appendToBody) {
+            document.body.appendChild(element);
         }
-        
-        if (options.styles) {
-            Object.entries(options.styles).forEach(([prop, value]) => {
-                element.style[prop] = value;
-            });
-        }
-        
-        if (options.parent) options.parent.appendChild(element);
         
         return element;
     }
     
-    static createContainer(className, options = {}) {
-        return this.createElement('div', {
-            className: `rift-container ${className}`,
-            ...options
-        });
-    }
+    // BEM specific methods
+    static createContainer(blockName, options = {}) { /* ... */ }
+    static createBEMElement(blockName, elementName, options = {}) { /* ... */ }
+    
+    // UI element specific helpers
+    static createHUDElement(id, initialText = '', options = {}) { /* ... */ }
+    static createButton(text, onClick, options = {}) { /* ... */ }
+    static createIcon(iconName, options = {}) { /* ... */ }
+    static createNotification(text, type = 'info', options = {}) { /* ... */ }
+    static createProgressBar(value = 100, options = {}) { /* ... */ }
+    static createModal(title, content, options = {}) { /* ... */ }
 }
 ```
 
-### Adapter Pattern
+### Orchestrator Pattern
 
-To facilitate incremental migration, an adapter layer maintains compatibility with the original UIManager API:
+The new `UIManager` implements an orchestrator pattern rather than directly controlling UI elements:
 
 ```javascript
-class UIManagerAdapter {
-    constructor(newUIManager) {
-        this.newUIManager = newUIManager;
-        this._setupAdapters();
+class UIManager {
+    constructor(world) {
+        this.world = world;
+        this.config = UIConfig;
+        this.isInitialized = false;
+        this.isGamePaused = false;
+        this.activeView = 'game'; // 'game', 'menu', 'pause'
+        
+        // Systems collection
+        this.systems = {};
+        
+        // Performance tracking
+        this.frameTime = 0;
+        this.fpsCounter = { /* ... */ };
     }
     
-    _setupAdapters() {
-        // Map old API methods to new component methods
-        this.updateHealthStatus = (percentage) => {
-            this.newUIManager.getComponent('healthDisplay').updateHealth(percentage);
-        };
+    init() {
+        // Initialize systems
+        this._initSystems();
         
-        this.updateAmmoStatus = (roundsLeft, totalAmmo) => {
-            this.newUIManager.getComponent('ammoDisplay').updateAmmo(roundsLeft, totalAmmo);
-        };
+        // Setup FPS counter if enabled
+        if (this.config.debug?.showFps) {
+            this._setupFPSCounter();
+        }
         
-        // ... other adapter methods
+        // ... other initialization
     }
+    
+    update(delta) {
+        // Skip updates if not initialized
+        if (!this.isInitialized) return this;
+        
+        // Skip most updates if game is paused (except critical UI)
+        if (this.isGamePaused && this.activeView !== 'pause') {
+            this._updateFPSCounter(performance.now());
+            return this;
+        }
+        
+        // Update each system
+        for (const key in this.systems) {
+            // ... update logic for systems and subsystems
+        }
+        
+        return this;
+    }
+    
+    // UI control methods
+    showFPSInterface() { /* ... */ }
+    hideFPSInterface() { /* ... */ }
+    setPaused(isPaused) { /* ... */ }
+    addNotification(text, type = 'info') { /* ... */ }
+    showMatchEvent(text, className = '') { /* ... */ }
+    
+    // System management methods
+    _initSystems() { /* ... */ }
+    setSize(width, height) { /* ... */ }
+    dispose() { /* ... */ }
+    
+    // Performance monitoring
+    _setupFPSCounter() { /* ... */ }
+    _updateFPSCounter(timestamp) { /* ... */ }
+    
+    // Event handlers
+    _onWindowResize() { /* ... */ }
+}
+```
+
+### Input Handler Pattern
+
+The `InputHandler` centralizes input processing for UI interactions:
+
+```javascript
+class InputHandler {
+    constructor(uiManager) {
+        this.uiManager = uiManager;
+        this.isEnabled = false;
+        
+        // Track state
+        this.pointerPosition = { x: 0, y: 0 };
+        this.pointerNormalized = { x: 0, y: 0 }; // -1 to 1
+        this.isPointerDown = false;
+        this.activePointerButton = -1;
+        this.keysDown = new Set();
+        this.gestureStartDistance = 0;
+        this.gestureScale = 1;
+        this.hoveredElements = [];
+        
+        // ... bind methods
+    }
+    
+    // Lifecycle
+    enable() { /* ... */ }
+    disable() { /* ... */ }
+    dispose() { /* ... */ }
+    
+    // Event handlers
+    _onMouseMove(event) { /* ... */ }
+    _onMouseDown(event) { /* ... */ }
+    _onMouseUp(event) { /* ... */ }
+    _onContextMenu(event) { /* ... */ }
+    _onKeyDown(event) { /* ... */ }
+    _onKeyUp(event) { /* ... */ }
+    _onBlur() { /* ... */ }
+    _onTouchStart(event) { /* ... */ }
+    _onTouchMove(event) { /* ... */ }
+    _onTouchEnd(event) { /* ... */ }
+    
+    // Utility methods
+    isKeyDown(key) { /* ... */ }
+    isAnyKeyDown(keys) { /* ... */ }
+    getCursorPosition() { /* ... */ }
+    getNormalizedCursorPosition() { /* ... */ }
 }
 ```
 
@@ -227,170 +359,203 @@ class UIManagerAdapter {
 
 ### BEM Methodology with Namespacing
 
-All CSS classes follow BEM (Block, Element, Modifier) methodology with a `rift-` prefix:
+The CSS variables file demonstrates the BEM methodology with "rift-" prefix:
 
 ```css
-.rift-health { /* Block */ }
-.rift-health__bar { /* Element */ }
-.rift-health__bar--critical { /* Modifier */ }
+:root {
+  /* Primary Colors */
+  --rift-primary: #e63946;
+  --rift-primary-glow: rgba(230, 57, 70, 0.7);
+  --rift-primary-light: #ff4d5e;
+  --rift-primary-dark: #c62f3b;
+  
+  /* Typography */
+  --rift-font-hud: 'Rajdhani', 'Orbitron', sans-serif;
+  --rift-font-display: 'Orbitron', 'Rajdhani', sans-serif; 
+  --rift-font-body: 'Exo 2', 'Rajdhani', sans-serif;
+  
+  /* ... other CSS variables */
+}
 ```
 
 ### CSS Variables for Theming
 
-CSS variables provide consistent theming across components:
+CSS variables provide consistent theming across components, mirrored in UIConfig:
 
-```css
-:root {
-  /* Color Scheme */
-  --primary-color: #e63946;
-  --primary-glow: rgba(230, 57, 70, 0.7);
-  --secondary-color: #33a8ff;
-  --secondary-glow: rgba(51, 168, 255, 0.7);
-  --success-color: #4caf50;
-  --success-glow: rgba(76, 175, 80, 0.7);
-  --warning-color: #ff9800;
-  --warning-glow: rgba(255, 152, 0, 0.7);
-  --danger-color: #f44336;
-  --danger-glow: rgba(244, 67, 54, 0.7);
-  
-  /* UI Sizing */
-  --hud-padding: 12px;
-  --border-radius: 5px;
-  
-  /* Fonts */
-  --font-hud: 'Rajdhani', 'Orbitron', sans-serif;
-  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
-  --font-body: 'Exo 2', 'Rajdhani', sans-serif;
+```javascript
+export const UIConfig = {
+    // CSS Variables (should match :root in CSS)
+    colors: {
+        primary: '#e63946',
+        primaryGlow: 'rgba(230, 57, 70, 0.7)',
+        secondary: '#33a8ff',
+        // ... other colors
+    },
+    
+    // Font settings
+    fonts: {
+        hud: "'Rajdhani', 'Orbitron', sans-serif",
+        display: "'Orbitron', 'Rajdhani', sans-serif",
+        body: "'Exo 2', 'Rajdhani', sans-serif"
+    },
+    
+    // ... other configuration values
 }
-```
-
-### Modular File Structure
-
-CSS is organized into modular files following a clear directory structure:
-
-```
-/styles
-│
-├── /core
-│   ├── _variables.css       # CSS variables, color schemes, fonts
-│   ├── _reset.css           # Base reset styles  
-│   ├── _typography.css      # Font definitions and text styles
-│   ├── _animations.css      # All keyframe animations
-│   └── _layout.css          # Basic layout styles and containers
-│
-├── /components
-│   ├── /hud
-│   │   ├── _health.css      # Health display styles
-│   │   ├── _ammo.css        # Ammo counter styles
-│   │   └── ... other HUD components
-│   ├── /combat
-│   │   ├── _damage.css      # Damage effects and numbers
-│   │   └── ... other combat UI components
-│   └── ... other component categories
-│
-└── main.css                 # Main file that imports all others
 ```
 
 ## Component Communication
 
 ### Event-Driven Communication
 
-Components communicate through the central EventManager using namespaced event types:
-
-```
-health:changed       // Health value has changed
-health:critical      // Health has reached critical level
-health:restored      // Health has been restored to non-critical level
-
-ammo:changed         // Ammo count has changed
-ammo:depleted        // Out of ammo
-ammo:reloading       // Reloading in progress
-ammo:reloaded        // Reload complete
-
-combat:hit           // Player hit an enemy
-combat:hit:critical  // Player scored a critical hit
-combat:damage:taken  // Player took damage
-combat:kill          // Player killed an enemy
-
-ui:notification      // Show a notification
-ui:achievement       // Show an achievement
-ui:screen:change     // Change the active screen
-```
-
-The event data structure is standardized for each event type:
+Components communicate through the central EventManager using namespaced event types. The UIComponent includes automatic subscription tracking and cleanup:
 
 ```javascript
-// Example event data
-{
-  type: 'health:changed',  // Event type (redundant but helpful)
-  value: 75,               // New health value
-  previous: 100,           // Previous health value
-  timestamp: 1589302293,   // Time of event
-  source: 'enemy_damage'   // Source of health change
+// In UIComponent
+registerEvents(events) {
+    if (!EventManager) return this;
+    
+    // Loop through event definitions
+    for (const [eventName, handler] of Object.entries(events)) {
+        // Create bound handler
+        const boundHandler = typeof handler === 'function' 
+            ? handler.bind(this) 
+            : (typeof this[handler] === 'function' ? this[handler].bind(this) : null);
+            
+        if (boundHandler) {
+            // Subscribe to event
+            EventManager.on(eventName, boundHandler);
+            
+            // Save subscription for cleanup
+            this.eventSubscriptions.push({
+                name: eventName,
+                handler: boundHandler
+            });
+        }
+    }
+    
+    return this;
+}
+
+// Automatic cleanup in dispose()
+dispose() {
+    // Dispose children first
+    this.children.forEach(child => {
+        if (typeof child.dispose === 'function') {
+            child.dispose();
+        }
+    });
+    
+    // Unsubscribe from all events
+    this.unregisterAllEvents();
+    
+    // Remove from DOM
+    if (this.element && this.element.parentNode) {
+        this.element.parentNode.removeChild(this.element);
+    }
+    
+    // ... other cleanup
 }
 ```
 
-## Rendering Strategy
+The event data structure is standardized in EventManager:
 
-### DOM-Based UI Elements
-
-Most UI elements use DOM manipulation for:
-- HUD elements (health, ammo, etc.)
-- Menus and screens
-- Notifications and messages
-- Persistent UI components
-
-### Canvas/WebGL Elements
-
-Three.js rendering is used for:
-- 3D elements that integrate with the game world
-- Performance-critical particle effects
-- Complex animations that would be inefficient with DOM
-- Elements that need to sync precisely with the game world
+```javascript
+// In EventManager.emit()
+const eventObject = {
+    type: eventType,       // Event type 
+    timestamp: performance.now(),  // Time of event
+    ...data                // Spread the event data
+};
+```
 
 ## Performance Patterns
 
 ### DOM Optimization
 
-To prevent layout thrashing and optimize performance:
-- Batch DOM operations using DocumentFragments
-- Use CSS transforms and opacity for animations
-- Minimize reflows by reading layout properties all at once
-- Use requestAnimationFrame for visual updates
-- Implement visibility checks to avoid updating offscreen elements
+The DOMFactory and UIComponent implementations show DOM optimization:
 
-### Event Optimization
-
-To prevent memory leaks and improve performance:
-- All event listeners are tracked and removed during component disposal
-- Event handlers are debounced for frequently firing events
-- Event data is kept minimal to reduce overhead
-- Event types are categorized by priority
+1. **Element Creation**: DOMFactory provides optimized element creation
+2. **Event Delegation**: InputHandler uses event delegation for efficiency
+3. **Component Lifecycle**: UIComponent ensures proper initialization and cleanup
+4. **Animation Performance**: UIComponent includes an animation system with easing
 
 ### Animation Strategy
 
-For optimal animation performance:
-- Use CSS animations for simple transitions (opacity, transform)
-- Use requestAnimationFrame for complex JS-driven animations
-- Prefer transform and opacity properties for animations
-- Implement animation budgets for simultaneous effects
-- Use will-change CSS property to optimize browser rendering
+The UIComponent class implements an animation system:
 
-## Testing Approach
+```javascript
+addAnimation(name, options) {
+    if (!name || !options.update || !options.duration) return this;
+    
+    this.animations[name] = {
+        name,
+        startTime: options.autoStart !== false ? performance.now() : null,
+        duration: options.duration * 1000, // Convert to ms
+        update: options.update,
+        complete: options.complete || null,
+        easing: options.easing || 'linear',
+        progress: 0,
+        isComplete: false,
+        isActive: options.autoStart !== false
+    };
+    
+    return this;
+}
 
-1. **Component Testing**: Each UI component is tested in isolation
-2. **Interaction Testing**: Event communication between components is verified
-3. **Visual Regression Testing**: UI appearance is compared against baseline
-4. **Performance Testing**: UI is benchmarked for rendering performance
-5. **Memory Testing**: Components are checked for memory leaks
+// Update animations in the component update cycle
+_updateAnimations(delta) {
+    const now = performance.now();
+    
+    for (const key in this.animations) {
+        const anim = this.animations[key];
+        
+        if (!anim.isActive || anim.isComplete) continue;
+        
+        // ... animation update logic with easing
+    }
+}
+```
 
 ## Implementation Path
 
-The implementation follows a gradual migration path:
+The current implementation has followed a clear path:
 
-1. Create the core infrastructure (UIComponent, EventManager, DOMFactory)
-2. Implement adapter layer that maps old UIManager to new components
-3. Build core components one by one, replacing UIManager functionality
-4. Refactor CSS following the new structure
-5. Add enhanced features that weren't in the original implementation
-6. Optimize performance and address edge cases
+1. ✅ Create the core infrastructure (UIComponent, EventManager, DOMFactory, InputHandler)
+2. ✅ Implement new UIManager as orchestrator
+3. ✅ Establish CSS foundation with variables
+4. ✅ Create component-specific CSS files (health display, hud layout)
+5. ✅ Build core HUD components:
+   - ✅ Created `HUDSystem` as a coordinator for all HUD elements
+   - ✅ Implemented `HealthDisplay` component with various health states and animations
+   - ✅ Added HUD layout system with positioning containers
+   - ✅ Integrated HUDSystem into UIManager
+6. ✅ Implement additional HUD components:
+   - ✅ Created `AmmoDisplay` component with magazine visualization
+   - ✅ Implemented ammunition state handling (low ammo, reloading)
+   - ✅ Added bullet visualizer with weapon-specific styling
+7. ✅ Implement crosshair component:
+   - ✅ Created `CrosshairSystem` component with dynamic spread mechanics
+   - ✅ Implemented hit markers with critical/headshot variations
+   - ✅ Added contextual states for enemy targeting
+   - ✅ Integrated weapon-specific crosshair styles
+8. ✅ Implement minimap component:
+   - ✅ Created `MinimapSystem` component integrating existing functionality
+   - ✅ Implemented BEM-based CSS with responsive design
+   - ✅ Added interactive features (zoom, rotate, expand)
+   - ✅ Integrated with event system for notifications
+   - ✅ Created specialized icons for players, enemies, items, and objectives
+9. ✅ Implement stamina and compass components:
+   - ✅ Created `StaminaSystem` component for sprint mechanics
+   - ✅ Implemented visual feedback for various stamina states
+   - ✅ Added `CompassDisplay` component with orientation and waypoint support
+   - ✅ Integrated both systems with existing HUD layout
+10. ✅ Begin implementing combat feedback systems:
+   - ✅ Created `CombatSystem` as a coordinator for combat feedback components
+   - ✅ Implemented `HitIndicator` component for hit confirmation feedback
+   - ✅ Added support for regular, critical, and headshot hit markers
+   - ✅ Implemented directional damage indicators for situational awareness
+   - ✅ Created kill confirmation animations for feedback
+   - ✅ Established CSS structure for combat-related components
+11. 🔄 Next: Continue implementing feedback systems (DamageIndicator, DamageNumbers)
+12. ⏳ Coming: Notification system and advanced features
+13. ⏳ Coming: Performance optimization and accessibility features
