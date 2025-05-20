@@ -1,0 +1,221 @@
+/*
+ * Event Banner Component Stylesheet
+ *
+ * Styles for the event banner system that displays:
+ * - Major game events (objective capture, round win/loss)
+ * - Mission updates
+ * - Achievement milestones
+ * - Game state changes
+ */
+
+/* Event banner container */
+.rift-event-banner {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: var(--rift-z-index-notifications);
+  pointer-events: none; /* Allow clicking through notification area */
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Banner message */
+.rift-event-banner__message {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--rift-primary);
+  border-radius: var(--rift-border-radius);
+  padding: 12px 24px;
+  color: var(--rift-text-color);
+  font-family: var(--rift-font-display);
+  font-weight: var(--rift-font-weight-bold);
+  font-size: 1.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px var(--rift-primary-glow);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity var(--rift-duration-normal) ease-out, 
+              transform var(--rift-duration-normal) ease-out;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Banner types/variations */
+.rift-event-banner__message--objective {
+  border-color: var(--rift-secondary);
+  box-shadow: 0 0 15px var(--rift-secondary-glow);
+}
+
+.rift-event-banner__message--alert {
+  border-color: var(--rift-warning);
+  box-shadow: 0 0 15px var(--rift-warning-glow);
+}
+
+.rift-event-banner__message--success {
+  border-color: var(--rift-success);
+  box-shadow: 0 0 15px var(--rift-success-glow);
+}
+
+.rift-event-banner__message--danger {
+  border-color: var(--rift-danger);
+  box-shadow: 0 0 15px var(--rift-danger-glow);
+}
+
+/* Banner title (optional) */
+.rift-event-banner__title {
+  display: block;
+  font-size: 1rem;
+  font-weight: var(--rift-font-weight-normal);
+  opacity: 0.8;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+/* Banner subtitle (optional) */
+.rift-event-banner__subtitle {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: var(--rift-font-weight-normal);
+  opacity: 0.7;
+  margin-top: 4px;
+  font-family: var(--rift-font-body);
+  text-transform: none;
+}
+
+/* Animation states */
+.rift-event-banner__message--enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rift-event-banner__message--exit {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Timer indicator (for objectives with time remaining) */
+.rift-event-banner__timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.rift-event-banner__timer-bar {
+  width: 100px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rift-event-banner__timer-progress {
+  height: 100%;
+  background-color: var(--rift-primary);
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(1);
+  transition: transform linear;
+}
+
+/* Round outcome banners - these are larger and more dramatic */
+.rift-round-outcome {
+  position: fixed;
+  top: 25%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: calc(var(--rift-z-index-notifications) + 10);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity var(--rift-duration-slow) ease-out, 
+              transform var(--rift-duration-slow) ease-out;
+}
+
+.rift-round-outcome__text {
+  font-family: var(--rift-font-display);
+  font-size: 3rem;
+  font-weight: var(--rift-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+  margin-bottom: 10px;
+}
+
+.rift-round-outcome--victory {
+  color: var(--rift-success);
+  text-shadow: 0 0 20px var(--rift-success-glow);
+}
+
+.rift-round-outcome--defeat {
+  color: var(--rift-danger);
+  text-shadow: 0 0 20px var(--rift-danger-glow);
+}
+
+.rift-round-outcome--draw {
+  color: var(--rift-warning);
+  text-shadow: 0 0 20px var(--rift-warning-glow);
+}
+
+.rift-round-outcome__subtitle {
+  font-family: var(--rift-font-body);
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 500px;
+  text-align: center;
+}
+
+/* Animation states for round outcome */
+.rift-round-outcome--enter {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.rift-round-outcome--exit {
+  opacity: 0;
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-event-banner {
+    max-width: 90%;
+  }
+  
+  .rift-event-banner__message {
+    font-size: 1.2rem;
+    padding: 10px 16px;
+  }
+  
+  .rift-round-outcome__text {
+    font-size: 2.5rem;
+  }
+  
+  .rift-round-outcome__subtitle {
+    font-size: 1rem;
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .rift-event-banner__message {
+    font-size: 1rem;
+    padding: 8px 12px;
+  }
+  
+  .rift-round-outcome__text {
+    font-size: 2rem;
+  }
+}

@@ -1,0 +1,119 @@
+/**
+ * Screen Effects CSS
+ * 
+ * Styles for screen-wide visual effects, including:
+ * - Damage flash effects
+ * - Healing glow effects 
+ * - Vignette effect for low health
+ */
+
+.rift-screen-effects {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: var(--rift-z-index-effects);
+  will-change: transform; /* Hardware acceleration hint for screen shake */
+}
+
+.rift-screen-effects__container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Damage flash overlay */
+.rift-screen-effects__damage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--rift-danger);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease-in;
+  z-index: var(--rift-z-index-damage-flash);
+}
+
+.rift-screen-effects__damage--active {
+  /* No additional styles needed - opacity managed by JS */
+}
+
+/* Healing effect overlay */
+.rift-screen-effects__heal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--rift-success);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease-in;
+  z-index: var(--rift-z-index-heal-flash);
+}
+
+.rift-screen-effects__heal--active {
+  /* No additional styles needed - opacity managed by JS */
+}
+
+/* Vignette effect for low health */
+.rift-screen-effects__vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: var(--rift-z-index-vignette);
+  
+  /* Vignette gradient - radial gradient with transparent center and red edges */
+  background: radial-gradient(
+    circle at center,
+    transparent 30%,
+    rgba(220, 0, 0, 0.1) 60%,
+    rgba(220, 0, 0, 0.6) 100%
+  );
+  
+  /* Add pulsing effect for critical health */
+  transition: opacity 0.5s ease-out;
+}
+
+.rift-screen-effects__vignette--active {
+  animation: rift-vignette-pulse 3s infinite ease-in-out;
+}
+
+/* Vignette pulsing animation */
+@keyframes rift-vignette-pulse {
+  0% { 
+    transform: scale(1);
+  }
+  50% { 
+    transform: scale(1.03);
+  }
+  100% { 
+    transform: scale(1);
+  }
+}
+
+/* Screen shake happens directly on the rift-screen-effects element via transform in JS */
+
+/* Media query for smaller screens - reduce effects intensity */
+@media (max-width: 768px) {
+  .rift-screen-effects__vignette {
+    /* Reduce vignette intensity on smaller screens */
+    background: radial-gradient(
+      circle at center,
+      transparent 40%,
+      rgba(220, 0, 0, 0.1) 70%,
+      rgba(220, 0, 0, 0.5) 100%
+    );
+  }
+}

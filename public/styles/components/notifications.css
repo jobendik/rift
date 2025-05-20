@@ -1,0 +1,15 @@
+/*
+ * Notifications Components Stylesheet
+ *
+ * Main import file for all notification-related UI components including:
+ * - Notification manager
+ * - Kill feed
+ * - Event banners
+ * - Achievement notifications
+ */
+
+/* Import all notification component styles */
+@import url('./notifications/_notification-manager.css');
+@import url('./notifications/_kill-feed.css');
+@import url('./notifications/_event-banner.css');
+@import url('./notifications/_achievement.css');

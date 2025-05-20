@@ -1,0 +1,149 @@
+/*
+ * FootstepIndicator Component
+ *
+ * Displays visual feedback for nearby movement, showing the direction
+ * of footsteps with distance-based intensity scaling and friend/foe differentiation.
+ *
+ * Uses the BEM methodology with the 'rift-' prefix.
+ */
+
+/* Footstep Indicator Container */
+.rift-footstep-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--rift-z-index-footstep-indicator, 35);
+  overflow: hidden;
+}
+
+/* Indicator Container (holds all footstep indicators) */
+.rift-footstep-indicator__container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+}
+
+/* Individual Footstep Indicator */
+.rift-footstep-indicator__indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  width: var(--rift-footstep-indicator-width, 150%);
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease-in;
+  
+  /* The arc shape for the indicator */
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 165, 0, 0.1) 70%,
+    rgba(255, 165, 0, 0.2) 85%,
+    rgba(255, 165, 0, 0.3) 100%
+  );
+  
+  /* Clip to a narrower sector shape than damage indicators */
+  clip-path: polygon(50% 50%, 35% 0%, 65% 0%);
+}
+
+/* Friendly Indicator (blue tones) */
+.rift-footstep-indicator__indicator--friendly {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(0, 150, 255, 0.08) 70%,
+    rgba(0, 150, 255, 0.15) 85%,
+    rgba(0, 150, 255, 0.25) 100%
+  );
+}
+
+/* Enemy Indicator (orange/red tones) */
+.rift-footstep-indicator__indicator--enemy {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 140, 0, 0.08) 70%,
+    rgba(255, 140, 0, 0.15) 85%,
+    rgba(255, 140, 0, 0.25) 100%
+  );
+}
+
+/* Distant Footstep (subtle indicator) */
+.rift-footstep-indicator__indicator--distant {
+  clip-path: polygon(50% 50%, 40% 0%, 60% 0%);
+  opacity: 0.5;
+}
+
+/* Medium Distance Footstep */
+.rift-footstep-indicator__indicator--medium {
+  clip-path: polygon(50% 50%, 37% 0%, 63% 0%);
+  opacity: 0.7;
+}
+
+/* Close Footstep (more prominent) */
+.rift-footstep-indicator__indicator--close {
+  clip-path: polygon(50% 50%, 35% 0%, 65% 0%);
+  opacity: 0.9;
+  
+  /* Add subtle pulsing for nearby footsteps */
+  animation: rift-footstep-pulse var(--rift-duration-fast, 0.5s) infinite alternate;
+}
+
+/* Continuous Footstep (for sequences of steps) */
+.rift-footstep-indicator__indicator--continuous {
+  /* Slightly different gradient for continuous footsteps */
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(255, 140, 0, 0.1) 60%,
+    rgba(255, 140, 0, 0.18) 80%,
+    rgba(255, 140, 0, 0.28) 100%
+  );
+}
+
+/* Continuous Friendly Footstep */
+.rift-footstep-indicator__indicator--continuous.rift-footstep-indicator__indicator--friendly {
+  background: radial-gradient(
+    farthest-side at center bottom,
+    transparent 0%,
+    rgba(0, 150, 255, 0.1) 60%,
+    rgba(0, 150, 255, 0.18) 80%,
+    rgba(0, 150, 255, 0.28) 100%
+  );
+}
+
+/* Active State (brings the indicator into view) */
+.rift-footstep-indicator__indicator--active {
+  opacity: 1;
+}
+
+/* Pulse Animation */
+@keyframes rift-footstep-pulse {
+  0% {
+    opacity: var(--opacity-min, 0.7);
+  }
+  100% {
+    opacity: var(--opacity-max, 1);
+  }
+}
+
+/* Media Queries for Responsive Sizing */
+@media (max-width: 768px) {
+  .rift-footstep-indicator__indicator {
+    --rift-footstep-indicator-width: 130%;
+  }
+}
+
+@media (min-width: 1201px) {
+  .rift-footstep-indicator__indicator {
+    --rift-footstep-indicator-width: 170%;
+  }
+}

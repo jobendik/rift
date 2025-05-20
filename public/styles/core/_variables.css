@@ -194,9 +194,23 @@
   --rift-damage-indicator-opacity: 0.7;
   --rift-damage-indicator-size: 120px;
   
+  /* Damage Numbers */
+  --rift-damage-numbers-color: white;
+  --rift-damage-numbers-normal-color: white;
+  --rift-damage-numbers-critical-color: var(--rift-warning);
+  --rift-damage-numbers-headshot-color: var(--rift-primary);
+  --rift-damage-numbers-kill-color: var(--rift-success);
+  --rift-damage-number-rise: 30px;
+  --rift-damage-number-duration: 1.5s;
+  --rift-z-index-damage-numbers: 45;
+  
   /* Screen Effects */
   --rift-damage-flash-color: rgba(255, 0, 0, 0.3);
   --rift-heal-flash-color: rgba(76, 175, 80, 0.3);
+  --rift-z-index-effects: 850;
+  --rift-z-index-vignette: 40;
+  --rift-z-index-damage-flash: 50;
+  --rift-z-index-heal-flash: 45;
   
   /* Minimap */
   --rift-minimap-size: 200px;

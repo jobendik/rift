@@ -1,0 +1,269 @@
+/*
+ * Achievement Component Stylesheet
+ *
+ * Styles for the achievement notification system that displays:
+ * - Player achievements
+ * - Unlocked items
+ * - Completed challenges
+ * - Milestone rewards
+ */
+
+/* Achievement container */
+.rift-achievement {
+  position: fixed;
+  bottom: var(--rift-space-lg);
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 400px;
+  max-width: 90vw;
+  background-color: rgba(0, 0, 0, 0.85);
+  border: 2px solid var(--rift-secondary);
+  border-radius: var(--rift-border-radius);
+  box-shadow: 0 0 20px var(--rift-secondary-glow);
+  padding: 16px;
+  transition: transform var(--rift-duration-normal) cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  z-index: var(--rift-z-index-notifications);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Achievement shown state */
+.rift-achievement--show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Achievement icon container */
+.rift-achievement__icon {
+  width: 64px;
+  height: 64px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid var(--rift-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.rift-achievement__icon-image {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* Achievement shine animation */
+.rift-achievement__icon::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: rift-achievement-shine 2s ease-in-out infinite;
+}
+
+@keyframes rift-achievement-shine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+}
+
+/* Achievement content */
+.rift-achievement__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Achievement header */
+.rift-achievement__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+/* Achievement label */
+.rift-achievement__label {
+  font-size: 0.85rem;
+  color: var(--rift-secondary);
+  font-family: var(--rift-font-body);
+  text-transform: uppercase;
+  font-weight: var(--rift-font-weight-semibold);
+  letter-spacing: 1px;
+}
+
+/* Achievement value (e.g. XP gained) */
+.rift-achievement__value {
+  font-size: 0.85rem;
+  color: var(--rift-success);
+  font-family: var(--rift-font-hud);
+  font-weight: var(--rift-font-weight-semibold);
+}
+
+/* Achievement title */
+.rift-achievement__title {
+  font-family: var(--rift-font-display);
+  font-size: 1.1rem;
+  font-weight: var(--rift-font-weight-semibold);
+  color: var(--rift-text-color);
+  margin: 0 0 4px 0;
+}
+
+/* Achievement description */
+.rift-achievement__description {
+  font-family: var(--rift-font-body);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* Achievement progress (for cumulative achievements) */
+.rift-achievement__progress {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Progress label */
+.rift-achievement__progress-label {
+  font-family: var(--rift-font-body);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Progress bar */
+.rift-achievement__progress-bar {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* Progress fill */
+.rift-achievement__progress-fill {
+  height: 100%;
+  background-color: var(--rift-secondary);
+  border-radius: 3px;
+  transition: width var(--rift-duration-normal) ease-out;
+}
+
+/* Achievement types */
+.rift-achievement--unlock {
+  border-color: var(--rift-primary);
+  box-shadow: 0 0 20px var(--rift-primary-glow);
+}
+
+.rift-achievement--unlock .rift-achievement__icon {
+  border-color: var(--rift-primary);
+}
+
+.rift-achievement--unlock .rift-achievement__label {
+  color: var(--rift-primary);
+}
+
+.rift-achievement--milestone {
+  border-color: var(--rift-warning);
+  box-shadow: 0 0 20px var(--rift-warning-glow);
+}
+
+.rift-achievement--milestone .rift-achievement__icon {
+  border-color: var(--rift-warning);
+}
+
+.rift-achievement--milestone .rift-achievement__label {
+  color: var(--rift-warning);
+}
+
+.rift-achievement--challenge {
+  border-color: var(--rift-danger);
+  box-shadow: 0 0 20px var(--rift-danger-glow);
+}
+
+.rift-achievement--challenge .rift-achievement__icon {
+  border-color: var(--rift-danger);
+}
+
+.rift-achievement--challenge .rift-achievement__label {
+  color: var(--rift-danger);
+}
+
+/* Achievement dismiss button */
+.rift-achievement__dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity var(--rift-duration-fast) ease;
+}
+
+.rift-achievement__dismiss:hover {
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-achievement {
+    width: 350px;
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .rift-achievement__icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .rift-achievement__icon-image {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .rift-achievement__title {
+    font-size: 1rem;
+  }
+  
+  .rift-achievement__description {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rift-achievement {
+    width: 300px;
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .rift-achievement__icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .rift-achievement__icon-image {
+    width: 30px;
+    height: 30px;
+  }
+}

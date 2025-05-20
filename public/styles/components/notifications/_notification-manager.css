@@ -1,0 +1,136 @@
+/*
+ * Notification Manager Component Stylesheet
+ *
+ * Styles for the general notification system that displays:
+ * - Timed notifications
+ * - Toast messages
+ * - System alerts
+ */
+
+/* Notification container that holds all notifications */
+.rift-notifications {
+  position: fixed;
+  top: var(--rift-space-md);
+  right: var(--rift-space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  max-width: 80vw;
+  z-index: var(--rift-z-index-notifications);
+  pointer-events: none; /* Allow clicking through notification area */
+}
+
+/* Individual notification item */
+.rift-notification {
+  background-color: var(--rift-ui-background);
+  border-left: 4px solid var(--rift-primary);
+  border-radius: var(--rift-border-radius);
+  padding: var(--rift-space-sm) var(--rift-space-md);
+  color: var(--rift-text-color);
+  font-family: var(--rift-font-body);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity var(--rift-duration-normal) ease-out, 
+              transform var(--rift-duration-normal) ease-out;
+  pointer-events: auto; /* Make notifications clickable */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Notification types */
+.rift-notification--info {
+  border-left-color: var(--rift-secondary);
+}
+
+.rift-notification--success {
+  border-left-color: var(--rift-success);
+}
+
+.rift-notification--warning {
+  border-left-color: var(--rift-warning);
+}
+
+.rift-notification--error {
+  border-left-color: var(--rift-danger);
+}
+
+/* Notification header (optional) */
+.rift-notification__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Notification title */
+.rift-notification__title {
+  font-weight: var(--rift-font-weight-semibold);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Notification content */
+.rift-notification__content {
+  line-height: 1.4;
+}
+
+/* Close button */
+.rift-notification__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity var(--rift-duration-fast) ease;
+}
+
+.rift-notification__close:hover {
+  opacity: 1;
+}
+
+/* Progress bar for auto-dismiss timer */
+.rift-notification__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform-origin: left;
+}
+
+.rift-notification__progress-bar {
+  height: 100%;
+  width: 100%;
+  background-color: var(--rift-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform linear;
+}
+
+/* Animation states */
+.rift-notification--enter {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rift-notification--exit {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity var(--rift-duration-fast) ease-out, 
+              transform var(--rift-duration-fast) ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-notifications {
+    width: calc(100vw - 2 * var(--rift-space-md));
+    max-width: none;
+  }
+}

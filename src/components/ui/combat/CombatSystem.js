@@ -6,6 +6,7 @@
  * - Damage indicators
  * - Damage numbers
  * - Screen effects
+ * - Footstep indicators
  * 
  * Acts as a central manager for combat visual feedback, similar to how
  * HUDSystem manages HUD components.
@@ -16,6 +17,9 @@
 import UIComponent from '../UIComponent.js';
 import HitIndicator from './HitIndicator.js';
 import DamageIndicator from './DamageIndicator.js';
+import DamageNumbers from './DamageNumbers.js';
+import ScreenEffects from './ScreenEffects.js';
+import FootstepIndicator from './FootstepIndicator.js';
 
 class CombatSystem extends UIComponent {
     /**
@@ -38,10 +42,13 @@ class CombatSystem extends UIComponent {
         // Component references
         this.hitIndicator = null;
         this.damageIndicator = null;
+        this.damageNumbers = null;
         
-        // Future components
-        // this.damageNumbers = null;
-        // this.screenEffects = null;
+        // Screen effects for damage, healing, etc.
+        this.screenEffects = null;
+        
+        // Footstep indicator for situational awareness
+        this.footstepIndicator = null;
     }
 
     /**
@@ -77,10 +84,13 @@ class CombatSystem extends UIComponent {
         // Update components
         if (this.hitIndicator) this.hitIndicator.update(delta);
         if (this.damageIndicator) this.damageIndicator.update(delta);
+        if (this.damageNumbers) this.damageNumbers.update(delta);
         
-        // Update future components
-        // if (this.damageNumbers) this.damageNumbers.update(delta);
-        // if (this.screenEffects) this.screenEffects.update(delta);
+        // Update screen effects
+        if (this.screenEffects) this.screenEffects.update(delta);
+        
+        // Update footstep indicator
+        if (this.footstepIndicator) this.footstepIndicator.update(delta);
         
         return this;
     }
@@ -105,10 +115,13 @@ class CombatSystem extends UIComponent {
         // Dispose children first
         if (this.hitIndicator) this.hitIndicator.dispose();
         if (this.damageIndicator) this.damageIndicator.dispose();
+        if (this.damageNumbers) this.damageNumbers.dispose();
         
-        // Dispose future components
-        // if (this.damageNumbers) this.damageNumbers.dispose();
-        // if (this.screenEffects) this.screenEffects.dispose();
+        // Dispose screen effects
+        if (this.screenEffects) this.screenEffects.dispose();
+        
+        // Dispose footstep indicator
+        if (this.footstepIndicator) this.footstepIndicator.dispose();
         
         // Call parent dispose method to handle unsubscribing events and DOM removal
         super.dispose();
@@ -144,13 +157,45 @@ class CombatSystem extends UIComponent {
         this.damageIndicator.init();
         this.addChild(this.damageIndicator);
         
-        // this.damageNumbers = new DamageNumbers({ container: this.element });
-        // this.damageNumbers.init();
-        // this.addChild(this.damageNumbers);
+        // Initialize damage numbers
+        const numbersConfig = this.config.damageNumbers || {};
+        this.damageNumbers = new DamageNumbers({
+            container: this.element,
+            maxNumbers: numbersConfig.maxNumbers || 30,
+            duration: numbersConfig.duration || 1500,
+            stackThreshold: numbersConfig.stackThreshold || 300,
+            riseDistance: numbersConfig.riseDistance || 30,
+            stackLimit: numbersConfig.stackLimit || 5
+        });
+        this.damageNumbers.init();
+        this.addChild(this.damageNumbers);
         
-        // this.screenEffects = new ScreenEffects({ container: this.element });
-        // this.screenEffects.init();
-        // this.addChild(this.screenEffects);
+        // Initialize screen effects
+        const effectsConfig = this.config.screenEffects || {};
+        this.screenEffects = new ScreenEffects({
+            container: this.element,
+            damageFlashDuration: effectsConfig.damageFlashDuration,
+            healFlashDuration: effectsConfig.healFlashDuration,
+            screenShakeDecay: effectsConfig.screenShakeDecay,
+            screenShakeMultiplier: effectsConfig.screenShakeMultiplier
+        });
+        this.screenEffects.init();
+        this.addChild(this.screenEffects);
+        
+        // Initialize footstep indicator
+        const footstepConfig = this.config.footstepIndicator || {};
+        this.footstepIndicator = new FootstepIndicator({
+            container: this.element,
+            maxIndicators: footstepConfig.maxIndicators || 8,
+            baseDuration: footstepConfig.baseDuration ? footstepConfig.baseDuration * 1000 : 800,
+            minOpacity: footstepConfig.minOpacity || 0.2,
+            maxOpacity: footstepConfig.maxOpacity || 0.7,
+            indicatorWidth: footstepConfig.indicatorWidth || 40,
+            maxDistance: footstepConfig.maxDistance || 20,
+            minDistance: footstepConfig.minDistance || 2
+        });
+        this.footstepIndicator.init();
+        this.addChild(this.footstepIndicator);
     }
 
     /**
@@ -161,9 +206,13 @@ class CombatSystem extends UIComponent {
         // Pause any ongoing animations or visual feedback
         if (this.hitIndicator) this.hitIndicator.clearAllIndicators();
         if (this.damageIndicator) this.damageIndicator.clearAllIndicators();
+        if (this.damageNumbers) this.damageNumbers.clearAllNumbers();
         
-        // Handle future components
-        // if (this.screenEffects) this.screenEffects.clearAll();
+        // Clear screen effects
+        if (this.screenEffects) this.screenEffects.clearAllEffects();
+        
+        // Clear footstep indicators
+        if (this.footstepIndicator) this.footstepIndicator.clearAllIndicators();
     }
 
     /**
@@ -243,6 +292,139 @@ class CombatSystem extends UIComponent {
         });
         
         console.log(`Damage indicator test: ${damageAmount} damage from ${damageAngle}°`);
+    }
+    
+    /**
+     * Test method for showing damage numbers
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} type - Type of damage number ('normal', 'critical', 'headshot', 'kill', 'stacked')
+     * @param {number} damage - Amount of damage
+     */
+    testDamageNumbers(type = 'normal', damage = null) {
+        if (!this.damageNumbers) return;
+        
+        // Calculate a damage amount if not provided
+        const damageAmount = damage !== null ? damage : Math.floor(Math.random() * 40) + 5;
+        
+        if (type === 'stacked') {
+            // Show stacked damage (multiple hits)
+            const hitCount = Math.floor(Math.random() * 5) + 2; // 2-6 hits
+            this.damageNumbers.testStackedDamage(hitCount, damageAmount);
+        } else {
+            // Show single damage number
+            this.damageNumbers.testDamageNumber(type, damageAmount);
+        }
+    }
+    
+    /**
+     * Test method for screen effects
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} effectType - Type of screen effect ('damage', 'heal', 'shake', 'vignette', 'all')
+     * @param {string} intensity - Effect intensity ('low', 'medium', 'high', 'critical')
+     */
+    testScreenEffects(effectType = 'damage', intensity = 'medium') {
+        if (!this.screenEffects) return;
+        
+        switch (effectType) {
+            case 'damage':
+                this.screenEffects.testDamageEffects(intensity);
+                break;
+            case 'heal':
+                this.screenEffects.testHealEffect(intensity);
+                break;
+            case 'shake':
+                this.screenEffects.testScreenShake(intensity);
+                break;
+            case 'vignette':
+                // For vignette, interpret intensity as health percentage
+                let healthPercent;
+                switch (intensity) {
+                    case 'low': healthPercent = 45; break;
+                    case 'medium': healthPercent = 25; break;
+                    case 'high': healthPercent = 12; break;
+                    case 'critical': healthPercent = 5; break;
+                    default: healthPercent = 25;
+                }
+                this.screenEffects.testVignette(healthPercent);
+                break;
+            case 'all':
+                // Show all effects in sequence with slight delays
+                this.screenEffects.testDamageEffects(intensity);
+                
+                setTimeout(() => {
+                    this.screenEffects.testScreenShake(intensity);
+                }, 300);
+                
+                setTimeout(() => {
+                    // Map intensity to health percentage for vignette
+                    let healthPercent;
+                    switch (intensity) {
+                        case 'low': healthPercent = 45; break;
+                        case 'medium': healthPercent = 25; break;
+                        case 'high': healthPercent = 12; break;
+                        case 'critical': healthPercent = 5; break;
+                        default: healthPercent = 25;
+                    }
+                    this.screenEffects.testVignette(healthPercent);
+                }, 600);
+                
+                setTimeout(() => {
+                    this.screenEffects.testHealEffect(intensity);
+                }, 1500);
+                break;
+        }
+        
+        console.log(`Screen effects test: ${effectType} at ${intensity} intensity`);
+    }
+    
+    /**
+     * Test method for footstep indicator
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} intensity - Effect intensity ('low', 'medium', 'high')
+     * @param {number} angle - Direction angle in degrees (0-360), random if not provided
+     * @param {boolean} isEnemy - Whether the footstep is from an enemy (true) or friendly (false)
+     * @param {number} count - Number of footsteps in sequence (for continuous tracking)
+     */
+    testFootstepIndicator(intensity = 'medium', angle = null, isEnemy = true, count = 1) {
+        if (!this.footstepIndicator) return;
+        
+        // Generate a random angle if not provided (0-360 degrees)
+        const footstepAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
+        
+        // Map intensity string to distance values (close is more intense)
+        let distance;
+        switch (intensity) {
+            case 'low':
+                distance = Math.floor(Math.random() * 5) + 15; // 15-19 units (far)
+                break;
+            case 'medium':
+                distance = Math.floor(Math.random() * 5) + 8; // 8-12 units (medium)
+                break;
+            case 'high':
+                distance = Math.floor(Math.random() * 3) + 2; // 2-4 units (close)
+                break;
+            default:
+                distance = Math.floor(Math.random() * 10) + 5; // 5-14 units
+        }
+        
+        // Create footstep data
+        const footstepData = {
+            angle: footstepAngle,
+            distance: distance,
+            isEnemy: isEnemy,
+            count: count
+        };
+        
+        // Show the footstep indicator
+        this.footstepIndicator.showFootstepFrom(footstepData);
+        
+        console.log(`Footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}° at distance ${distance}, count: ${count}`);
     }
 }
 

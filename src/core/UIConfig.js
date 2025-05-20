@@ -105,6 +105,20 @@ export const UIConfig = {
         zIndex: 50
     },
     
+    // Damage numbers settings
+    damageNumbers: {
+        maxNumbers: 30, // maximum simultaneous numbers
+        duration: 1.5, // seconds
+        stackThreshold: 300, // ms - time window for stacking damage
+        riseDistance: 30, // pixels
+        stackLimit: 5, // max hits to show before showing total only
+        normalColor: 'white',
+        criticalColor: '#ff9800', // matches --rift-warning
+        headshotColor: '#e63946', // matches --rift-primary
+        killColor: '#4caf50', // matches --rift-success
+        zIndex: 45
+    },
+    
     // Screen effects
     screenEffects: {
         damageFlashDuration: 0.5, // seconds
@@ -116,6 +130,24 @@ export const UIConfig = {
         screenShakeDamageScalar: 40
     },
     
+    // Footstep indicator settings
+    footstepIndicator: {
+        baseDuration: 0.8, // seconds
+        minOpacity: 0.2, // for distant footsteps
+        maxOpacity: 0.7, // for close footsteps
+        indicatorWidth: 40, // degrees (visual angle)
+        maxIndicators: 8, // maximum simultaneous indicators
+        maxDistance: 20, // game units
+        minDistance: 2, // game units (footsteps within this range have max intensity)
+        friendlyColor: 'rgba(0, 150, 255, 0.25)',
+        enemyColor: 'rgba(255, 140, 0, 0.25)',
+        continuousStepInterval: 0.2, // seconds between footsteps in a sequence
+        defaultSteps: 4, // default number of steps in a sequence
+        pulseFrequency: 3, // pulses per second
+        continousOpacityBoost: 0.08, // additional opacity for continuous footsteps
+        zIndex: 35
+    },
+    
     // Player feedback
     feedback: {
         hitMarker3DSize: 24, // px
@@ -123,7 +155,7 @@ export const UIConfig = {
         damageNumberDuration: 1.5, // seconds
         damageNumberRiseSpeed: 30, // px/s
         damageNumberSpread: 20, // px
-        footstepDuration: 1.5 // seconds
+        footstepDuration: 1.5 // seconds (retained for backward compatibility)
     },
     
     // Health display
@@ -155,18 +187,31 @@ export const UIConfig = {
         ammoVisualizerShowEmpty: true
     },
     
-    // Notifications
+    // Notifications System
     notifications: {
+        // General notifications
         displayDuration: 4.0, // seconds
         fadeDuration: 0.5, // seconds
         cooldown: 0.5, // seconds
-        spacingDelay: 0.5 // seconds
-    },
-    
-    // Event banners
-    events: {
-        displayDuration: 3.0, // seconds
-        fadeDuration: 1.0 // seconds
+        spacingDelay: 0.5, // seconds
+        maxNotifications: 5, // maximum visible notifications
+        stackSimilar: true, // whether to combine similar notifications
+        
+        // Kill feed
+        killFeedDuration: 5.0, // seconds
+        maxKillMessages: 5, // maximum kill messages in feed
+        killStreakTimeout: 10.0, // seconds window for kill streaks
+        
+        // Achievement notifications
+        achievementDuration: 5.0, // seconds
+        
+        // Event banners
+        events: {
+            displayDuration: 3.0, // seconds
+            fadeDuration: 1.0, // seconds
+            outcomeDisplayDuration: 5.0, // seconds for victory/defeat banners
+            delayBetweenBanners: 0.5 // seconds between queued banners
+        }
     },
     
     // Objective markers

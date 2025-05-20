@@ -14,7 +14,7 @@ import { DOMFactory } from '../utils/DOMFactory.js';
 // These will be uncommented and used as we implement each system
 import HUDSystem from '../components/ui/hud/HUDSystem.js';
 import CombatSystem from '../components/ui/combat/CombatSystem.js';
-// import { NotificationSystem } from '../components/ui/notifications/NotificationSystem.js';
+import NotificationSystem from '../components/ui/notifications/NotificationSystem.js';
 // import { ScreenManager } from '../components/ui/screens/ScreenManager.js';
 // import { MarkerSystem } from '../components/ui/markers/MarkerSystem.js';
 // import { ProgressionSystem } from '../components/ui/progression/ProgressionSystem.js';
@@ -102,7 +102,7 @@ export class UIManager {
         this.systems = {
             hud: new HUDSystem(this.world),
             combat: new CombatSystem(this.world),
-            notifications: { init: () => {}, update: () => {} },
+            notifications: new NotificationSystem(this.world),
             screens: { init: () => {}, update: () => {} },
             markers: { init: () => {}, update: () => {} },
             progression: { init: () => {}, update: () => {} },
@@ -110,7 +110,32 @@ export class UIManager {
                 damage: { init: () => {}, update: () => {} },
                 weather: { init: () => {}, update: () => {} },
                 screenShake: { init: () => {}, update: () => {} },
-                footsteps: { init: () => {}, update: () => {} }
+                // Note: FootstepIndicator is now handled by CombatSystem
+                footsteps: { 
+                    init: () => {
+                        if (EventManager && this.systems.combat?.footstepIndicator) {
+                            console.log('Registering footstep event handlers');
+                            
+                            // Listen for entity footstep events and pass to combat system
+                            EventManager.on('entity:footstep', (data) => {
+                                if (this.systems.combat) {
+                                    // Extract the info we need for FootstepIndicator
+                                    const footstepData = {
+                                        angle: data.angle,
+                                        distance: data.distance,
+                                        isEnemy: data.isEnemy || !data.isFriendly, // Default to enemy if not specified
+                                        count: data.count || 1, // Default to single footstep
+                                        entityId: data.entityId
+                                    };
+                                    
+                                    // Pass to combat system's footstep indicator
+                                    this.systems.combat.footstepIndicator.showFootstepFrom(footstepData);
+                                }
+                            });
+                        }
+                    }, 
+                    update: () => {} 
+                }
             },
             debug: { init: () => {}, update: () => {} }
         };
@@ -329,11 +354,12 @@ export class UIManager {
      * Add notification to the notification system
      * @param {String} text - Notification text
      * @param {String} type - Notification type (info, warning, error, success)
+     * @param {Object} options - Additional notification options
      * @return {UIManager} This UIManager instance
      */
-    addNotification(text, type = 'info') {
+    addNotification(text, type = 'info', options = {}) {
         if (this.systems.notifications?.addNotification) {
-            this.systems.notifications.addNotification(text, type);
+            this.systems.notifications.addNotification(text, type, options);
         } else {
             console.log(`[Notification] ${type}: ${text}`);
         }
@@ -345,13 +371,100 @@ export class UIManager {
      * Show a match event banner
      * @param {String} text - Event text
      * @param {String} className - CSS class for styling
+     * @param {Object} options - Additional banner options
      * @return {UIManager} This UIManager instance
      */
-    showMatchEvent(text, className = '') {
+    showMatchEvent(text, className = '', options = {}) {
         if (this.systems.notifications?.showMatchEvent) {
             this.systems.notifications.showMatchEvent(text, className);
         } else {
             console.log(`[Match Event] ${text}`);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Show an event banner
+     * @param {String} text - Banner text
+     * @param {String} type - Banner type: 'default', 'objective', 'alert', 'success', 'danger'
+     * @param {Object} options - Additional options (title, subtitle, duration)
+     * @return {UIManager} This UIManager instance
+     */
+    showBanner(text, type = 'default', options = {}) {
+        if (this.systems.notifications?.showBanner) {
+            this.systems.notifications.showBanner(text, type, options);
+        } else {
+            console.log(`[Banner] ${type}: ${text}`);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Show a round outcome banner (victory, defeat, draw)
+     * @param {String} outcome - The outcome: 'victory', 'defeat', or 'draw'
+     * @param {String} subtitle - Optional subtitle text
+     * @return {UIManager} This UIManager instance
+     */
+    showRoundOutcome(outcome, subtitle = '') {
+        if (this.systems.notifications?.showRoundOutcome) {
+            this.systems.notifications.showRoundOutcome(outcome, subtitle);
+        } else {
+            console.log(`[Round Outcome] ${outcome}: ${subtitle}`);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Show an achievement notification
+     * @param {Object} achievement - Achievement data object
+     * @return {UIManager} This UIManager instance
+     */
+    showAchievement(achievement) {
+        if (this.systems.notifications?.showAchievement) {
+            this.systems.notifications.showAchievement(achievement);
+        } else {
+            console.log(`[Achievement] ${achievement.title}: ${achievement.description}`);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Test method to simulate a footstep at a given angle and distance
+     * For development/debugging only
+     * 
+     * @param {Object} options - Footstep options
+     * @param {number} options.angle - Direction angle in degrees (0-360)
+     * @param {number} options.distance - Distance in world units
+     * @param {boolean} options.isEnemy - Whether it's an enemy footstep (true) or friendly (false)
+     * @param {number} options.count - Number of footsteps in sequence
+     * @return {UIManager} This UIManager instance
+     */
+    testFootstepIndicator(options = {}) {
+        const defaults = {
+            angle: Math.floor(Math.random() * 360),
+            distance: Math.floor(Math.random() * 15) + 5,
+            isEnemy: true,
+            count: 1
+        };
+        
+        const footstepData = { ...defaults, ...options };
+        
+        if (this.systems.combat?.testFootstepIndicator) {
+            const intensity = footstepData.distance <= 4 ? 'high' : 
+                            footstepData.distance <= 12 ? 'medium' : 'low';
+                            
+            this.systems.combat.testFootstepIndicator(
+                intensity, 
+                footstepData.angle, 
+                footstepData.isEnemy, 
+                footstepData.count
+            );
+            
+            console.log(`Test footstep: ${footstepData.isEnemy ? 'Enemy' : 'Friendly'} at ${footstepData.angle}° (${footstepData.distance} units away)`);
         }
         
         return this;
