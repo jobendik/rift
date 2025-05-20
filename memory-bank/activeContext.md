@@ -1,165 +1,184 @@
-# RIFT: Active Context
+# Active Context: RIFT FPS UI/CSS Redesign
 
 ## Current Work Focus
 
-The current development focus is on restructuring the project to meet professional standards while continuing to refine the core systems of the RIFT game engine, with particular emphasis on:
+We are in the initial phase of the RIFT FPS UI/CSS redesign project, with a focus on the following priorities:
 
-1. **Project Restructuring** 
-   - Implementing a logical, hierarchical folder structure
-   - Establishing consistent naming conventions
-   - Updating all references to maintain functionality
-   - Creating comprehensive documentation for the new structure
+1. **Documentation & Planning**: Creating comprehensive Memory Bank documentation for project direction and requirements
+2. **Architecture Analysis**: Understanding the current monolithic UIManager.js and planning its decomposition 
+3. **CSS Structure Planning**: Organizing the CSS into a modular, maintainable system based on proposedCSSstructure.md
+4. **Component Architecture Design**: Creating a component-based UI architecture following patterns in proposedUIManagerStructure
 
-2. **Three.js Migration Fixes** 
-   - Addressing compatibility issues with recent Three.js versions
-   - Fixing colorSpace-related rendering issues
-   - Ensuring proper material and texture handling
-
-3. **UI Improvements**
-   - Implementing the advanced minimap system
-   - Refining HUD elements for better player feedback
-   - Enhancing pause screen functionality
-
-4. **Environmental System Enhancement**
-   - Refining the day/night cycle system
-   - Improving weather transitions and effects
-   - Optimizing environmental effects for performance
-
-5. **Physics and Navigation**
-   - Implementing more robust collision detection
-   - Optimizing navigation mesh performance
-   - Improving path planning for AI entities
-
-6. **Game Loop Stability**
-   - Ensuring consistent frame rate across different devices
-   - Implementing better error handling and recovery
-   - Optimizing the update cycle for complex scenes
+After reviewing the source files, we now have a clear understanding of the current implementation and the proposed architecture. The monolithic UIManager.js is feature-rich but lacks proper separation of concerns, while the proposed structure provides a clear path to modernizing the UI architecture.
 
 ## Recent Changes
 
-### Project Restructuring
-- Implemented a professional folder structure with logical organization
-- Created a comprehensive component-based UI organization
-- Migrated minimap system to new structure with improved documentation
-- Updated asset management utilities with enhanced path resolution
-- Established consistent naming conventions across the project
-- Implemented proper module exports for cleaner imports
-- Migrated pauseScreen.js to new UI structure under src/components/ui/screens
-- Created index.js files to facilitate modular imports across component directories
-- Updated main.js references to use new component paths
-- Fixed module loading issues by eliminating dynamic imports in favor of top-level imports
+As this is the project initialization phase, there have been no code changes yet. The following documentation has been established:
 
-### Three.js Compatibility Updates
-- Fixed SRGBColorSpace definition for newer Three.js versions
-- Created wrappers around TextureLoader and GLTFLoader to fix colorSpace issues
-- Implemented proper texture handling for PBR materials
-- Ensured lighting and shadow compatibility with current Three.js standards
-
-### Enhanced Environmental System
-- Implemented smooth transitions between different times of day
-- Created a more sophisticated weather system with multiple weather types
-- Added visual effects including rain particles, cloud sprites, and lightning
-- Improved fog and atmospheric effects based on weather conditions
-
-### UI System Improvements
-- Designed a new minimap integration framework
-- Enhanced loading screen with better progress indicators
-- Improved pause screen handling with proper fullscreen and pointer lock management
-- Added error recovery mechanisms for asset loading failures
-
-### Control System Refinements
-- Enhanced pointer lock handling for better browser compatibility
-- Improved first-person controls responsiveness
-- Added fallback mechanisms for different input methods
-- Fixed issues with keyboard and mouse input synchronization
-
-## Active Decisions and Considerations
-
-### Architecture Evolution
-- Deciding whether to further separate rendering from game logic
-- Considering the implementation of a more formal component-entity system
-- Evaluating performance costs of current architectural decisions
-- Exploring potential refactoring to improve code organization
-
-### Performance Optimizations
-- Analyzing frame rate bottlenecks across different devices
-- Evaluating the cost-benefit of various visual effects
-- Considering different LOD (Level of Detail) strategies
-- Exploring more efficient asset loading and management approaches
-
-### Feature Prioritization
-- Determining which gameplay features provide the most value
-- Balancing visual quality against performance
-- Evaluating which AI improvements would most enhance gameplay
-- Deciding on which browser compatibilities to prioritize
-
-### Technical Debt
-- Identifying areas requiring refactoring
-- Prioritizing bug fixes vs. new feature development
-- Addressing inconsistencies in coding patterns
-- Planning for long-term maintainability
+1. **Project Brief**: Core requirements, goals, and success criteria
+2. **Product Context**: Project rationale and intended functionality
+3. **System Patterns**: Architectural approach and key technical decisions 
+4. **Tech Context**: Technologies, constraints, and technical opportunities
+5. **Active Context**: Current work focus and next steps
+6. **Progress**: Project status tracking
+7. **.clinerules**: Project guidelines and standards
 
 ## Next Steps
 
-### Short-term Goals (Current Sprint)
-1. Complete Three.js migration fixes for all rendering systems
-2. Finalize and integrate the advanced minimap system
-3. Fix remaining collision detection issues in complex geometry
-4. Enhance enemy AI pathfinding in dynamic environments
-5. Optimize the weather effect system for better performance
+The immediate next steps in the project are:
 
-### Medium-term Goals (Next 2-3 Sprints)
-1. Implement a more sophisticated weapon feedback system
-2. Enhance the UI with better visual feedback during gameplay
-3. Improve audio spatializion and environment-based sound effects
-4. Add more diverse enemy behaviors and tactics
-5. Create a more dynamic lighting system for atmospheric effects
+1. **Create core architecture**:
+   - Implement `UIComponent` base class as a foundation for all UI elements
+   - Create `EventManager` for standardized component communication
+   - Develop `DOMFactory` for consistent DOM element creation
+   - Establish `UIManager` as an orchestrator rather than implementer
 
-### Long-term Goals
-1. Explore potential for multiplayer capabilities
-2. Implement a more sophisticated level progression system
-3. Develop tools for easier content creation and level design
-4. Investigate possibilities for cross-platform deployment
-5. Create a more comprehensive game progression structure
+2. **Establish CSS foundation**:
+   - Create core variables file with color scheme, spacing, and typography
+   - Set up modular component-specific CSS files
+   - Implement animation system with keyframes in a central location
+   - Create utility classes for common patterns
 
-## Development Workflow
+3. **Begin incremental refactoring**:
+   - Start with self-contained UI elements like the health and ammo displays
+   - Extract damage and hit indication systems into their own components
+   - Refactor notification system
+   - Implement progression system (XP, levels) as a dedicated component
 
-### Current Branching Strategy
-- `main` - Stable production code
-- `develop` - Integration branch for feature work
-- Feature branches for specific implementations
-- Hotfix branches for critical issues
+4. **Advanced feature implementation**:
+   - Enhance damage feedback with better directional indicators
+   - Improve crosshair system with more contextual feedback
+   - Create a more engaging kill feed and achievement system
+   - Implement weather effects and environmental feedback
 
-### Testing Approach
-- Manual testing of gameplay mechanics
-- Performance profiling on different hardware
-- Browser compatibility testing
-- Ad-hoc testing of new features
+## Active Decisions and Considerations
 
-### Deployment Process
-- Local development with Vite dev server
-- Production builds via npm build script
-- Manual deployment to hosting environments
-- Version tracking via git tags
+### Active Architectural Decisions
 
-## Collaboration Focus
+1. **Component Granularity**
+   - Question: How fine-grained should components be?
+   - Current Thinking: Each logical UI element (health bar, ammo display, etc.) should be its own component, but avoid over-atomization that creates unnecessary complexity.
+   - Impact: Affects maintenance overhead, reusability, and testing strategy.
 
-### Team Communication
-- Regular code reviews for quality assurance
-- Design discussions for major feature implementations
-- Technical documentation updates for knowledge sharing
-- Performance and issue tracking
+2. **Event System Design**
+   - Question: How should we structure the event system?
+   - Current Thinking: Implement a centralized EventManager with namespaced event types, standardized event objects, and automatic cleanup on component disposal.
+   - Impact: Critical for ensuring components can communicate without tight coupling.
 
-### External Dependencies
-- Monitoring Three.js and Yuka.js for updates and breaking changes
-- Evaluating new web APIs that could enhance functionality
-- Tracking browser vendor implementations of relevant features
-- Considering additional libraries only when necessary
+3. **DOM Management Strategy**
+   - Question: How should components interact with the DOM?
+   - Current Thinking: Each component should own its DOM elements and have responsibility for creating, updating, and disposing of them, facilitated by a central DOMFactory.
+   - Impact: Affects rendering performance and prevents "DOM thrashing."
 
-## Known Challenges
+4. **CSS Architecture**
+   - Question: How should we organize CSS for maximum maintainability?
+   - Current Thinking: Component-specific CSS files with BEM methodology, CSS variables for theming, and utility classes for common patterns.
+   - Impact: Ensures styling changes don't cause unintended side effects.
 
-1. **Browser Compatibility** - Ensuring consistent experience across different browsers
-2. **Performance Optimization** - Balancing visual quality with performance
-3. **Mobile Support** - Adapting the experience for touch controls and smaller screens
-4. **Asset Management** - Optimizing loading and memory usage for game assets
-5. **AI Complexity** - Balancing sophisticated behavior with performance constraints
+### Implementation Considerations
+
+1. **Refactoring Approach**
+   - Question: How do we refactor while maintaining a working game?
+   - Current Thinking: Create adapter layer that maps old UIManager API to new component system, allowing incremental migration.
+   - Impact: Enables continuous development without breaking existing functionality.
+
+2. **Performance Monitoring**
+   - Question: How do we ensure new UI doesn't impact game performance?
+   - Current Thinking: Implement performance tracking in debug mode, set budgets for UI operations, use efficient rendering techniques.
+   - Impact: Critical for maintaining smooth gameplay with enhanced visual effects.
+
+3. **Feature Priorities**
+   - Question: Which UI enhancements should be implemented first?
+   - Current Thinking: Focus on core gameplay feedback (health, ammo, hit indicators) before adding more "nice-to-have" features.
+   - Impact: Ensures the most important elements are polished before secondary features.
+
+4. **Animation Strategy**
+   - Question: How do we handle animations efficiently?
+   - Current Thinking: Use CSS animations for simple transitions, requestAnimationFrame for complex animations, avoid JS animations that block the main thread.
+   - Impact: Significant for perceived performance and visual polish.
+
+## Current Challenges
+
+1. **Complex UIManager**
+   - The current UIManager.js has extensive functionality (2000+ lines) that needs careful decomposition
+   - Many methods reference each other, creating complex dependencies
+   - Directly modifies DOM elements throughout the code
+   - Manages both 3D (Three.js) and 2D (DOM) elements
+
+2. **Resource Management**
+   - Current implementation doesn't properly clean up resources, potentially causing memory leaks
+   - Event listeners need systematic tracking and removal
+   - DOM elements are created but not always properly removed
+
+3. **State Management**
+   - Game state is often directly accessed instead of being properly observed
+   - UI updates are triggered both by events and direct method calls
+   - Need to standardize the flow of data into UI components
+
+4. **Mixed Rendering Approaches**
+   - The current implementation mixes Three.js rendering (for sprites) and DOM manipulation
+   - Need to determine the best approach for different UI elements
+
+## Integration Touchpoints
+
+1. **World Object**
+   - Core game state container that UIManager receives in constructor
+   - Contains references to player, enemies, and game systems
+   - New architecture needs to maintain this integration point
+
+2. **Player Object**
+   - Contains health, weapons, position information
+   - UI needs to observe changes to player state
+
+3. **WeaponSystem**
+   - Manages weapons and ammunition
+   - UI needs to reflect current weapon and ammo status
+
+4. **Asset Manager**
+   - Loads textures and other assets used by the UI
+   - New component system needs access to these resources
+
+5. **Input Handling**
+   - Current UIManager handles many input events directly
+   - Need to create a dedicated input handler component
+
+## Feature Inventory
+
+Based on the current UIManager.js, we need to maintain and enhance these key features:
+
+1. **Core HUD Elements**
+   - Health display with low/critical states
+   - Ammo counter with magazine visualization
+   - Crosshair system with context-aware behavior
+   - Minimap with player and enemy positions
+   - Compass for orientation
+
+2. **Feedback Systems**
+   - Hit indicators (when player hits enemies)
+   - Damage indicators (when player takes damage)
+   - Kill confirmations and kill streaks
+   - Floating damage numbers
+   - Screen effects (damage flash, healing glow)
+
+3. **Notification Systems**
+   - Kill feed with weapon icons
+   - Event banners for significant events
+   - Contextual notifications
+   - Achievement popups
+
+4. **Menu Systems**
+   - Weapon wheel for selection
+   - World map for navigation
+   - Mission briefing screen
+   - Round summary/statistics
+
+5. **Progression System**
+   - Player level and XP tracking
+   - Experience bar visualization
+   - Rank display and progression
+
+6. **Environmental Elements**
+   - Weather effects (rain, etc.)
+   - Footstep indicators
+   - Objective markers
+   - Power-up status indicators

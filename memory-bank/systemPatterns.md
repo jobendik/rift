@@ -1,255 +1,396 @@
-# RIFT: System Patterns
+# System Patterns: RIFT FPS UI/CSS Redesign
 
-## High-Level Architecture
+## System Architecture
 
-RIFT implements a hybrid component-entity architecture that integrates Three.js (for rendering) with Yuka.js (for game logic and AI). This architecture creates a clean separation between visual representation and game logic, allowing each system to focus on its specific responsibilities.
+The redesigned RIFT FPS UI system employs a component-based architecture with clear separation of concerns and well-defined communication patterns. The architecture consists of these major elements:
 
+### Core Components
 ```mermaid
 flowchart TD
-    World["World (Central Controller)"] --> EntityManager
-    World --> AssetManager
-    World --> SpawningManager
-    World --> UIManager
-    World --> PathPlanner
-    World --> Sky["EnvironmentSystem (Sky/Weather)"]
+    World[World] --> UIManager
+    UIManager --> Components
+    UIManager --> Systems
     
-    EntityManager --> Entities["Game Entities"]
-    Entities --> Player
-    Entities --> Enemies
-    Entities --> Items
-    Entities --> Level
+    subgraph Components
+        UIComponent[UIComponent Base]
+        HUD[HUD Components]
+        Menus[Menu Components]
+        Notifications[Notification Components]
+        Feedback[Feedback Components]
+    end
     
-    AssetManager --> Models
-    AssetManager --> Textures
-    AssetManager --> Audio
-    AssetManager --> Animations
+    subgraph Systems
+        EventManager[EventManager]
+        DOMFactory[DOMFactory]
+        InputHandler[InputHandler]
+        Renderer[UI Renderer]
+    end
     
-    SpawningManager --> Spawning["Spawn Points"]
-    SpawningManager --> ItemManagement["Item Management"]
-    
-    UIManager --> HUD["Heads-Up Display"]
-    UIManager --> Menus
-    UIManager --> MessageSystem
-    
-    Player --> WeaponSystem
-    Player --> Controls["FirstPersonControls"]
-    
-    Enemies --> AI["Goal-Oriented AI"]
-    AI --> Goals
-    AI --> Evaluators
-    AI --> Perception
-    AI --> Memory
-    
-    PathPlanner --> NavMesh
-    PathPlanner --> CostTable
+    EventManager --> Components
+    DOMFactory --> Components
+    InputHandler --> EventManager
+    Components --> Renderer
 ```
 
-## Core System Components
-
-### World Class
-
-The `World` class serves as the central controller for the entire game, responsible for:
-- Initializing and managing all subsystems
-- Coordinating the game loop
-- Managing scene setup and rendering
-- Handling entity lifecycle
-- Providing centralized access to shared resources
-
-Pattern: **Facade Pattern** - Provides a simplified interface to the complex underlying systems.
-
-### Entity-Component Relationship
-
-A key architectural pattern in RIFT is the relationship between logical entities and their visual representations:
-
+### Component Hierarchy
 ```mermaid
-flowchart LR
-    YukaEntity["Yuka Entity (Logic)"] --> SyncFunction["Sync Function"]
-    ThreeObject["Three.js Object (Visual)"] --> SyncFunction
-    SyncFunction --> EntityRenderComponent["Entity Render Component"]
+flowchart TD
+    UIComponent[UIComponent Base] --> HUD[HUD Components]
+    UIComponent --> Menus[Menu Components]
+    UIComponent --> Notifications[Notification Components]
+    UIComponent --> Feedback[Feedback Components]
+    
+    HUD --> Health[HealthDisplay]
+    HUD --> Ammo[AmmoDisplay]
+    HUD --> Minimap[MinimapSystem]
+    HUD --> Crosshair[CrosshairSystem]
+    
+    Menus --> WeaponWheel[WeaponWheel]
+    Menus --> WorldMap[WorldMap]
+    Menus --> RoundSummary[RoundSummary]
+    Menus --> MissionBriefing[MissionBriefing]
+    
+    Notifications --> KillFeed[KillFeed]
+    Notifications --> EventBanner[EventBanner]
+    Notifications --> Achievements[AchievementSystem]
+    Notifications --> Messages[NotificationManager]
+    
+    Feedback --> HitMarkers[HitIndicator]
+    Feedback --> DamageEffects[DamageEffects]
+    Feedback --> ScreenShake[ScreenShakeSystem]
+    Feedback --> DamageNumbers[DamageNumbers]
 ```
 
-Key implementation:
+## Key Design Patterns
+
+### Component Pattern
+
+All UI elements extend a common `UIComponent` base class that provides:
+- Standard lifecycle methods (init, update, render, dispose)
+- Event subscription management
+- DOM element creation and management
+- Consistent API for state changes
+
 ```javascript
-entity.setRenderComponent(threeJsObject, syncFunction);
+class UIComponent {
+    constructor(options = {}) {
+        this.isInitialized = false;
+        this.isVisible = false;
+        this.options = options;
+        this.elements = {};
+        this._eventSubscriptions = [];
+    }
+    
+    // Lifecycle methods
+    init() { this.isInitialized = true; return this; }
+    update(delta) { return this; }
+    render() { return this; }
+    dispose() { this._cleanupEvents(); return this; }
+    
+    // Event handling
+    subscribe(eventType, handler) {
+        const subscription = EventManager.subscribe(eventType, handler);
+        this._eventSubscriptions.push(subscription);
+        return subscription;
+    }
+    
+    _cleanupEvents() {
+        this._eventSubscriptions.forEach(sub => EventManager.unsubscribe(sub));
+        this._eventSubscriptions = [];
+    }
+    
+    // Visibility
+    show() { this.isVisible = true; return this; }
+    hide() { this.isVisible = false; return this; }
+}
 ```
 
-Pattern: **Bridge Pattern** - Decouples abstraction (game entity) from implementation (visual representation).
+### Observer Pattern (Event System)
 
-### Game Entity Hierarchy
+The event system facilitates communication between components without creating tight coupling:
 
-```mermaid
-flowchart TD
-    GameEntity["GameEntity (Base)"] --> MovingEntity
-    GameEntity --> Level
-    GameEntity --> Items
+```javascript
+class EventManager {
+    static _events = new Map();
+    static _subscriptionId = 0;
     
-    MovingEntity --> Vehicle
-    MovingEntity --> Player
+    static subscribe(eventType, handler) {
+        const id = this._subscriptionId++;
+        
+        if (!this._events.has(eventType)) {
+            this._events.set(eventType, new Map());
+        }
+        
+        this._events.get(eventType).set(id, handler);
+        
+        return { id, eventType };
+    }
     
-    Vehicle --> Enemy
+    static unsubscribe(subscription) {
+        if (!subscription || !subscription.eventType) return false;
+        
+        const eventHandlers = this._events.get(subscription.eventType);
+        if (eventHandlers) {
+            return eventHandlers.delete(subscription.id);
+        }
+        return false;
+    }
     
-    Items --> HealthPack
-    Items --> WeaponItem
+    static emit(eventType, data) {
+        const eventHandlers = this._events.get(eventType);
+        if (!eventHandlers) return;
+        
+        eventHandlers.forEach(handler => {
+            try {
+                handler(data);
+            } catch (error) {
+                console.error(`Error in event handler for ${eventType}:`, error);
+            }
+        });
+    }
+}
 ```
 
-Pattern: **Composite Pattern** - Allows building complex entity hierarchies while treating individual objects and compositions uniformly.
+### Factory Pattern
 
-## Key Subsystems
+The `DOMFactory` creates DOM elements with consistent styling and structure:
 
-### AI Architecture
-
-RIFT implements a sophisticated AI system using Goal-Oriented Action Planning (GOAP):
-
-```mermaid
-flowchart TD
-    AI["Enemy AI"] --> Brain["Think Component"]
-    Brain --> Evaluators
-    Brain --> Goals
+```javascript
+class DOMFactory {
+    static createElement(type, options = {}) {
+        const element = document.createElement(type);
+        
+        if (options.className) {
+            const classNames = Array.isArray(options.className) 
+                ? options.className 
+                : options.className.split(' ');
+            element.classList.add(...classNames);
+        }
+        
+        if (options.id) element.id = options.id;
+        if (options.text) element.textContent = options.text;
+        if (options.html) element.innerHTML = options.html;
+        
+        if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+                element.setAttribute(key, value);
+            });
+        }
+        
+        if (options.styles) {
+            Object.entries(options.styles).forEach(([prop, value]) => {
+                element.style[prop] = value;
+            });
+        }
+        
+        if (options.parent) options.parent.appendChild(element);
+        
+        return element;
+    }
     
-    Evaluators --> AttackEval["AttackEvaluator"]
-    Evaluators --> ExploreEval["ExploreEvaluator"]
-    Evaluators --> GetHealthEval["GetHealthEvaluator"]
-    Evaluators --> GetWeaponEval["GetWeaponEvaluator"]
-    
-    Goals --> MainGoals["Top-Level Goals"]
-    Goals --> SubGoals["Tactical Sub-Goals"]
-    
-    MainGoals --> Attack["AttackGoal"]
-    MainGoals --> Explore["ExploreGoal"]
-    MainGoals --> GetItem["GetItemGoal"]
-    MainGoals --> Hunt["HuntGoal"]
-    
-    SubGoals --> Charge["ChargeGoal"]
-    SubGoals --> Dodge["DodgeGoal"]
-    SubGoals --> FindPath["FindPathGoal"]
-    SubGoals --> FollowPath["FollowPathGoal"]
-    SubGoals --> SeekPosition["SeekToPositionGoal"]
-    
-    AI --> Perception["Perception Systems"]
-    Perception --> Vision
-    Perception --> Memory
-    Perception --> TargetSystem
+    static createContainer(className, options = {}) {
+        return this.createElement('div', {
+            className: `rift-container ${className}`,
+            ...options
+        });
+    }
+}
 ```
 
-Pattern: **Strategy Pattern** - Enables selecting behavior algorithms (goals) at runtime based on context.
+### Adapter Pattern
 
-### Navigation System
+To facilitate incremental migration, an adapter layer maintains compatibility with the original UIManager API:
 
-```mermaid
-flowchart TD
-    NavSystem["Navigation System"] --> NavMesh["Navigation Mesh"]
-    NavSystem --> PathPlanner["Path Planner"]
-    NavSystem --> CostTable["Path Cost Table"]
-    NavSystem --> SpatialIndex["Spatial Index"]
+```javascript
+class UIManagerAdapter {
+    constructor(newUIManager) {
+        this.newUIManager = newUIManager;
+        this._setupAdapters();
+    }
     
-    PathPlanner --> PathTask["Path Planning Tasks"]
-    PathPlanner --> AsyncQueue["Async Task Queue"]
-    
-    NavSystem --> SteeringBehaviors["Steering Behaviors"]
-    SteeringBehaviors --> FollowPath["FollowPathBehavior"]
-    SteeringBehaviors --> OnPath["OnPathBehavior"]
-    SteeringBehaviors --> Seek["SeekBehavior"]
+    _setupAdapters() {
+        // Map old API methods to new component methods
+        this.updateHealthStatus = (percentage) => {
+            this.newUIManager.getComponent('healthDisplay').updateHealth(percentage);
+        };
+        
+        this.updateAmmoStatus = (roundsLeft, totalAmmo) => {
+            this.newUIManager.getComponent('ammoDisplay').updateAmmo(roundsLeft, totalAmmo);
+        };
+        
+        // ... other adapter methods
+    }
+}
 ```
 
-Pattern: **Command Pattern** - Encapsulates path planning requests as objects (tasks) for asynchronous execution.
+## CSS Architecture
 
-### Weapon System
+### BEM Methodology with Namespacing
 
-```mermaid
-flowchart TD
-    WeaponSystem --> WeaponBase["Weapon (Base Class)"]
-    WeaponBase --> Blaster
-    WeaponBase --> Shotgun
-    WeaponBase --> AssaultRifle
-    
-    WeaponSystem --> ProjectileSystem["Projectile System"]
-    ProjectileSystem --> Bullet
-    ProjectileSystem --> RayIntersection["Ray Intersection Logic"]
-    
-    WeaponSystem --> WeaponState["Weapon State Management"]
-    WeaponState --> Ready
-    WeaponState --> Firing
-    WeaponState --> Reloading
-    WeaponState --> Switching
+All CSS classes follow BEM (Block, Element, Modifier) methodology with a `rift-` prefix:
+
+```css
+.rift-health { /* Block */ }
+.rift-health__bar { /* Element */ }
+.rift-health__bar--critical { /* Modifier */ }
 ```
 
-Pattern: **Template Method Pattern** - Defines the skeleton of weapon behavior in the base class, with specifics implemented in subclasses.
+### CSS Variables for Theming
 
-### Environmental System
+CSS variables provide consistent theming across components:
 
-```mermaid
-flowchart TD
-    EnvironmentSystem --> Sky
-    EnvironmentSystem --> Weather
-    EnvironmentSystem --> Effects
-    
-    Sky --> TimeOfDay["Time of Day States"]
-    Sky --> SkyTransitions["Sky Transitions"]
-    Sky --> LightingChanges["Lighting Changes"]
-    
-    Weather --> WeatherTypes["Weather Types"]
-    WeatherTypes --> Clear
-    WeatherTypes --> Cloudy
-    WeatherTypes --> Rainy
-    WeatherTypes --> Storm
-    WeatherTypes --> Foggy
-    
-    Effects --> Rain["Rain Particles"]
-    Effects --> Clouds["Cloud Sprites"]
-    Effects --> Lightning["Lightning Effect"]
-    Effects --> Fog["Fog Settings"]
+```css
+:root {
+  /* Color Scheme */
+  --primary-color: #e63946;
+  --primary-glow: rgba(230, 57, 70, 0.7);
+  --secondary-color: #33a8ff;
+  --secondary-glow: rgba(51, 168, 255, 0.7);
+  --success-color: #4caf50;
+  --success-glow: rgba(76, 175, 80, 0.7);
+  --warning-color: #ff9800;
+  --warning-glow: rgba(255, 152, 0, 0.7);
+  --danger-color: #f44336;
+  --danger-glow: rgba(244, 67, 54, 0.7);
+  
+  /* UI Sizing */
+  --hud-padding: 12px;
+  --border-radius: 5px;
+  
+  /* Fonts */
+  --font-hud: 'Rajdhani', 'Orbitron', sans-serif;
+  --font-display: 'Orbitron', 'Rajdhani', sans-serif;
+  --font-body: 'Exo 2', 'Rajdhani', sans-serif;
+}
 ```
 
-Pattern: **State Pattern** - Allows the environment to alter behavior when its internal state changes.
+### Modular File Structure
 
-## Data Flow Architecture
+CSS is organized into modular files following a clear directory structure:
 
-```mermaid
-flowchart LR
-    Input["User Input"] --> Controls
-    Controls --> Player
-    Player --> EntityManager
-    
-    EntityManager <--> Physics["Physics/Collision"]
-    EntityManager <--> AI["AI Systems"]
-    
-    EntityManager --> RenderSync["Render Sync"]
-    RenderSync --> Renderer["Three.js Renderer"]
-    
-    AssetManager --> EntityManager
-    AssetManager --> Renderer
-    
-    World --> UpdateLoop["Update Loop"]
-    UpdateLoop --> EntityManager
-    UpdateLoop --> UIManager
-    UpdateLoop --> EnvironmentSystem
-    UpdateLoop --> Renderer
+```
+/styles
+│
+├── /core
+│   ├── _variables.css       # CSS variables, color schemes, fonts
+│   ├── _reset.css           # Base reset styles  
+│   ├── _typography.css      # Font definitions and text styles
+│   ├── _animations.css      # All keyframe animations
+│   └── _layout.css          # Basic layout styles and containers
+│
+├── /components
+│   ├── /hud
+│   │   ├── _health.css      # Health display styles
+│   │   ├── _ammo.css        # Ammo counter styles
+│   │   └── ... other HUD components
+│   ├── /combat
+│   │   ├── _damage.css      # Damage effects and numbers
+│   │   └── ... other combat UI components
+│   └── ... other component categories
+│
+└── main.css                 # Main file that imports all others
 ```
 
-Pattern: **Observer Pattern** - Components observe and react to changes in other parts of the system.
+## Component Communication
 
-## Key Technical Decisions
+### Event-Driven Communication
 
-### Rendering and Performance
+Components communicate through the central EventManager using namespaced event types:
 
-1. **Asynchronous Processing**
-   - Path planning tasks executed asynchronously to prevent frame drops
-   - Asset loading with progress indicators for better UX
-   - Frame-independent physics and movement calculations
+```
+health:changed       // Health value has changed
+health:critical      // Health has reached critical level
+health:restored      // Health has been restored to non-critical level
 
-2. **Spatial Optimization**
-   - Cell-space partitioning for efficient entity management
-   - Navigation mesh for optimized pathfinding
-   - Level of detail (LOD) based on distance and visibility
+ammo:changed         // Ammo count has changed
+ammo:depleted        // Out of ammo
+ammo:reloading       // Reloading in progress
+ammo:reloaded        // Reload complete
 
-3. **Memory Management**
-   - Asset pooling for frequently used objects
-   - Texture and model optimization
-   - Efficient audio resource handling
-   - Cleaning up unused resources
+combat:hit           // Player hit an enemy
+combat:hit:critical  // Player scored a critical hit
+combat:damage:taken  // Player took damage
+combat:kill          // Player killed an enemy
 
-4. **Rendering Pipeline**
-   - PBR (Physically Based Rendering) materials
-   - Dynamic shadow mapping
-   - Post-processing effects
-   - SRGBColorSpace for accurate color reproduction
+ui:notification      // Show a notification
+ui:achievement       // Show an achievement
+ui:screen:change     // Change the active screen
+```
+
+The event data structure is standardized for each event type:
+
+```javascript
+// Example event data
+{
+  type: 'health:changed',  // Event type (redundant but helpful)
+  value: 75,               // New health value
+  previous: 100,           // Previous health value
+  timestamp: 1589302293,   // Time of event
+  source: 'enemy_damage'   // Source of health change
+}
+```
+
+## Rendering Strategy
+
+### DOM-Based UI Elements
+
+Most UI elements use DOM manipulation for:
+- HUD elements (health, ammo, etc.)
+- Menus and screens
+- Notifications and messages
+- Persistent UI components
+
+### Canvas/WebGL Elements
+
+Three.js rendering is used for:
+- 3D elements that integrate with the game world
+- Performance-critical particle effects
+- Complex animations that would be inefficient with DOM
+- Elements that need to sync precisely with the game world
+
+## Performance Patterns
+
+### DOM Optimization
+
+To prevent layout thrashing and optimize performance:
+- Batch DOM operations using DocumentFragments
+- Use CSS transforms and opacity for animations
+- Minimize reflows by reading layout properties all at once
+- Use requestAnimationFrame for visual updates
+- Implement visibility checks to avoid updating offscreen elements
+
+### Event Optimization
+
+To prevent memory leaks and improve performance:
+- All event listeners are tracked and removed during component disposal
+- Event handlers are debounced for frequently firing events
+- Event data is kept minimal to reduce overhead
+- Event types are categorized by priority
+
+### Animation Strategy
+
+For optimal animation performance:
+- Use CSS animations for simple transitions (opacity, transform)
+- Use requestAnimationFrame for complex JS-driven animations
+- Prefer transform and opacity properties for animations
+- Implement animation budgets for simultaneous effects
+- Use will-change CSS property to optimize browser rendering
+
+## Testing Approach
+
+1. **Component Testing**: Each UI component is tested in isolation
+2. **Interaction Testing**: Event communication between components is verified
+3. **Visual Regression Testing**: UI appearance is compared against baseline
+4. **Performance Testing**: UI is benchmarked for rendering performance
+5. **Memory Testing**: Components are checked for memory leaks
+
+## Implementation Path
+
+The implementation follows a gradual migration path:
+
+1. Create the core infrastructure (UIComponent, EventManager, DOMFactory)
+2. Implement adapter layer that maps old UIManager to new components
+3. Build core components one by one, replacing UIManager functionality
+4. Refactor CSS following the new structure
+5. Add enhanced features that weren't in the original implementation
+6. Optimize performance and address edge cases

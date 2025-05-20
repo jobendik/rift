@@ -1,162 +1,147 @@
-# RIFT Project Intelligence File
+# RIFT FPS UI/CSS Redesign Project Rules
 
-## Coding Conventions
+This file captures key project patterns, preferences, and learnings that will help guide development decisions and maintain consistency throughout the UI/CSS redesign process.
 
-### Naming Conventions
-- **Classes**: PascalCase (e.g., `PlayerController`, `AssetManager`)
-- **Methods/Functions**: camelCase (e.g., `updatePosition()`, `loadAsset()`)
-- **Variables**: camelCase (e.g., `currentHealth`, `weaponType`)
-- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`, `DEFAULT_SPEED`)
-- **File Names**: Match class name for classes (e.g., `PlayerController.js`)
-- **Private Properties**: Prefix with underscore (e.g., `_privateValue`)
+## Project Structure Guidelines
 
-### Structure Patterns
-- One primary class per file
-- Group related functionality in directories
-- Use index.js files for module exports when appropriate
-- Keep file sizes manageable (<500 lines when possible)
-- Order methods: constructor, lifecycle methods, event handlers, internal helpers
+### UI Component Organization
+- Each UI component should be in its own file within the appropriate subdirectory
+- Component hierarchy should be reflected in directory structure
+- Follow the pattern: `src/components/ui/[category]/[ComponentName].js`
+- Example: `src/components/ui/hud/HealthDisplay.js`
 
-### Design Patterns
-- **Bridge Pattern** for entity-renderer relationships
-- **Facade Pattern** for simplified subsystem access via World class
-- **Strategy Pattern** for enemy AI behaviors
-- **Command Pattern** for path planning tasks
-- **Observer Pattern** for event handling
-- **State Pattern** for managing environmental effects
+### CSS Structure
+- CSS files should mirror component structure
+- Use BEM naming convention with `rift-` prefix
+- Follow the pattern: `public/styles/components/[component-category].css`
+- Variables should be defined in `public/styles/variables.css`
 
-## Code Organization
+### Asset Naming and Organization
+- Images should use kebab-case: `damage-indicator-front.png`
+- Organize assets by type (textures, models, animations, etc.)
+- UI-specific assets should be in `public/assets/hud/`
 
-### Core Systems
-- **World**: Central controller - avoid direct manipulation of other systems
-- **EntityManager**: Always add/remove entities through this system
-- **AssetManager**: Handle all asset loading through this singleton
+## Code Style Preferences
 
-### Entity Relationships
-- Entity components communicate via direct method calls, not global events
-- Parent-child relationships managed through Yuka.js entity hierarchy
-- Visual representation always synced through the `sync` function
-- Always clean up entity resources on destruction
+### JavaScript Conventions
+- Use ES6+ syntax consistently
+- Class names should be PascalCase
+- Method and variable names should be camelCase
+- Constants should be UPPER_SNAKE_CASE
+- Prefer const over let when variable won't be reassigned
+- Use descriptive variable names - avoid abbreviations
+- Add JSDoc comments for all public methods
 
-### Error Handling
-- Wrap initialization code in try/catch blocks
-- Use console.error for critical failures
-- Provide fallbacks for non-critical failures
-- Include detailed error messages for debugging
+### CSS Conventions
+- Use BEM methodology for class naming
+- Class structure: `rift-[block]__[element]--[modifier]`
+- Example: `rift-health__bar--critical`
+- Use CSS variables for colors, spacing, and timing
+- Organize properties consistently: positioning → box model → typography → visual → animation
+- Use shorthand properties when applicable
 
-## Performance Patterns
+## Technical Implementation Patterns
 
-### Rendering Optimizations
-- Set `matrixAutoUpdate = false` on static objects
-- Use instanced meshes for repeated elements
-- Limit dynamic shadow casters
-- Implement LOD (Level of Detail) for complex models
-- Keep material count low by sharing materials
+### Component Architecture
+- All UI components should extend from base `UIComponent` class
+- Components should implement standard lifecycle methods:
+  - `init()` - Setup and initial rendering
+  - `update(delta)` - Handle regular updates
+  - `render()` - Update DOM representation
+  - `dispose()` - Clean up resources and event listeners
+- Each component should have a single responsibility
 
-### Memory Management
-- Pool frequently used objects (like projectiles)
-- Dispose of Three.js objects properly (geometries, materials, textures)
-- Unload unused assets when changing levels
-- Use sprite sheets instead of individual textures when possible
-- Pay attention to audio buffer management
+### Event Handling
+- Use central event bus for communication between components
+- Events should follow `namespace:action` naming pattern
+- Example: `health:changed`, `ammo:depleted`, `enemy:killed`
+- Always unsubscribe from events in component `dispose()` method
+- Include relevant data in event objects
 
-### Animation Handling
-- Use AnimationMixer for skeletal animations
-- Limit the number of active animations
-- Implement animation blending for smooth transitions
-- Store animation clips in the AssetManager
+### Performance Considerations
+- Batch DOM operations to prevent layout thrashing
+- Use CSS transforms and opacity for animations when possible
+- Debounce handlers for frequently occurring events
+- Use requestAnimationFrame for visual updates
+- Implement visibility checks to avoid updating offscreen elements
 
-## Testing and Debugging
+### State Management
+- Component state should be updated through clear interfaces
+- Avoid direct manipulation of DOM from outside owning component
+- Use data binding pattern for view updates
+- Keep source of truth in model objects when possible
 
-### Debug Mode
-- World.debug = true enables all debug helpers and orbit camera
-- Debug helpers should be conditionally created only when debug is true
-- Performance metrics are only collected in debug mode
-- Debug UI should be togglable without reloading
+## Game-Specific Patterns
 
-### Visual Debugging
-- Use colored console.log with proper prefixes for different systems
-- Create helper visualizations for pathfinding, vision, and collisions
-- Implement frame rate counter for performance monitoring
-- Add UUID labels for entity identification
+### Player Feedback
+- Visual feedback should match severity of event
+- Critical alerts (low health, danger) should use red/vibration
+- Positive feedback (pickups, kills) should use green/blue/gold
+- Directional indicators should clearly show source location
+- Always provide multiple feedback channels (visual + audio)
 
-## Implementation Notes
+### HUD Element Guidelines
+- Critical information (health, ammo) always visible
+- Secondary information should appear contextually
+- Keep screen edges clean except for essential information 
+- Center screen should remain mostly clear for gameplay
+- Use consistent iconography and color meaning
 
-### Three.js Integration
-- Always use SRGBColorSpace for textures and output 
-- Handle WebGLRenderer context loss events
-- Fix texture loading carefully due to migration issues
-- Use specific versions of Three.js to avoid breaking changes
+### Animation Standards
+- Enter animations: fade in + slide from edge/scale
+- Exit animations: quick fade out, minimal movement
+- Attention animations: pulse/glow, avoid excessive movement
+- Damage feedback: directional, intensity matches damage amount
+- Keep animations under 300ms for interface elements
+- Reserve longer animations for major achievements/events
 
-### Audio System
-- Use PositionalAudio for all in-game sounds
-- Clone audio sources before playing to allow overlapping sounds
-- Set appropriate reference distances for spatial audio
-- Adjust volume based on CONFIG settings
+## Development Workflow
 
-### Input Handling
-- Use the FirstPersonControls class for all player input
-- Handle pointer lock and fullscreen API differences between browsers
-- Implement input state tracking for smoother controls
-- Normalize input values for consistent movement speed
+### PowerShell Commands
+- Use PowerShell for all command-line operations on this project
+- Common commands:
+  - Start dev server: `npm run dev`
+  - Copy assets: `.\copyAssetsToPublic.ps1`
+  - Deploy build: `npm run build`
 
-### AI Behaviors
-- Enemy AI evaluators run at regular intervals (not every frame)
-- Vision checks use raycasting with appropriate frequency limitations
-- Path planning requests are queued and processed asynchronously
-- Memory system tracks entities even when out of sight
+### Testing Approach
+- Test components in isolation whenever possible
+- Create test scenarios for common gameplay states
+- Verify performance with browser dev tools
+- Test across multiple screen sizes
+- Check for memory leaks during prolonged use
+- Validate color contrast for accessibility
 
-## Common Challenges and Solutions
+### Implementation Order
+- Start with foundational components and work up
+- Order: Core architecture → HUD components → Notification system → Menu systems → Enhanced features
 
-### Browser Compatibility
-- Use feature detection rather than browser detection
-- Implement fallbacks for unsupported features
-- Test on multiple browsers for each major feature
-- Handle pointer lock differences between browsers carefully
-
-### Asset Loading
-- Provide clear loading progress indicators
-- Implement retry logic for failed asset loading
-- Use appropriate compression for different asset types
-- Consider preloading critical assets before gameplay starts
-
-### Navigation Mesh
-- Always validate positions against the navMesh
-- Use spatial index for efficient position queries
-- Maintain navMesh compatibility with level geometry
-- Handle edge cases where entities might leave the navMesh
-
-### Weather and Environment System
-- Environmental effects should degrade gracefully on lower-end hardware
-- Manage particle system counts based on performance
-- Implement smooth transitions between weather states
-- Position weather effects relative to the player for efficiency
-
-## Project-Specific Workflow
-
-### Development Cycle
-1. Implement core functionality
-2. Add debug visualization
-3. Test across performance scenarios
-4. Optimize critical paths
-5. Add polish and refinements
+## Specific Project Insights
 
 ### Critical Paths
-- Asset loading is the first bottleneck users encounter
-- Rendering performance is critical during combat sequences
-- Path planning can cause frame drops with many enemies
-- Weather transitions may cause temporary performance issues
+- UIManager is the central coordination point for all UI elements
+- Health and ammo displays are the most frequently updated elements
+- Damage indicators are critical for player survival feedback
+- Minimap system has custom rendering requirements
 
-### UI Integration
-- UI elements use a mix of HTML/CSS and Three.js sprites
-- HUD updates are tied to the render loop
-- Death/pause screens manage pointer lock
-- Loading screens provide progress feedback
+### Known Pain Points
+- Direct DOM manipulation in UIManager makes changes risky
+- Current CSS has specificity conflicts that need resolution
+- No standardized way to add new UI components
+- Performance issues with multiple simultaneous notifications
+- Current hit indicators lack directional clarity
 
-## When Making Changes
+### Integration Notes
+- World class provides the main game state
+- WeaponSystem manages current weapon and ammo state
+- AssetManager must be used for loading all assets
+- Player class contains health and status information
+- Config contains game-wide settings and constants
 
-1. Consider impact on other systems before modifying shared code
-2. Update relevant documentation in comments
-3. Test across different performance scenarios
-4. Add appropriate debug visualizations for new features
-5. Follow existing patterns for consistency
+### User Preferences
+- Aim for highly polished AAA-quality visuals
+- Focus on immersion and fluid gameplay
+- Add features that enhance excitement and engagement
+- Maintain consistent premium aesthetic throughout
+
+This document will evolve as we learn more about the project and establish new patterns and preferences.
