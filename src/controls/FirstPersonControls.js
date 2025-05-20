@@ -382,7 +382,7 @@ function onPointerlockChange() {
 				
 				// Initialize the pause screen with 3D model
 				// We use dynamic import to avoid loading this until needed
-				import('../../app/pauseScreen.js').then((module) => {
+				import('../components/ui/screens/PauseScreen.js').then((module) => {
 					// Store a reference globally for cleanup
 					window.pauseScreen = module;
 					// Initialize the 3D scene

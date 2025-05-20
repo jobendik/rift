@@ -1,7 +1,7 @@
 import { OrthographicCamera, Scene, Sprite, SpriteMaterial, TextureLoader, Group, Color } from 'three';
 import { CONFIG } from './Config.js';
 import * as DAT from 'dat.gui';
-import { MinimapIntegration } from '../../app/minimapIntegration.js';
+import { MinimapIntegration } from '../components/ui/minimap/MinimapIntegration.js';
 
 const PI25 = Math.PI * 0.25;
 const PI75 = Math.PI * 0.75;
