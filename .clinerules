@@ -1,0 +1,162 @@
+# RIFT Project Intelligence File
+
+## Coding Conventions
+
+### Naming Conventions
+- **Classes**: PascalCase (e.g., `PlayerController`, `AssetManager`)
+- **Methods/Functions**: camelCase (e.g., `updatePosition()`, `loadAsset()`)
+- **Variables**: camelCase (e.g., `currentHealth`, `weaponType`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`, `DEFAULT_SPEED`)
+- **File Names**: Match class name for classes (e.g., `PlayerController.js`)
+- **Private Properties**: Prefix with underscore (e.g., `_privateValue`)
+
+### Structure Patterns
+- One primary class per file
+- Group related functionality in directories
+- Use index.js files for module exports when appropriate
+- Keep file sizes manageable (<500 lines when possible)
+- Order methods: constructor, lifecycle methods, event handlers, internal helpers
+
+### Design Patterns
+- **Bridge Pattern** for entity-renderer relationships
+- **Facade Pattern** for simplified subsystem access via World class
+- **Strategy Pattern** for enemy AI behaviors
+- **Command Pattern** for path planning tasks
+- **Observer Pattern** for event handling
+- **State Pattern** for managing environmental effects
+
+## Code Organization
+
+### Core Systems
+- **World**: Central controller - avoid direct manipulation of other systems
+- **EntityManager**: Always add/remove entities through this system
+- **AssetManager**: Handle all asset loading through this singleton
+
+### Entity Relationships
+- Entity components communicate via direct method calls, not global events
+- Parent-child relationships managed through Yuka.js entity hierarchy
+- Visual representation always synced through the `sync` function
+- Always clean up entity resources on destruction
+
+### Error Handling
+- Wrap initialization code in try/catch blocks
+- Use console.error for critical failures
+- Provide fallbacks for non-critical failures
+- Include detailed error messages for debugging
+
+## Performance Patterns
+
+### Rendering Optimizations
+- Set `matrixAutoUpdate = false` on static objects
+- Use instanced meshes for repeated elements
+- Limit dynamic shadow casters
+- Implement LOD (Level of Detail) for complex models
+- Keep material count low by sharing materials
+
+### Memory Management
+- Pool frequently used objects (like projectiles)
+- Dispose of Three.js objects properly (geometries, materials, textures)
+- Unload unused assets when changing levels
+- Use sprite sheets instead of individual textures when possible
+- Pay attention to audio buffer management
+
+### Animation Handling
+- Use AnimationMixer for skeletal animations
+- Limit the number of active animations
+- Implement animation blending for smooth transitions
+- Store animation clips in the AssetManager
+
+## Testing and Debugging
+
+### Debug Mode
+- World.debug = true enables all debug helpers and orbit camera
+- Debug helpers should be conditionally created only when debug is true
+- Performance metrics are only collected in debug mode
+- Debug UI should be togglable without reloading
+
+### Visual Debugging
+- Use colored console.log with proper prefixes for different systems
+- Create helper visualizations for pathfinding, vision, and collisions
+- Implement frame rate counter for performance monitoring
+- Add UUID labels for entity identification
+
+## Implementation Notes
+
+### Three.js Integration
+- Always use SRGBColorSpace for textures and output 
+- Handle WebGLRenderer context loss events
+- Fix texture loading carefully due to migration issues
+- Use specific versions of Three.js to avoid breaking changes
+
+### Audio System
+- Use PositionalAudio for all in-game sounds
+- Clone audio sources before playing to allow overlapping sounds
+- Set appropriate reference distances for spatial audio
+- Adjust volume based on CONFIG settings
+
+### Input Handling
+- Use the FirstPersonControls class for all player input
+- Handle pointer lock and fullscreen API differences between browsers
+- Implement input state tracking for smoother controls
+- Normalize input values for consistent movement speed
+
+### AI Behaviors
+- Enemy AI evaluators run at regular intervals (not every frame)
+- Vision checks use raycasting with appropriate frequency limitations
+- Path planning requests are queued and processed asynchronously
+- Memory system tracks entities even when out of sight
+
+## Common Challenges and Solutions
+
+### Browser Compatibility
+- Use feature detection rather than browser detection
+- Implement fallbacks for unsupported features
+- Test on multiple browsers for each major feature
+- Handle pointer lock differences between browsers carefully
+
+### Asset Loading
+- Provide clear loading progress indicators
+- Implement retry logic for failed asset loading
+- Use appropriate compression for different asset types
+- Consider preloading critical assets before gameplay starts
+
+### Navigation Mesh
+- Always validate positions against the navMesh
+- Use spatial index for efficient position queries
+- Maintain navMesh compatibility with level geometry
+- Handle edge cases where entities might leave the navMesh
+
+### Weather and Environment System
+- Environmental effects should degrade gracefully on lower-end hardware
+- Manage particle system counts based on performance
+- Implement smooth transitions between weather states
+- Position weather effects relative to the player for efficiency
+
+## Project-Specific Workflow
+
+### Development Cycle
+1. Implement core functionality
+2. Add debug visualization
+3. Test across performance scenarios
+4. Optimize critical paths
+5. Add polish and refinements
+
+### Critical Paths
+- Asset loading is the first bottleneck users encounter
+- Rendering performance is critical during combat sequences
+- Path planning can cause frame drops with many enemies
+- Weather transitions may cause temporary performance issues
+
+### UI Integration
+- UI elements use a mix of HTML/CSS and Three.js sprites
+- HUD updates are tied to the render loop
+- Death/pause screens manage pointer lock
+- Loading screens provide progress feedback
+
+## When Making Changes
+
+1. Consider impact on other systems before modifying shared code
+2. Update relevant documentation in comments
+3. Test across different performance scenarios
+4. Add appropriate debug visualizations for new features
+5. Follow existing patterns for consistency
