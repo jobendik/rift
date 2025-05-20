@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
-  // Viktig: base må matche GitHub Pages URL (brukernavn.github.io/repo)
+  // Important: base must match GitHub Pages URL (username.github.io/repo)
   base: '/rift/',
   root: 'app',
 
@@ -24,12 +24,36 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@app': resolve(__dirname, 'app'),
+      '@assets': resolve(__dirname, 'assets'),
+      '@config': resolve(__dirname, 'config'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@controls': resolve(__dirname, 'src/controls'),
+      '@core': resolve(__dirname, 'src/core'),
+      '@effects': resolve(__dirname, 'src/effects'),
+      '@entities': resolve(__dirname, 'src/entities'),
+      '@ai': resolve(__dirname, 'src/ai'),
+      '@physics': resolve(__dirname, 'src/physics'),
+      '@weapons': resolve(__dirname, 'src/weapons'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@styles': resolve(__dirname, 'styles')
     },
   },
 
-  assetsInclude: ['**/*.glb', '**/*.json', '**/*.ogg', '**/*.png', '**/*.fbx', '**/*.gltf', '**/*.bin', '**/*.animation'],  plugins: [
-    // We'll use a separate script for copying assets instead
+  assetsInclude: ['**/*.glb', '**/*.json', '**/*.ogg', '**/*.png', '**/*.fbx', '**/*.gltf', '**/*.bin', '**/*.animation'],
+
+  plugins: [
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'assets/**/*',
+          dest: 'assets'
+        },
+        {
+          src: 'config/**/*',
+          dest: 'config'
+        }
+      ]
+    })
   ],
 
   optimizeDeps: {

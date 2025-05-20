@@ -3,7 +3,18 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@app/*": ["app/*"]
+      "@assets/*": ["assets/*"],
+      "@config/*": ["config/*"],
+      "@components/*": ["src/components/*"],
+      "@controls/*": ["src/controls/*"],
+      "@core/*": ["src/core/*"],
+      "@effects/*": ["src/effects/*"],
+      "@entities/*": ["src/entities/*"],
+      "@ai/*": ["src/ai/*"],
+      "@physics/*": ["src/physics/*"],
+      "@weapons/*": ["src/weapons/*"],
+      "@utils/*": ["src/utils/*"],
+      "@styles/*": ["styles/*"]
     },
     "target": "ESNext",
     "useDefineForClassFields": true,

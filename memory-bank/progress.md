@@ -59,6 +59,21 @@
 
 ## In-Progress Features
 
+### Project Restructuring
+- ✅ Analysis and planning phase
+- ✅ Directory structure design
+- ✅ Naming convention establishment
+- 🔄 Component migrations (UI, Utils)
+  - ✅ Minimap system migration
+  - ✅ Pause screen migration  
+  - 🔄 Other UI components
+- 🔄 Asset organization and path updates
+- 🔄 Reference updates in code
+  - ✅ Updated minimap imports in main.js
+  - ✅ Updated pause screen imports in main.js
+  - 🔄 Other component references
+- 🔄 Build system adaptation
+
 ### Environment System Enhancements
 - 🔄 Weather transition improvements
 - 🔄 Environmental particle effects
@@ -202,21 +217,30 @@
 - ✅ Sound effects
 - ✅ Enemy behaviors
 
-### Milestone 3: Environmental Systems (In Progress)
+### Milestone 3: Project Restructuring (In Progress)
+- ✅ Analysis and planning
+- ✅ Directory structure design
+- ✅ Naming conventions standardization
+- 🔄 Component organization
+- 🔄 Asset reorganization
+- 🔄 Code reference updates
+- 🔄 Documentation improvements
+
+### Milestone 4: Environmental Systems (In Progress)
 - 🔄 Day/night cycle
 - 🔄 Weather effects
 - 🔄 Advanced lighting
 - 🔄 Atmospheric effects
 - 🔄 Environmental audio
 
-### Milestone 4: Enhanced Gameplay (Planned)
+### Milestone 5: Enhanced Gameplay (Planned)
 - 📝 Additional weapons
 - 📝 Advanced enemy types
 - 📝 More sophisticated AI
 - 📝 Objective systems
 - 📝 Player progression
 
-### Milestone 5: Polish and Optimization (Planned)
+### Milestone 6: Polish and Optimization (Planned)
 - 📝 Performance improvements
 - 📝 Visual enhancements
 - 📝 Audio refinements

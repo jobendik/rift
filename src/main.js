@@ -5,7 +5,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import world from './core/World.js';
-import { AdvancedMinimap } from '../app/minimapClass.js';
+import { AdvancedMinimap, MinimapIntegration, MinimapKeyboardControls } from './components/ui/minimap/index.js';
+import { init as pauseScreenInit, cleanup as pauseScreenCleanup } from './components/ui/screens/PauseScreen.js';
 
 // Console color logging for better debugging
 const logStyles = {
@@ -126,19 +127,18 @@ GLTFLoader.prototype.load = function(url, onLoad, onProgress, onError) {
 document.addEventListener('DOMContentLoaded', () => {
   log('DOM ready, setting up event handlers', 'info');
   
-  // Initialize the pointer lock overlay
+// Initialize the pointer lock overlay
   const pointerLockOverlay = document.getElementById('pointerLockOverlay');
   if (pointerLockOverlay) {
     // Initially hide the overlay
     pointerLockOverlay.classList.add('hidden');
     
-    // Preload the pause screen module
-    import('../app/pauseScreen.js').then(module => {
-      window.pauseScreen = module;
-      log('Pause screen module preloaded', 'success');
-    }).catch(error => {
-      log(`Error preloading pause screen module: ${error.message}`, 'error');
-    });
+    // Attach the pause screen functions to the window object
+    window.pauseScreen = { 
+      init: pauseScreenInit,
+      cleanup: pauseScreenCleanup 
+    };
+    log('Pause screen module loaded', 'success');
     
     // Add click handler to resume game
     pointerLockOverlay.addEventListener('click', () => {
