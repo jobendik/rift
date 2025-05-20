@@ -1,0 +1,58 @@
+/**
+ * RIFT Game Engine
+ * Main CSS Entry Point
+ * 
+ * This file imports all component styles and defines global styles
+ * for the RIFT project.
+ */
+
+/* Base styles and resets */
+@import './main.css';
+
+/* Component styles */
+@import './components/hud.css';
+@import './components/minimap.css';
+@import './components/screens.css';
+@import './components/messages.css';
+
+/* Global variables */
+:root {
+  /* Color palette */
+  --primary-color: #4a7bf7;
+  --secondary-color: #2b486b;
+  --accent-color: #f7aa4a;
+  --background-color: #151b25;
+  --text-color: #e6e6e6;
+  --danger-color: #f74a4a;
+  --success-color: #4af77b;
+  --warning-color: #f7db4a;
+  
+  /* Typography */
+  --font-main: 'Rajdhani', sans-serif;
+  --font-secondary: 'Titillium Web', sans-serif;
+  --font-size-small: 0.8rem;
+  --font-size-normal: 1rem;
+  --font-size-medium: 1.25rem;
+  --font-size-large: 1.5rem;
+  --font-size-xlarge: 2rem;
+  --font-size-xxlarge: 3rem;
+  
+  /* UI Elements */
+  --border-radius: 4px;
+  --hud-opacity: 0.85;
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-dark: 0 8px 16px rgba(0, 0, 0, 0.4);
+  
+  /* Animations */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-medium: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+  
+  /* Layout */
+  --hud-margin: 20px;
+  --hud-padding: 15px;
+  --z-index-base: 1;
+  --z-index-hud: 10;
+  --z-index-modal: 100;
+}

@@ -1,0 +1,539 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #222;
+  color: #fff;
+  overflow: hidden;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#startScreenPanel {
+  text-align: center;
+  padding: 2em;
+  background-color: #333;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* h1 styles removed as we're using the logo image instead */
+
+button#start {
+  padding: 0.8em 2em;
+  font-size: 1.5em;
+  background-color: #e63946;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  margin-top: 2em;
+  animation: pulse 2s infinite;
+  letter-spacing: 0.1em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(230, 57, 70, 0.9), 0 0 30px rgba(230, 57, 70, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+}
+
+button#start:hover {
+  background-color: #ff4d5e;
+  transform: scale(1.1);
+  animation-play-state: paused;
+}
+
+#app {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#startScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  overflow: hidden;
+}
+
+#startScreenContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  pointer-events: none; /* Allow clicking through to canvas except for button */
+}
+
+#startScreenContent h1 {
+  pointer-events: none;
+  animation: glow 2s infinite alternate;
+}
+
+#startScreenContent button {
+  pointer-events: auto; /* Make sure button is clickable */
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  to {
+    text-shadow: 0 0 15px rgba(230, 57, 70, 1), 0 0 30px rgba(230, 57, 70, 0.5);
+  }
+}
+
+#logo-container {
+  margin-bottom: 2em;
+  position: relative;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#rift-logo {
+  max-width: 320px;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.7)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+  animation: logo-glow 3s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes logo-glow {
+  from {
+    filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.7)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 15px rgba(230, 57, 70, 1)) drop-shadow(0 0 30px rgba(230, 57, 70, 0.5));
+  }
+}
+
+/* UI Container Styles */
+.uiContainer {
+  position: absolute;
+  padding: 1em;
+  color: white;
+  text-shadow: 0 0 5px black;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+#hudAmmo {
+  bottom: 1em;
+  right: 1em;
+  font-size: 1.5em;
+}
+
+#hudHealth {
+  top: 1em;
+  left: 1em;
+  font-size: 1.5em;
+}
+
+/* Enhanced UI styles to accompany the updated UIManager.js */
+
+/* Modern FPS Frag List */
+#hudFragList {
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  z-index: 890;
+  max-height: 60vh;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  padding: 8px;
+  border-left: 3px solid rgba(230, 57, 70, 0.7);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#fragList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Rajdhani', 'Orbitron', 'Roboto', sans-serif; /* Modern gaming fonts */
+  width: 250px;
+}
+
+#fragList li {
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Kill Streak Display */
+#hudKillStreak {
+  position: fixed;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 890;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  padding: 5px 15px;
+  border-bottom: 2px solid #e63946;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#hudKillStreak div {
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 1.2em;
+  color: #ff9900;
+  text-shadow: 0 0 5px rgba(255, 153, 0, 0.7);
+}
+
+@keyframes pulseScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Match Timer */
+#hudMatchTimer {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 880;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  padding: 5px 15px;
+}
+
+#hudMatchTimer div {
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+}
+
+/* Score Display */
+#hudScore {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 880;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  padding: 5px 15px;
+}
+
+#hudScore div {
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.score-update {
+  animation: scoreFlash 0.5s ease-in-out;
+}
+
+@keyframes scoreFlash {
+  0% { background-color: rgba(0, 0, 0, 0.5); }
+  50% { background-color: rgba(230, 57, 70, 0.7); }
+  100% { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+/* Objectives List */
+#hudObjectives {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 870;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  padding: 10px;
+  max-width: 300px;
+}
+
+#hudObjectives ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  font-family: 'Rajdhani', 'Roboto', sans-serif;
+}
+
+#hudObjectives li {
+  margin-bottom: 5px;
+  padding: 5px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+#hudObjectives li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#hudObjectives li.complete {
+  opacity: 0.7;
+}
+
+.objective-checkbox {
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.objective-text {
+  font-size: 0.9em;
+}
+
+@keyframes pulseHighlight {
+  0% { background-color: rgba(0, 0, 0, 0); }
+  50% { background-color: rgba(255, 255, 255, 0.2); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+
+/* FPS Counter */
+#fpsCounter {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #00ff00;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  z-index: 1000;
+}
+
+/* Ammo and Health modernized */
+#hudAmmo, #hudHealth {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-family: 'Rajdhani', 'Roboto', sans-serif;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid rgba(230, 57, 70, 0.7);
+}
+
+#hudAmmo {
+  bottom: 20px;
+  right: 20px;
+  font-size: 1.5em;
+}
+
+#hudHealth {
+  top: 20px;
+  left: 20px;
+  font-size: 1.5em;
+}
+
+/* Add icons for health and ammo */
+#hudHealth::before {
+  content: "❤️ ";
+  margin-right: 5px;
+}
+
+#hudAmmo::before {
+  content: "🔫 ";
+  margin-right: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #hudFragList {
+    width: 200px;
+  }
+  
+  #fragList {
+    width: 180px;
+  }
+  
+  #hudAmmo, #hudHealth {
+    font-size: 1.2em;
+  }
+  
+  #hudMatchTimer div, #hudScore div {
+    font-size: 0.9em;
+  }
+}
+
+/* HUD Elements Styles */
+
+#hudCompass {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 890; /* Below minimap */
+}
+
+#compassImage {
+  max-width: 300px;
+  height: auto;
+}
+
+#hudWeapons {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 890; /* Below minimap */
+}
+
+#weaponsImage {
+  max-width: 200px;
+  height: auto;
+}
+
+/* Pointer Lock Overlay Styles */
+#pointerLockOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.7) 100%); /* Gradient for better visibility */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#pointerLockOverlay .overlay-content {
+  text-align: center;
+  padding: 2em;
+  background-color: rgba(40, 40, 40, 0.85);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
+  position: relative;
+  z-index: 10;
+  margin-bottom: 80px;
+}
+
+#pointerLockOverlay h2 {
+  margin-top: 0;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(230, 57, 70, 0.7);
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+#pauseModelContainer {
+  position: absolute;
+  bottom: 50px; /* Positioned higher up to show full robot in black area */
+  left: 30px; /* Position farther left to clear the menu */
+  width: 350px !important; /* Wider container - !important to override inline styles */
+  height: 450px !important; /* Much taller to see the entire model - !important to override inline styles */
+  z-index: 5;
+  overflow: visible;
+  background-color: transparent !important;
+  border-radius: 5px;
+  /* Add new rule to help prevent stretching in fullscreen */
+  max-width: 350px;
+  max-height: 450px;
+}
+
+.transparent-canvas {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.pause-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+}
+
+.pause-menu button {
+  padding: 0.7em 1.5em;
+  width: 200px;
+  font-size: 1.2em;
+  background-color: #e63946;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.5);
+}
+
+.pause-menu button:hover {
+  background-color: #ff4d5e;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(230, 57, 70, 0.8);
+}
+
+/* Fix for the transparency issue */
+#pauseModelContainer {
+  background-color: transparent !important;
+}
+
+#pauseModelContainer canvas {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.transparent-canvas {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Advanced Minimap Styles - Moved to bottom left corner */
+#advancedMinimapContainer {
+  position: fixed;
+  bottom: 20px; /* Position at bottom */
+  left: 20px;   /* Position at left */
+  z-index: 900;
+  pointer-events: none; /* Don't intercept mouse events */
+  padding: 0;
+  margin: 0;
+}
+
+/* Make sure the minimap container has proper styling */
+#advancedMinimapContainer > div {
+  border-radius: 50% !important; /* Force circular shape */
+  overflow: hidden !important;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7) !important; /* Stronger shadow for better visibility */
+}

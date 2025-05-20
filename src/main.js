@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import world from './core/World.js';
 import { AdvancedMinimap, MinimapIntegration, MinimapKeyboardControls } from './components/ui/minimap/index.js';
 import { init as pauseScreenInit, cleanup as pauseScreenCleanup } from './components/ui/screens/PauseScreen.js';
+import { init as startScreenInit, cleanup as startScreenCleanup } from './components/ui/screens/StartScreen.js';
 
 // Console color logging for better debugging
 const logStyles = {
@@ -37,14 +38,37 @@ loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
 };
 
 loadingManager.onLoad = () => {
-  log('All assets loaded successfully!', 'success');
+  log('All assets loaded successfully! Transitioning to start screen...', 'success');
   
   if (loadingScreen) {
+    log('Found loading screen, adding fade-out class', 'info');
     loadingScreen.classList.add('fade-out');
+    
     setTimeout(() => {
+      log('Hiding loading screen and showing start screen', 'info');
       loadingScreen.classList.add('hidden');
-      if (startScreen) startScreen.classList.remove('hidden');
+      
+      if (startScreen) {
+        log('Found start screen, removing hidden class', 'info');
+        startScreen.classList.remove('hidden');
+        
+        // Force a display style to ensure it's visible
+        startScreen.style.display = 'block';
+        
+        // Initialize the start screen component
+        try {
+          startScreenInit();
+          log('Start screen component initialized', 'success');
+        } catch (error) {
+          log(`Error initializing start screen component: ${error.message}`, 'error');
+          console.error(error);
+        }
+      } else {
+        log('Start screen element not found!', 'error');
+      }
     }, 1000);
+  } else {
+    log('Loading screen element not found!', 'error');
   }
 };
 
@@ -123,7 +147,14 @@ GLTFLoader.prototype.load = function(url, onLoad, onProgress, onError) {
 document.addEventListener('DOMContentLoaded', () => {
   log('DOM ready, setting up event handlers', 'info');
   
-// Initialize the pointer lock overlay
+  // Debug: Make sure loading screen is triggering transitions properly
+  // This simulates assets being loaded
+  setTimeout(() => {
+    log('DEBUG: Manually triggering loadingManager.onLoad', 'warning');
+    loadingManager.onLoad();
+  }, 2000);
+  
+  // Initialize the pointer lock overlay
   const pointerLockOverlay = document.getElementById('pointerLockOverlay');
   if (pointerLockOverlay) {
     // Initially hide the overlay

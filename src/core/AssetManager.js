@@ -109,10 +109,8 @@ class AssetManager {
 	*/
 	_loadAnimations() {
 		console.info('AssetManager: Loading animations');
-		const animationLoader = this.animationLoader;
-
-		// player - removed leading slash
-		animationLoader.load('animations/player.json', (clips) => {
+		const animationLoader = this.animationLoader;			// player animations
+		animationLoader.load('assets/animations/player.json', (clips) => {
 			console.info('AssetManager: Player animations loaded:', clips.length);
 			for (const clip of clips) {
 				this.animations.set(clip.name, clip);
@@ -121,8 +119,8 @@ class AssetManager {
 			console.error('AssetManager: Error loading player animations:', error);
 		});
 
-		// blaster - removed leading slash
-		animationLoader.load('animations/blaster.json', (clips) => {
+                // blaster - fixed path to use assets/animations
+                animationLoader.load('assets/animations/blaster.json', (clips) => {
 			console.info('AssetManager: Blaster animations loaded:', clips.length);
 			for (const clip of clips) {
 				this.animations.set(clip.name, clip);
@@ -131,8 +129,8 @@ class AssetManager {
 			console.error('AssetManager: Error loading blaster animations:', error);
 		});
 
-		// shotgun - removed leading slash
-		animationLoader.load('animations/shotgun.json', (clips) => {
+                // shotgun - fixed path to use assets/animations
+                animationLoader.load('assets/animations/shotgun.json', (clips) => {
 			console.info('AssetManager: Shotgun animations loaded:', clips.length);
 			for (const clip of clips) {
 				this.animations.set(clip.name, clip);
@@ -141,8 +139,8 @@ class AssetManager {
 			console.error('AssetManager: Error loading shotgun animations:', error);
 		});
 
-		// assault rifle - removed leading slash
-		animationLoader.load('animations/assaultRifle.json', (clips) => {
+                // assault rifle - fixed path to use assets/animations
+                animationLoader.load('assets/animations/assaultRifle.json', (clips) => {
 			console.info('AssetManager: Assault rifle animations loaded:', clips.length);
 			for (const clip of clips) {
 				this.animations.set(clip.name, clip);
@@ -262,10 +260,8 @@ class AssetManager {
 			health.matrixAutoUpdate = false;
 
 			const ammo = new PositionalAudio(listener);
-			ammo.matrixAutoUpdate = false;
-
-			const loadAudio = (path, target, name) => {
-				audioLoader.load('audios/' + path, // removed leading slash
+			ammo.matrixAutoUpdate = false;			const loadAudio = (path, target, name) => {
+				audioLoader.load('assets/audios/' + path,
 					buffer => {
 						console.info(`AssetManager: Audio loaded: ${name}`);
 						target.setBuffer(buffer);
@@ -331,7 +327,7 @@ class AssetManager {
 		loadingManager.itemStart('levelConfig');
 
 		// Removed leading slash
-		fetch('config/level.json')
+		fetch('assets/config/level.json')
 			.then(response => {
 				if (!response.ok) {
 					throw new Error(`HTTP error ${response.status}`);
@@ -364,9 +360,9 @@ class AssetManager {
 		const animations = this.animations;
 
 		try {
-			// shadow for soldiers - removed leading slash
+			// shadow for soldiers - fixed path to use assets/textures
 			console.info('AssetManager: Loading shadow texture');
-			const shadowTexture = textureLoader.load('textures/shadow.png', 
+			const shadowTexture = textureLoader.load('assets/textures/shadow.png', 
 				texture => {
 					console.info('AssetManager: Shadow texture loaded successfully');
 					texture.colorSpace = SRGBColorSpace;
@@ -386,11 +382,9 @@ class AssetManager {
 			shadowPlane.rotation.set(-Math.PI * 0.5, 0, 0);
 			shadowPlane.scale.multiplyScalar(2);
 			shadowPlane.matrixAutoUpdate = false;
-			shadowPlane.updateMatrix();
-
-			// soldier - removed leading slash
+			shadowPlane.updateMatrix();			// soldier model
 			console.info('AssetManager: Loading soldier model');
-			gltfLoader.load('models/soldier.glb', 
+			gltfLoader.load('assets/models/soldier.glb', 
 				(gltf) => {
 					console.info('AssetManager: Soldier model loaded successfully');
 					const renderComponent = gltf.scene;
@@ -422,11 +416,9 @@ class AssetManager {
 				(error) => {
 					console.error('AssetManager: Error loading soldier model:', error);
 				}
-			);
-
-			// level - removed leading slash
+			);			// level model
 			console.info('AssetManager: Loading level model');
-			gltfLoader.load('models/level.glb', 
+			gltfLoader.load('assets/models/level.glb', 
 				(gltf) => {
 					console.info('AssetManager: Level model loaded successfully');
 					const renderComponent = gltf.scene;
@@ -443,7 +435,7 @@ class AssetManager {
 					const mesh = renderComponent.getObjectByName('level');
 					if (mesh) {
 						// UPDATED LIGHTMAP HANDLING - FIXED CODE
-						textureLoader.load('textures/lightmap.png', 
+						textureLoader.load('assets/textures/lightmap.png', 
 							function(texture) {
 								console.info('AssetManager: Lightmap texture loaded successfully');
 								
@@ -486,13 +478,10 @@ class AssetManager {
 				(error) => {
 					console.error('AssetManager: Error loading level model:', error);
 				}
-			);
-
-			// Load weapon models with error handling
+			);			// Load weapon models with error handling
 			const loadWeaponModel = (path, modelName) => {
 				console.info(`AssetManager: Loading ${modelName} model`);
-				// removed leading slash
-				gltfLoader.load('models/' + path, 
+				gltfLoader.load('assets/models/' + path, 
 					(gltf) => {
 						console.info(`AssetManager: ${modelName} model loaded successfully`);
 						const renderComponent = gltf.scene;
@@ -522,9 +511,9 @@ class AssetManager {
 			loadWeaponModel('assaultRifle_low.glb', 'assaultRifle_low');
 			loadWeaponModel('healthPack.glb', 'healthPack');
 
-			// muzzle sprite - removed leading slash
+			// muzzle sprite - fixed path to use assets/textures
 			console.info('AssetManager: Loading muzzle texture');
-			const muzzleTexture = textureLoader.load('textures/muzzle.png',
+			const muzzleTexture = textureLoader.load('assets/textures/muzzle.png',
 				texture => {
 					console.info('AssetManager: Muzzle texture loaded successfully');
 					texture.colorSpace = SRGBColorSpace;
@@ -573,7 +562,7 @@ class AssetManager {
 			const loadTexture = (path, name) => {
 				console.info(`AssetManager: Loading texture: ${name}`);
 				// removed leading slash
-				let texture = textureLoader.load('textures/' + path,
+				let texture = textureLoader.load('assets/textures/' + path,
 					texture => {
 						console.info(`AssetManager: Texture loaded successfully: ${name}`);
 						texture.colorSpace = SRGBColorSpace;
@@ -616,7 +605,7 @@ class AssetManager {
 		console.info('AssetManager: Loading navigation mesh');
 
 		// removed leading slash
-		navMeshLoader.load('navmeshes/navmesh.glb')
+		navMeshLoader.load('assets/navmeshes/navmesh.glb')
 			.then((navMesh) => {
 				this.navMesh = navMesh;
 				console.info('AssetManager: Navigation mesh loaded successfully');
@@ -633,7 +622,7 @@ class AssetManager {
 		console.info('AssetManager: Loading cost table');
 
 		// removed leading slash
-		fetch('navmeshes/costTable.json')
+		fetch('assets/navmeshes/costTable.json')
 			.then(response => {
 				if (!response.ok) {
 					throw new Error(`HTTP error ${response.status}`);

@@ -8,7 +8,6 @@
 export * from './PauseScreen.js';
 
 // Additional screen components will be added here as they are migrated
-// For example:
-// export * from './StartScreen.js';
+export * from './StartScreen.js';
 // export * from './LoadingScreen.js';
 // export * from './GameOverScreen.js';

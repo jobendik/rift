@@ -1,0 +1,124 @@
+/**
+ * RIFT Game Engine
+ * Main CSS File
+ * 
+ * Contains base styles, resets, and global elements
+ */
+
+/* Base styles and resets */
+body {
+  margin: 0;
+  font-family: var(--font-main), Arial, Helvetica, sans-serif;
+  background-color: var(--background-color, #222);
+  color: var(--text-color, #fff);
+  overflow: hidden;
+}
+
+/* Basic utility classes */
+.hidden {
+  display: none !important;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-index-modal, 100);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#app {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(230, 57, 70, 0.9), 0 0 30px rgba(230, 57, 70, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  to {
+    text-shadow: 0 0 15px rgba(230, 57, 70, 1), 0 0 30px rgba(230, 57, 70, 0.5);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes pulseScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes scoreFlash {
+  0% { background-color: rgba(0, 0, 0, 0.5); }
+  50% { background-color: rgba(230, 57, 70, 0.7); }
+  100% { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+@keyframes pulseHighlight {
+  0% { background-color: rgba(0, 0, 0, 0); }
+  50% { background-color: rgba(255, 255, 255, 0.2); }
+  100% { background-color: rgba(0, 0, 0, 0); }
+}
+
+@keyframes logo-glow {
+  from {
+    filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.7)) drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 15px rgba(230, 57, 70, 1)) drop-shadow(0 0 30px rgba(230, 57, 70, 0.5));
+  }
+}
+
+/* FPS Counter */
+#fpsCounter {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #00ff00;
+  padding: 5px 10px;
+  border-radius: var(--border-radius, 4px);
+  font-family: monospace;
+  z-index: 1000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #hudFragList {
+    width: 200px;
+  }
+  
+  #fragList {
+    width: 180px;
+  }
+  
+  #hudAmmo, #hudHealth {
+    font-size: 1.2em;
+  }
+  
+  #hudMatchTimer div, #hudScore div {
+    font-size: 0.9em;
+  }
+}
