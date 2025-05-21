@@ -7,6 +7,7 @@
  * - Enhanced damage indicators
  * - Damage numbers
  * - Screen effects
+ * - Advanced screen effects
  * - Footstep indicators
  */
 
@@ -18,4 +19,5 @@
 @import url('./combat/_dynamic-crosshair.css');
 @import url('./combat/_damage-numbers.css');
 @import url('./combat/_screen-effects.css');
+@import url('./combat/_advanced-screen-effects.css');
 @import url('./combat/_footstep-indicator.css');

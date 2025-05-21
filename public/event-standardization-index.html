@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT Event Standardization Index</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #33a8ff;
+            --accent-color: #00c853;
+            --warning-color: #ffab00;
+            --error-color: #e53935;
+            --background-color: #121212;
+            --panel-bg: rgba(20, 20, 20, 0.9);
+            --card-bg: rgba(30, 30, 30, 0.8);
+            --border-color: #333;
+            --text-color: #f1f1f1;
+            --text-secondary: #aaaaaa;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 2rem;
+        }
+        
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 2px solid var(--primary-color);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin: 1rem 0;
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            margin: 0.5rem 0;
+            color: var(--text-color);
+        }
+        
+        h4 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin: 1rem 0 0.5rem;
+            color: var(--secondary-color);
+        }
+        
+        button, .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover, .btn:hover {
+            background-color: #c62f3b;
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-content {
+            padding: 1.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        
+        .tab.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .dashboard-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .card-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+        
+        .component-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .component-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+        
+        .component-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .compliance-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .compliance-badge.high {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+        
+        .compliance-badge.medium {
+            background-color: var(--warning-color);
+            color: #000;
+        }
+        
+        .compliance-badge.low {
+            background-color: var(--error-color);
+        }
+        
+        .component-events {
+            margin-bottom: 1rem;
+        }
+        
+        .event-list {
+            list-style: none;
+            margin: 0.5rem 0;
+        }
+        
+        .event-list li {
+            padding: 0.25rem 0;
+        }
+        
+        .event-list li.standard {
+            color: var(--accent-color);
+        }
+        
+        .event-list li.non-standard {
+            color: var(--error-color);
+        }
+        
+        code {
+            font-family: monospace;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .standard-name {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+        
+        .suggestion-list {
+            list-style: none;
+            margin: 0.5rem 0;
+        }
+        
+        .suggestion {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .suggestion code.old {
+            color: var(--error-color);
+        }
+        
+        .suggestion code.new {
+            color: var(--accent-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-family: monospace;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .validation-result {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .validation-result.valid {
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .validation-result.invalid {
+            border-left: 4px solid var(--error-color);
+        }
+        
+        .validation-result.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status {
+            font-weight: 600;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .valid .status {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+        
+        .invalid .status {
+            background-color: var(--error-color);
+        }
+        
+        .warning .status {
+            background-color: var(--warning-color);
+            color: #000;
+        }
+        
+        .issues {
+            margin: 0.5rem 0;
+        }
+        
+        .issue {
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(255, 0, 0, 0.1);
+            border-radius: 3px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .recommendation {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: rgba(0, 255, 0, 0.1);
+            border-radius: 3px;
+        }
+        
+        .payload-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .payload-original, .payload-recommended {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .payload-original h6, .payload-recommended h6 {
+            margin: 0 0 0.5rem;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        pre {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 4px;
+            overflow: auto;
+            font-size: 0.8rem;
+            max-height: 200px;
+        }
+        
+        .validator-error, .generator-error {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background-color: rgba(255, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        
+        .error-icon {
+            font-size: 1.5rem;
+        }
+        
+        .test-container {
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .test-header {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 1rem 0 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+        
+        .test-message {
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.25rem;
+            border-left: 3px solid var(--primary-color);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>RIFT Event Standardization Index</h1>
+    </header>
+    
+    <div class="container">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Component Analysis</h2>
+                <button id="analyze-btn" class="btn">Analyze Components</button>
+            </div>
+            <div id="dashboard" class="panel-content">
+                <p>No analysis results yet. Click "Analyze Components" to begin.</p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Component Details</h2>
+            </div>
+            <div id="components" class="panel-content">
+                <p>No components analyzed yet.</p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Event Validator</h2>
+            </div>
+            <div class="panel-content">
+                <div id="validator">
+                    <form id="validate-event-form">
+                        <div class="form-group">
+                            <label for="event-name">Event Name:</label>
+                            <input type="text" id="event-name" placeholder="e.g., health:changed, weapon:fired">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="event-payload">Event Payload (JSON):</label>
+                            <textarea id="event-payload" placeholder='{
+  "value": 80,
+  "previous": 100,
+  "delta": -20,
+  "source": "enemy-attack"
+}'></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Validate Event</button>
+                    </form>
+                    
+                    <div id="validator-results" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Code Generator</h2>
+            </div>
+            <div class="panel-content">
+                <div id="code-generator">
+                    <form id="generate-code-form">
+                        <div class="form-group">
+                            <label for="component-name">Component Name:</label>
+                            <input type="text" id="component-name" placeholder="e.g., HealthDisplay">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="events-list">Events List (one per line, format: event-name: handlerName):</label>
+                            <textarea id="events-list" placeholder='health:changed: this._onHealthChanged
+health:max: this._onMaxHealthChanged
+player:damaged: this._onPlayerDamaged'></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn">Generate Migration Code</button>
+                    </form>
+                    
+                    <div id="code-generator-results" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Event Tests</h2>
+                <button id="run-tests-btn" class="btn">Run Tests</button>
+            </div>
+            <div class="panel-content">
+                <p>Click "Run Tests" to execute the Event Standardization tests.</p>
+                <div id="test-results"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="event-standardization-index.js"></script>
+</body>
+</html>

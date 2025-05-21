@@ -22,6 +22,7 @@ import { EnhancedHitIndicator } from './EnhancedHitIndicator.js';
 import { DynamicCrosshairSystem } from './DynamicCrosshairSystem.js';
 import DamageNumbers from './DamageNumbers.js';
 import ScreenEffects from './ScreenEffects.js';
+import AdvancedScreenEffects from './AdvancedScreenEffects.js';
 import FootstepIndicator from './FootstepIndicator.js';
 
 class CombatSystem extends UIComponent {
@@ -52,6 +53,7 @@ class CombatSystem extends UIComponent {
         
         // Screen effects for damage, healing, etc.
         this.screenEffects = null;
+        this.advancedScreenEffects = null;
         
         // Footstep indicator for situational awareness
         this.footstepIndicator = null;
@@ -96,7 +98,11 @@ class CombatSystem extends UIComponent {
         if (this.damageNumbers) this.damageNumbers.update(delta);
         
         // Update screen effects
-        if (this.screenEffects) this.screenEffects.update(delta);
+        if (this.advancedScreenEffects) {
+            this.advancedScreenEffects.update(delta);
+        } else if (this.screenEffects) {
+            this.screenEffects.update(delta);
+        }
         
         // Update footstep indicator
         if (this.footstepIndicator) this.footstepIndicator.update(delta);
@@ -131,6 +137,7 @@ class CombatSystem extends UIComponent {
         
         // Dispose screen effects
         if (this.screenEffects) this.screenEffects.dispose();
+        if (this.advancedScreenEffects) this.advancedScreenEffects.dispose();
         
         // Dispose footstep indicator
         if (this.footstepIndicator) this.footstepIndicator.dispose();
@@ -221,17 +228,30 @@ class CombatSystem extends UIComponent {
         this.damageNumbers.init();
         this.addChild(this.damageNumbers);
         
-        // Initialize screen effects
-        const effectsConfig = this.config.screenEffects || {};
-        this.screenEffects = new ScreenEffects({
-            container: this.element,
-            damageFlashDuration: effectsConfig.damageFlashDuration,
-            healFlashDuration: effectsConfig.healFlashDuration,
-            screenShakeDecay: effectsConfig.screenShakeDecay,
-            screenShakeMultiplier: effectsConfig.screenShakeMultiplier
-        });
-        this.screenEffects.init();
-        this.addChild(this.screenEffects);
+        // Check if enhanced screen effects are enabled in UIConfig
+        const useAdvancedScreenEffects = UIConfig.enhancedCombat && UIConfig.enhancedCombat.screenEffects;
+        
+        if (useAdvancedScreenEffects) {
+            // Initialize advanced screen effects
+            this.advancedScreenEffects = new AdvancedScreenEffects({
+                container: this.element
+                // Config is loaded from UIConfig.enhancedCombat.screenEffects in the component itself
+            });
+            this.advancedScreenEffects.init();
+            this.addChild(this.advancedScreenEffects);
+        } else {
+            // Initialize legacy screen effects
+            const effectsConfig = this.config.screenEffects || {};
+            this.screenEffects = new ScreenEffects({
+                container: this.element,
+                damageFlashDuration: effectsConfig.damageFlashDuration,
+                healFlashDuration: effectsConfig.healFlashDuration,
+                screenShakeDecay: effectsConfig.screenShakeDecay,
+                screenShakeMultiplier: effectsConfig.screenShakeMultiplier
+            });
+            this.screenEffects.init();
+            this.addChild(this.screenEffects);
+        }
         
         // Initialize footstep indicator
         const footstepConfig = this.config.footstepIndicator || {};
@@ -272,7 +292,11 @@ class CombatSystem extends UIComponent {
         if (this.damageNumbers) this.damageNumbers.clearAllNumbers();
         
         // Clear screen effects
-        if (this.screenEffects) this.screenEffects.clearAllEffects();
+        if (this.advancedScreenEffects) {
+            this.advancedScreenEffects.clearAllEffects();
+        } else if (this.screenEffects) {
+            this.screenEffects.clearAllEffects();
+        }
         
         // Clear footstep indicators
         if (this.footstepIndicator) this.footstepIndicator.clearAllIndicators();
@@ -512,8 +536,15 @@ class CombatSystem extends UIComponent {
      * 
      * @param {string} effectType - Type of screen effect ('damage', 'heal', 'shake', 'vignette', 'all')
      * @param {string} intensity - Effect intensity ('low', 'medium', 'high', 'critical')
+     * @param {string} damageType - Type of damage ('default', 'bullet', 'explosive', 'fire', 'energy')
      */
-    testScreenEffects(effectType = 'damage', intensity = 'medium') {
+    testScreenEffects(effectType = 'damage', intensity = 'medium', damageType = 'default') {
+        // Check if we're using advanced or regular screen effects
+        if (this.advancedScreenEffects) {
+            this.testAdvancedScreenEffects(effectType, intensity, damageType);
+            return;
+        }
+        
         if (!this.screenEffects) return;
         
         switch (effectType) {
@@ -566,6 +597,49 @@ class CombatSystem extends UIComponent {
         }
         
         console.log(`Screen effects test: ${effectType} at ${intensity} intensity`);
+    }
+    
+    /**
+     * Test method for advanced screen effects
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} effectType - Type of screen effect ('damage', 'heal', 'stun', 'blind', 'explosion', 'radiation', 'fire', 'electrical', 'poison', 'water', 'powerup')
+     * @param {string} intensity - Effect intensity ('low', 'medium', 'high', 'critical')
+     * @param {string} damageType - Type of damage ('default', 'bullet', 'explosive', 'fire', 'energy')
+     */
+    testAdvancedScreenEffects(effectType = 'damage', intensity = 'medium', damageType = 'default') {
+        if (!this.advancedScreenEffects) return;
+        
+        if (effectType === 'damage') {
+            // Test damage effects with specific damage type
+            this.advancedScreenEffects.testDamageEffects(intensity, damageType);
+            
+        } else if (effectType === 'powerup') {
+            // Test powerup effects
+            const powerupTypes = ['damage', 'speed', 'armor', 'invisible'];
+            const type = damageType && powerupTypes.includes(damageType) ? damageType : 'damage';
+            const duration = 5; // 5 seconds
+            
+            this.advancedScreenEffects.testPowerupEffect(type, duration);
+            
+        } else if (effectType === 'all') {
+            // Show a sequence of different effects for demonstration
+            const delays = [0, 2000, 4000, 6000, 8000, 10000, 12000];
+            const effects = ['damage', 'heal', 'stun', 'explosion', 'fire', 'electrical', 'water'];
+            
+            effects.forEach((effect, index) => {
+                setTimeout(() => {
+                    this.advancedScreenEffects.testEffect(effect, intensity);
+                }, delays[index]);
+            });
+            
+        } else {
+            // Test other effect types
+            this.advancedScreenEffects.testEffect(effectType, intensity);
+        }
+        
+        console.log(`Advanced screen effects test: ${effectType} at ${intensity} intensity with ${damageType} type`);
     }
     
     /**

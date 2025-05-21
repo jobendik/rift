@@ -1,0 +1,8 @@
+/*
+ * Movement Components
+ *
+ * Styles for movement-related UI components including:
+ * - MovementSystem: for detecting and processing movement events
+ */
+
+@import 'movement/_movement-system.css';

@@ -1,0 +1,16 @@
+/*
+ * Movement System Component
+ * 
+ * Base styling for the movement system component.
+ * This component is primarily logic-based and doesn't have many visual elements,
+ * but this file is included for consistency with project structure.
+ *
+ * Uses the BEM methodology with the 'rift-' prefix.
+ */
+
+.rift-movement-system {
+  /* This component has minimal visual representation */
+  display: none;
+  position: absolute;
+  pointer-events: none;
+}

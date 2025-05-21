@@ -428,18 +428,25 @@ class FootstepIndicator extends UIComponent {
     _registerEventListeners() {
         // Register for footstep events
         this.registerEvents({
-            'entity:footsteps': this._onEntityFootsteps.bind(this),
+            'footstep:detected': this._onFootstepDetected.bind(this),
             'game:paused': () => this.clearAllIndicators(),
             'game:resumed': () => this.clearAllIndicators()
         });
     }
 
     /**
-     * Handle entity footstep events
+     * Handle footstep detection events
      * @private
-     * @param {Object} event - Footstep event data
+     * @param {Object} event - Standardized footstep event data
+     * @param {Object} event.position - Position where footstep was detected
+     * @param {Object} event.playerPosition - Current player position
+     * @param {number} event.playerRotation - Current player rotation in radians
+     * @param {boolean} event.isFriendly - Whether footstep is from a friendly entity
+     * @param {boolean} event.isContinuous - Whether this is part of continuous movement
+     * @param {number} event.distance - Distance from player (if position not provided)
+     * @param {number} event.direction - Direction angle (if position not provided)
      */
-    _onEntityFootsteps(event) {
+    _onFootstepDetected(event) {
         // Check if we have position data
         if (event.position && event.playerPosition) {
             this.showFootstepsFromPosition({

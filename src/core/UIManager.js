@@ -19,9 +19,9 @@ import MenuSystem from '../components/ui/menus/MenuSystem.js';
 // import { MarkerSystem } from '../components/ui/markers/MarkerSystem.js';
 import ProgressionSystem from '../components/ui/progression/ProgressionSystem.js';
 import EnvironmentSystem from '../components/ui/environment/EnvironmentSystem.js';
+import MovementSystem from '../components/ui/movement/MovementSystem.js';
 // import { DamageEffects } from '../components/ui/effects/DamageEffects.js';
 // import { ScreenShakeSystem } from '../components/ui/effects/ScreenShakeSystem.js';
-// import { FootstepSystem } from '../components/ui/effects/FootstepSystem.js';
 // import { DebugUI } from '../components/ui/debug/DebugUI.js';
 
 export class UIManager {
@@ -105,6 +105,7 @@ export class UIManager {
             notifications: new NotificationSystem(this.world),
             menus: new MenuSystem(this.world),
             environment: new EnvironmentSystem({ world: this.world }),
+            movement: new MovementSystem(this.world),
             // Keep screens for backward compatibility - the MenuSystem will manage this
             screens: { 
                 init: () => {}, 
@@ -132,21 +133,38 @@ export class UIManager {
                     setWeather: (type, intensity) => this.systems.environment?.setWeather(type, intensity)
                 },
                 screenShake: { init: () => {}, update: () => {} },
-                // Note: FootstepIndicator is now handled by CombatSystem
+                // Movement handling delegated to the dedicated MovementSystem
                 footsteps: { 
                     init: () => {
                         if (EventManager && this.systems.combat?.footstepIndicator) {
                             console.log('Registering footstep event handlers');
                             
-                            // Listen for entity footstep events and pass to combat system
-                            EventManager.on('entity:footstep', (data) => {
-                                if (this.systems.combat) {
-                                    // Extract the info we need for FootstepIndicator
+                            // Listen for footstep detection events and pass to combat system
+                            EventManager.subscribe('footstep:detected', (data) => {
+                                if (this.systems.combat?.footstepIndicator) {
+                                    // Calculate angle from player to source position if not provided
+                                    let angle = data.angle;
+                                    
+                                    if (!angle && data.position && data.playerPosition && data.playerRotation !== undefined) {
+                                        // Position data is in 3D, need to calculate angle relative to player
+                                        const dx = data.position.x - data.playerPosition.x;
+                                        const dz = data.position.z - data.playerPosition.z;
+                                        
+                                        // Calculate angle in degrees (0 = north, clockwise)
+                                        angle = Math.atan2(dx, dz) * (180 / Math.PI);
+                                        
+                                        // Adjust for player rotation
+                                        const playerAngle = data.playerRotation * (180 / Math.PI);
+                                        angle = (angle - playerAngle + 360) % 360;
+                                    }
+                                    
+                                    // Extract the info we need for FootstepIndicator using standardized event structure
                                     const footstepData = {
-                                        angle: data.angle,
+                                        angle: angle,
                                         distance: data.distance,
                                         isEnemy: data.isEnemy || !data.isFriendly, // Default to enemy if not specified
                                         count: data.count || 1, // Default to single footstep
+                                        isContinuous: data.isContinuous || false,
                                         entityId: data.entityId
                                     };
                                     
@@ -156,7 +174,20 @@ export class UIManager {
                             });
                         }
                     }, 
-                    update: () => {} 
+                    update: () => {},
+                    
+                    // Proxy methods to the MovementSystem for convenience
+                    testFootstep: (options) => {
+                        if (this.systems.movement?.testFootstep) {
+                            return this.systems.movement.testFootstep(options);
+                        }
+                    },
+                    
+                    testSequence: (options) => {
+                        if (this.systems.movement?.testFootstepSequence) {
+                            return this.systems.movement.testFootstepSequence(options);
+                        }
+                    }
                 }
             },
             debug: { init: () => {}, update: () => {} }
@@ -736,6 +767,54 @@ export class UIManager {
             );
             
             console.log(`Test footstep: ${footstepData.isEnemy ? 'Enemy' : 'Friendly'} at ${footstepData.angle}° (${footstepData.distance} units away)`);
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Test movement detection using the MovementSystem
+     * For development/debugging only
+     * 
+     * @param {Object} options - Movement test options
+     * @param {number} [options.angle] - Direction angle in degrees (0-360, random if not specified)
+     * @param {number} [options.distance] - Distance in world units
+     * @param {boolean} [options.isFriendly] - Whether it's a friendly entity (true) or enemy (false)
+     * @param {boolean} [options.isContinuous] - Whether to simulate continuous movement
+     * @param {number} [options.count] - For sequence testing, number of footsteps in sequence
+     * @param {number} [options.interval] - For sequence testing, time between footsteps (ms)
+     * @return {UIManager} This UIManager instance
+     */
+    testMovement(options = {}) {
+        if (!this.systems.movement) {
+            console.log('[UIManager] MovementSystem not available for movement testing');
+            return this;
+        }
+        
+        // Enable debug mode for the test
+        this.systems.movement.setDebugMode(true);
+        
+        // If sequence requested, use sequence test
+        if (options.sequence || options.count > 1) {
+            this.systems.movement.testFootstepSequence({
+                angle: options.angle,
+                distance: options.distance || 10,
+                isFriendly: options.isFriendly || false,
+                count: options.count || 4,
+                interval: options.interval || 200
+            });
+            
+            console.log(`[UIManager] Testing movement sequence`);
+        } else {
+            // Single footstep test
+            this.systems.movement.testFootstep({
+                angle: options.angle,
+                distance: options.distance || 10,
+                isFriendly: options.isFriendly || false,
+                isContinuous: options.isContinuous || false
+            });
+            
+            console.log(`[UIManager] Testing single movement event`);
         }
         
         return this;

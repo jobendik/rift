@@ -18,6 +18,8 @@
 @import './components/notifications.css';
 @import './components/menus.css';
 @import './components/progression.css';
+@import './components/movement.css';
+@import './components/environment.css';
 
 /* Global variables */
 :root {

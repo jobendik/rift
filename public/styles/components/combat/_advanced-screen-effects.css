@@ -1,0 +1,381 @@
+/**
+ * Advanced Screen Effects CSS
+ * 
+ * Enhanced screen-wide visual effects with:
+ * - Dynamic vignette effects for low health
+ * - Directional damage flash effects
+ * - Multi-layer color effects for different damage/environment types
+ * - Distortion effects for water, etc.
+ * - Overlay effects for critical states
+ * - Hardware-accelerated animations
+ */
+
+.rift-advanced-screen-effects {
+  --vignette-intensity: 0;
+  --vignette-color: var(--rift-damage-vignette, 128, 0, 0);
+  --flash-intensity: 0;
+  --flash-color: rgba(255, 0, 0, 0.3);
+  --color-intensity: 0;
+  --color-effect: transparent;
+  --distortion-intensity: 0;
+  --overlay-intensity: 0;
+  --overlay-color: transparent;
+  --pulse-duration: 1.5s;
+  --effect-duration: 5s;
+  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: var(--rift-z-index-effects);
+  will-change: transform; /* Hardware acceleration hint for screen shake */
+  transition: transform 0.1s linear;
+}
+
+/* Common layer styles */
+.rift-advanced-screen-effects__layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--rift-easing-out);
+}
+
+/* Vignette effect */
+.rift-advanced-screen-effects__layer--vignette {
+  z-index: var(--rift-z-index-vignette);
+  background: radial-gradient(
+    circle at center,
+    transparent 30%,
+    rgba(var(--vignette-color), calc(var(--vignette-intensity) * 0.8)) 80%,
+    rgba(var(--vignette-color), calc(var(--vignette-intensity) * 0.95)) 100%
+  );
+  transition: opacity 0.5s ease;
+}
+
+.rift-advanced-screen-effects__vignette--active {
+  opacity: 1;
+}
+
+.rift-advanced-screen-effects__vignette--pulse {
+  animation: rift-vignette-pulse var(--pulse-duration) ease-in-out infinite;
+}
+
+/* Damage flash */
+.rift-advanced-screen-effects__layer--flash {
+  z-index: var(--rift-z-index-damage-flash);
+  background-color: var(--flash-color);
+  transition: opacity 0.05s ease-in;
+}
+
+.rift-advanced-screen-effects__flash--active {
+  opacity: var(--flash-intensity);
+}
+
+.rift-advanced-screen-effects__flash--explosion {
+  opacity: var(--flash-intensity);
+  animation: rift-explosion-flash 0.8s ease-out;
+}
+
+/* Color overlay effects */
+.rift-advanced-screen-effects__layer--color {
+  z-index: var(--rift-z-index-color-effect);
+  background-color: var(--color-effect);
+  transition: opacity 0.2s ease-in;
+  mix-blend-mode: screen; /* Use screen blend mode for additive effect */
+}
+
+/* Healing effect */
+.rift-advanced-screen-effects__color--heal-active {
+  opacity: var(--color-intensity);
+  animation: rift-heal-pulse 1.5s ease-in-out;
+}
+
+/* Status/Environment color effects */
+.rift-advanced-screen-effects__color--radiation {
+  opacity: var(--color-intensity);
+  animation: rift-radiation-pulse 2s infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--fire {
+  opacity: var(--color-intensity);
+  animation: rift-fire-flicker 0.1s infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--electrical {
+  opacity: var(--color-intensity);
+  animation: rift-electrical-pulse 0.2s infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--poison {
+  opacity: var(--color-intensity);
+  animation: rift-poison-pulse 3s infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--water {
+  opacity: var(--color-intensity);
+}
+
+.rift-advanced-screen-effects__color--stun {
+  opacity: var(--color-intensity);
+  background-color: rgba(255, 255, 150, 0.3);
+  animation: rift-stun-flash 0.2s infinite alternate ease-in-out;
+}
+
+/* Powerup effects */
+.rift-advanced-screen-effects__color--powerup {
+  opacity: var(--color-intensity, 0.5);
+  animation: rift-powerup-pulse var(--effect-duration) infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--powerup-damage {
+  opacity: var(--color-intensity, 0.3);
+  animation: rift-powerup-damage var(--effect-duration) infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--powerup-speed {
+  opacity: var(--color-intensity, 0.3);
+  animation: rift-powerup-speed var(--effect-duration) infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--powerup-armor {
+  opacity: var(--color-intensity, 0.3);
+  animation: rift-powerup-armor var(--effect-duration) infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__color--powerup-invisible {
+  opacity: var(--color-intensity, 0.5);
+  animation: rift-powerup-invisible var(--effect-duration) infinite ease-in-out;
+}
+
+/* Distortion effects */
+.rift-advanced-screen-effects__layer--distortion {
+  z-index: var(--rift-z-index-distortion);
+}
+
+.rift-advanced-screen-effects__distortion--water {
+  opacity: 1;
+  backdrop-filter: blur(calc(var(--distortion-intensity) * 2px));
+  animation: rift-water-distortion 4s infinite ease-in-out;
+}
+
+/* Overlay effects */
+.rift-advanced-screen-effects__layer--overlay {
+  z-index: var(--rift-z-index-overlay);
+  background-color: var(--overlay-color);
+  transition: opacity 0.2s ease;
+}
+
+.rift-advanced-screen-effects__overlay--critical {
+  opacity: var(--overlay-intensity);
+  animation: rift-critical-pulse 0.8s infinite ease-in-out;
+}
+
+.rift-advanced-screen-effects__overlay--stun {
+  opacity: var(--overlay-intensity);
+  backdrop-filter: blur(calc(var(--overlay-intensity) * 5px));
+  animation: rift-stun-overlay 0.2s infinite alternate ease-in-out;
+}
+
+.rift-advanced-screen-effects__overlay--blind {
+  opacity: var(--overlay-intensity);
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: opacity 0.1s ease-in;
+}
+
+.rift-advanced-screen-effects__overlay--blind-fading {
+  transition: opacity 1s ease-out;
+  opacity: 0;
+}
+
+/* Animation keyframes */
+@keyframes rift-vignette-pulse {
+  0% { 
+    opacity: calc(0.8 * var(--vignette-intensity));
+    transform: scale(1);
+  }
+  50% { 
+    opacity: var(--vignette-intensity);
+    transform: scale(1.03);
+  }
+  100% { 
+    opacity: calc(0.8 * var(--vignette-intensity));
+    transform: scale(1);
+  }
+}
+
+@keyframes rift-explosion-flash {
+  0% { opacity: var(--flash-intensity); }
+  25% { opacity: var(--flash-intensity); }
+  100% { opacity: 0; }
+}
+
+@keyframes rift-heal-pulse {
+  0% { opacity: 0; }
+  20% { opacity: var(--color-intensity); }
+  80% { opacity: calc(var(--color-intensity) * 0.7); }
+  100% { opacity: 0; }
+}
+
+@keyframes rift-radiation-pulse {
+  0% { opacity: calc(var(--color-intensity) * 0.6); }
+  50% { opacity: var(--color-intensity); }
+  100% { opacity: calc(var(--color-intensity) * 0.6); }
+}
+
+@keyframes rift-fire-flicker {
+  0% { 
+    opacity: calc(var(--color-intensity) * 0.7);
+    transform: scale(1);
+  }
+  50% { 
+    opacity: var(--color-intensity);
+    transform: scale(1.01);
+  }
+  100% { 
+    opacity: calc(var(--color-intensity) * 0.8);
+    transform: scale(1);
+  }
+}
+
+@keyframes rift-electrical-pulse {
+  0%, 100% { 
+    opacity: calc(var(--color-intensity) * 0.2);
+    transform: translateX(0);
+  }
+  10%, 90% { 
+    opacity: calc(var(--color-intensity) * 0.5);
+    transform: translateX(-1px);
+  }
+  30%, 70% { 
+    opacity: var(--color-intensity);
+    transform: translateX(1px);
+  }
+  50% { 
+    opacity: var(--color-intensity);
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes rift-poison-pulse {
+  0% { 
+    opacity: calc(var(--color-intensity) * 0.5);
+    filter: hue-rotate(0deg);
+  }
+  50% { 
+    opacity: var(--color-intensity);
+    filter: hue-rotate(20deg);
+  }
+  100% { 
+    opacity: calc(var(--color-intensity) * 0.5);
+    filter: hue-rotate(0deg);
+  }
+}
+
+@keyframes rift-water-distortion {
+  0%, 100% {
+    backdrop-filter: blur(calc(var(--distortion-intensity) * 2px));
+  }
+  50% {
+    backdrop-filter: blur(calc(var(--distortion-intensity) * 3px));
+  }
+}
+
+@keyframes rift-critical-pulse {
+  0%, 100% { opacity: calc(var(--overlay-intensity) * 0.5); }
+  50% { opacity: var(--overlay-intensity); }
+}
+
+@keyframes rift-stun-flash {
+  0% { opacity: calc(var(--color-intensity) * 0.5); }
+  100% { opacity: var(--color-intensity); }
+}
+
+@keyframes rift-stun-overlay {
+  0% { backdrop-filter: blur(calc(var(--overlay-intensity) * 3px)); }
+  100% { backdrop-filter: blur(calc(var(--overlay-intensity) * 5px)); }
+}
+
+@keyframes rift-powerup-pulse {
+  0%, 100% { 
+    opacity: calc(var(--color-intensity) * 0.5);
+    filter: hue-rotate(0deg);
+  }
+  50% { 
+    opacity: var(--color-intensity);
+    filter: hue-rotate(20deg);
+  }
+}
+
+@keyframes rift-powerup-damage {
+  0% { opacity: calc(var(--color-intensity) * 0.4); }
+  50% { opacity: var(--color-intensity); }
+  100% { opacity: calc(var(--color-intensity) * 0.4); }
+}
+
+@keyframes rift-powerup-speed {
+  0% { opacity: calc(var(--color-intensity) * 0.5); }
+  25% { opacity: var(--color-intensity); }
+  100% { opacity: calc(var(--color-intensity) * 0.5); }
+}
+
+@keyframes rift-powerup-armor {
+  0%, 100% { 
+    opacity: calc(var(--color-intensity) * 0.5);
+  }
+  50% {
+    opacity: var(--color-intensity);
+  }
+}
+
+@keyframes rift-powerup-invisible {
+  0%, 100% { 
+    opacity: calc(var(--color-intensity) * 0.4);
+    backdrop-filter: blur(1px);
+  }
+  50% { 
+    opacity: calc(var(--color-intensity) * 0.6);
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* Media query for smaller screens - reduce effects intensity */
+@media (max-width: 768px) {
+  .rift-advanced-screen-effects__layer--vignette {
+    /* Reduce vignette intensity on smaller screens */
+    background: radial-gradient(
+      circle at center,
+      transparent 40%,
+      rgba(var(--vignette-color), calc(var(--vignette-intensity) * 0.7)) 70%,
+      rgba(var(--vignette-color), calc(var(--vignette-intensity) * 0.85)) 100%
+    );
+  }
+  
+  /* Disable some resource-intensive effects on mobile */
+  .rift-advanced-screen-effects__distortion--water {
+    backdrop-filter: none;
+  }
+}
+
+/* Support for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .rift-advanced-screen-effects__vignette--pulse,
+  .rift-advanced-screen-effects__color--radiation,
+  .rift-advanced-screen-effects__color--fire,
+  .rift-advanced-screen-effects__color--electrical,
+  .rift-advanced-screen-effects__color--poison,
+  .rift-advanced-screen-effects__color--powerup,
+  .rift-advanced-screen-effects__color--powerup-damage,
+  .rift-advanced-screen-effects__color--powerup-speed,
+  .rift-advanced-screen-effects__color--powerup-armor,
+  .rift-advanced-screen-effects__color--powerup-invisible,
+  .rift-advanced-screen-effects__overlay--critical,
+  .rift-advanced-screen-effects__overlay--stun {
+    animation-duration: 0s;
+  }
+}

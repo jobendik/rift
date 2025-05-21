@@ -53,10 +53,10 @@ export class HealthDisplay extends UIComponent {
             healingGlow: null
         };
         
-        // Event subscriptions
+        // Event subscriptions using standardized event names
         this.registerEvents({
             'health:changed': this._onHealthChanged,
-            'health:max-changed': this._onMaxHealthChanged,
+            'health:max-changed': this._onMaxHealthChanged, // Corrected to standard naming convention
             'player:damaged': this._onPlayerDamaged,
             'player:healed': this._onPlayerHealed
         });
@@ -342,18 +342,26 @@ export class HealthDisplay extends UIComponent {
     
     /**
      * Handle health changed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized state change event data
      * @private
      */
     _onHealthChanged(event) {
+        // Verify we have a proper state change event
         if (typeof event.value === 'number') {
             this.updateHealth(event.value);
+            
+            // If we have information about what caused the change, use it
+            if (event.source === 'damage') {
+                this.showDamageEffect();
+            } else if (event.source === 'heal') {
+                this.showHealEffect(event.delta ? Math.abs(event.delta) : 0);
+            }
         }
     }
     
     /**
      * Handle max health changed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized state change event data
      * @private
      */
     _onMaxHealthChanged(event) {
@@ -364,31 +372,40 @@ export class HealthDisplay extends UIComponent {
     
     /**
      * Handle player damaged event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized combat event data
      * @private
      */
     _onPlayerDamaged(event) {
         // Show damage effect
         this.showDamageEffect();
         
-        // Update health if current value is provided
+        // Update health if current health info is provided
         if (typeof event.currentHealth === 'number') {
             this.updateHealth(event.currentHealth, false);
+        } else if (typeof event.damage === 'number' && typeof this.state.currentHealth === 'number') {
+            // Calculate new health based on damage amount if currentHealth not provided
+            const newHealth = Math.max(0, this.state.currentHealth - event.damage);
+            this.updateHealth(newHealth, false);
         }
     }
     
     /**
      * Handle player healed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized combat event data
      * @private
      */
     _onPlayerHealed(event) {
-        // Show heal effect
-        this.showHealEffect(event.amount);
+        // Show heal effect with amount if provided
+        const healAmount = typeof event.amount === 'number' ? event.amount : 0;
+        this.showHealEffect(healAmount);
         
-        // Update health if current value is provided
+        // Update health if current health info is provided
         if (typeof event.currentHealth === 'number') {
             this.updateHealth(event.currentHealth, false);
+        } else if (typeof event.amount === 'number' && typeof this.state.currentHealth === 'number') {
+            // Calculate new health based on heal amount if currentHealth not provided
+            const newHealth = Math.min(this.state.maxHealth, this.state.currentHealth + event.amount);
+            this.updateHealth(newHealth, false);
         }
     }
     

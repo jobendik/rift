@@ -51,12 +51,12 @@ export class AmmoDisplay extends UIComponent {
             bullets: []
         };
         
-        // Event subscriptions
+        // Event subscriptions using standardized event names
         this.registerEvents({
             'ammo:changed': this._onAmmoChanged,
-            'ammo:total-changed': this._onTotalAmmoChanged,
-            'weapon:reload:start': this._onReloadStart,
-            'weapon:reload:complete': this._onReloadComplete,
+            'ammo:reserve-changed': this._onTotalAmmoChanged, // Standardized from ammo:total-changed
+            'weapon:reloading': this._onReloadStart, // Standardized from weapon:reload:start
+            'weapon:reloaded': this._onReloadComplete, // Standardized from weapon:reload:complete
             'weapon:switched': this._onWeaponSwitched
         });
     }
@@ -396,7 +396,11 @@ export class AmmoDisplay extends UIComponent {
     
     /**
      * Handle ammo changed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized state change event
+     * @param {Number} event.value - Current ammo value
+     * @param {Number} event.previous - Previous ammo value
+     * @param {Number} [event.delta] - Amount changed
+     * @param {Number} [event.max] - Maximum magazine size
      * @private
      */
     _onAmmoChanged(event) {
@@ -406,8 +410,11 @@ export class AmmoDisplay extends UIComponent {
     }
     
     /**
-     * Handle total ammo changed event
-     * @param {Object} event - Event data
+     * Handle reserve ammo changed event
+     * @param {Object} event - Standardized state change event
+     * @param {Number} event.value - Current reserve ammo value
+     * @param {Number} event.previous - Previous reserve ammo value
+     * @param {Number} [event.delta] - Amount changed
      * @private
      */
     _onTotalAmmoChanged(event) {
@@ -417,8 +424,10 @@ export class AmmoDisplay extends UIComponent {
     }
     
     /**
-     * Handle reload start event
-     * @param {Object} event - Event data
+     * Handle weapon reloading event
+     * @param {Object} event - Standardized weapon event
+     * @param {String} [event.weaponType] - Type of weapon being reloaded
+     * @param {Number} [event.duration] - Reload duration in milliseconds
      * @private
      */
     _onReloadStart(event) {
@@ -426,8 +435,10 @@ export class AmmoDisplay extends UIComponent {
     }
     
     /**
-     * Handle reload complete event
-     * @param {Object} event - Event data
+     * Handle weapon reloaded event
+     * @param {Object} event - Standardized weapon event
+     * @param {Number} [event.currentAmmo] - New magazine ammo count
+     * @param {Number} [event.totalAmmo] - New reserve ammo count
      * @private
      */
     _onReloadComplete(event) {
@@ -446,7 +457,11 @@ export class AmmoDisplay extends UIComponent {
     
     /**
      * Handle weapon switched event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized weapon event
+     * @param {String} [event.weaponType] - Type of weapon switched to
+     * @param {Number} [event.magSize] - Magazine size of new weapon
+     * @param {Number} [event.currentAmmo] - Current magazine ammo of new weapon
+     * @param {Number} [event.totalAmmo] - Current reserve ammo of new weapon
      * @private
      */
     _onWeaponSwitched(event) {

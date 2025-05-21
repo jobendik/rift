@@ -317,14 +317,11 @@ export class UIComponent {
                 : (typeof this[handler] === 'function' ? this[handler].bind(this) : null);
                 
             if (boundHandler) {
-                // Subscribe to event
-                EventManager.on(eventName, boundHandler);
+                // Subscribe to event using 'on' alias
+                const subscription = EventManager.on(eventName, boundHandler);
                 
                 // Save subscription for cleanup
-                this.eventSubscriptions.push({
-                    name: eventName,
-                    handler: boundHandler
-                });
+                this.eventSubscriptions.push(subscription);
             }
         }
         
@@ -341,17 +338,17 @@ export class UIComponent {
         
         // Find subscriptions for this event
         const subscriptionsForEvent = this.eventSubscriptions.filter(
-            sub => sub.name === eventName
+            sub => sub.eventType === eventName
         );
         
         // Unsubscribe each handler
         subscriptionsForEvent.forEach(sub => {
-            EventManager.off(sub.name, sub.handler);
+            EventManager.unsubscribe(sub);
         });
         
         // Remove from tracked subscriptions
         this.eventSubscriptions = this.eventSubscriptions.filter(
-            sub => sub.name !== eventName
+            sub => sub.eventType !== eventName
         );
         
         return this;
@@ -366,7 +363,7 @@ export class UIComponent {
         
         // Unsubscribe from all events
         this.eventSubscriptions.forEach(sub => {
-            EventManager.off(sub.name, sub.handler);
+            EventManager.unsubscribe(sub);
         });
         
         this.eventSubscriptions = [];
