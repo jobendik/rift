@@ -179,6 +179,44 @@
   100% { transform: rotate(360deg); }
 }
 
+/* ========== SCREEN TRANSITION ANIMATIONS ========== */
+
+/* Slide in from the left */
+@keyframes rift-slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Slide out to the right */
+@keyframes rift-slide-out-right {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Slide in from the right */
+@keyframes rift-slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Slide out to the left */
+@keyframes rift-slide-out-left {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+/* Scale in from center */
+@keyframes rift-scale-in {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Scale out to center */
+@keyframes rift-scale-out {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.8); opacity: 0; }
+}
+
 /* ========== REUSABLE ANIMATION CLASSES ========== */
 
 /* Pulse animations */
@@ -219,4 +257,29 @@
 /* Spinner */
 .rift-animate-spinner {
   animation: rift-spinner 1s linear infinite;
+}
+
+/* Screen transition animations */
+.rift-animate-slide-in-left {
+  animation: rift-slide-in-left var(--rift-duration-normal) var(--rift-easing-standard) forwards;
+}
+
+.rift-animate-slide-out-right {
+  animation: rift-slide-out-right var(--rift-duration-normal) var(--rift-easing-standard) forwards;
+}
+
+.rift-animate-slide-in-right {
+  animation: rift-slide-in-right var(--rift-duration-normal) var(--rift-easing-standard) forwards;
+}
+
+.rift-animate-slide-out-left {
+  animation: rift-slide-out-left var(--rift-duration-normal) var(--rift-easing-standard) forwards;
+}
+
+.rift-animate-scale-in {
+  animation: rift-scale-in var(--rift-duration-normal) var(--rift-easing-standard) forwards;
+}
+
+.rift-animate-scale-out {
+  animation: rift-scale-out var(--rift-duration-normal) var(--rift-easing-standard) forwards;
 }

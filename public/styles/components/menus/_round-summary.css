@@ -1,0 +1,573 @@
+/**
+ * Round Summary Component Styles
+ * Styling for the end-of-round summary screen
+ */
+
+/* Round summary container */
+.rift-round-summary {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    color: var(--rift-text-color);
+    font-family: var(--rift-font-display);
+}
+
+/* Round summary header */
+.rift-round-summary__header {
+    display: flex;
+    align-items: center;
+    padding: var(--rift-space-md) var(--rift-space-lg);
+    background-color: var(--rift-ui-background-dark);
+    border-bottom: 1px solid var(--rift-border-color);
+}
+
+.rift-round-summary__title {
+    flex: 1;
+    font-size: var(--rift-font-size-xl);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    margin: 0;
+}
+
+.rift-round-summary__outcome {
+    padding: var(--rift-space-xs) var(--rift-space-md);
+    border-radius: var(--rift-border-radius-sm);
+    font-size: var(--rift-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    font-weight: var(--rift-font-weight-bold);
+    margin-left: var(--rift-space-md);
+}
+
+.rift-round-summary__outcome--victory {
+    background-color: var(--rift-success);
+    color: var(--rift-text-color-light);
+}
+
+.rift-round-summary__outcome--defeat {
+    background-color: var(--rift-danger);
+    color: var(--rift-text-color-light);
+}
+
+.rift-round-summary__outcome--draw {
+    background-color: var(--rift-warning);
+    color: var(--rift-text-color-dark);
+}
+
+/* Round summary content */
+.rift-round-summary__content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Round summary details */
+.rift-round-summary__main {
+    flex: 1;
+    padding: var(--rift-space-lg);
+    overflow-y: auto;
+    background-color: var(--rift-ui-background-light);
+}
+
+.rift-round-summary__tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rift-border-color);
+    margin-bottom: var(--rift-space-md);
+}
+
+.rift-round-summary__tab {
+    padding: var(--rift-space-sm) var(--rift-space-lg);
+    cursor: pointer;
+    position: relative;
+    text-transform: uppercase;
+    font-size: var(--rift-font-size-sm);
+    letter-spacing: var(--rift-letter-spacing-wide);
+    font-weight: var(--rift-font-weight-semibold);
+}
+
+.rift-round-summary__tab--active {
+    color: var(--rift-primary);
+}
+
+.rift-round-summary__tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--rift-primary);
+}
+
+.rift-round-summary__panel {
+    display: none;
+}
+
+.rift-round-summary__panel--active {
+    display: block;
+}
+
+/* Player performance section */
+.rift-round-summary__performance {
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-round-summary__section-title {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-semibold);
+    margin-bottom: var(--rift-space-sm);
+    color: var(--rift-secondary);
+}
+
+.rift-round-summary__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--rift-space-md);
+    margin-bottom: var(--rift-space-md);
+}
+
+.rift-round-summary__stat {
+    background-color: var(--rift-ui-background);
+    border-radius: var(--rift-border-radius);
+    padding: var(--rift-space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid var(--rift-border-color);
+}
+
+.rift-round-summary__stat-value {
+    font-size: var(--rift-font-size-xl);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+}
+
+.rift-round-summary__stat-label {
+    font-size: var(--rift-font-size-xs);
+    color: var(--rift-text-color-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    margin-top: var(--rift-space-xs);
+}
+
+/* Achievements section */
+.rift-round-summary__achievements {
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-round-summary__achievements-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rift-space-md);
+}
+
+.rift-round-summary__achievement {
+    display: flex;
+    align-items: center;
+    background-color: var(--rift-ui-background);
+    border-radius: var(--rift-border-radius);
+    padding: var(--rift-space-sm);
+    border: 1px solid var(--rift-border-color);
+    min-width: 250px;
+    flex: 1;
+    max-width: 350px;
+}
+
+.rift-round-summary__achievement-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--rift-border-radius-sm);
+    background-color: var(--rift-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--rift-space-md);
+    flex-shrink: 0;
+}
+
+.rift-round-summary__achievement-info {
+    flex: 1;
+}
+
+.rift-round-summary__achievement-title {
+    font-weight: var(--rift-font-weight-semibold);
+    margin-bottom: var(--rift-space-xs);
+}
+
+.rift-round-summary__achievement-description {
+    font-size: var(--rift-font-size-sm);
+    color: var(--rift-text-color-muted);
+}
+
+.rift-round-summary__achievement-value {
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-secondary);
+}
+
+/* Progress section */
+.rift-round-summary__progression {
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-round-summary__xp {
+    background-color: var(--rift-ui-background);
+    border-radius: var(--rift-border-radius);
+    padding: var(--rift-space-md);
+    border: 1px solid var(--rift-border-color);
+    margin-bottom: var(--rift-space-md);
+}
+
+.rift-round-summary__xp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--rift-space-sm);
+}
+
+.rift-round-summary__xp-title {
+    font-weight: var(--rift-font-weight-semibold);
+}
+
+.rift-round-summary__xp-value {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+}
+
+.rift-round-summary__xp-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: var(--rift-ui-background-dark);
+    border-radius: var(--rift-border-radius-sm);
+    overflow: hidden;
+    margin-bottom: var(--rift-space-xs);
+}
+
+.rift-round-summary__xp-bar {
+    height: 100%;
+    background-color: var(--rift-primary);
+    width: 0%; /* Will be set by JS */
+    transition: width var(--rift-duration-slow) ease-out;
+}
+
+.rift-round-summary__xp-level {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--rift-font-size-xs);
+    color: var(--rift-text-color-muted);
+}
+
+/* Rewards section */
+.rift-round-summary__rewards {
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-round-summary__rewards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rift-space-md);
+}
+
+.rift-round-summary__reward {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--rift-ui-background);
+    border-radius: var(--rift-border-radius);
+    padding: var(--rift-space-md);
+    border: 1px solid var(--rift-border-color);
+    min-width: 120px;
+    text-align: center;
+}
+
+.rift-round-summary__reward-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--rift-border-radius-sm);
+    background-color: var(--rift-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--rift-space-sm);
+}
+
+.rift-round-summary__reward-title {
+    font-weight: var(--rift-font-weight-semibold);
+    margin-bottom: var(--rift-space-xs);
+}
+
+.rift-round-summary__reward-value {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+}
+
+.rift-round-summary__reward-description {
+    font-size: var(--rift-font-size-xs);
+    color: var(--rift-text-color-muted);
+    margin-top: var(--rift-space-xs);
+}
+
+/* Leaderboard table */
+.rift-round-summary__leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-round-summary__leaderboard-header {
+    background-color: var(--rift-ui-background-dark);
+    text-transform: uppercase;
+    font-size: var(--rift-font-size-xs);
+    letter-spacing: var(--rift-letter-spacing-wide);
+    color: var(--rift-text-color-muted);
+}
+
+.rift-round-summary__leaderboard th {
+    padding: var(--rift-space-sm);
+    text-align: left;
+}
+
+.rift-round-summary__leaderboard td {
+    padding: var(--rift-space-sm);
+    border-bottom: 1px solid var(--rift-border-color-light);
+}
+
+.rift-round-summary__player-row {
+    background-color: rgba(230, 57, 70, 0.1);
+}
+
+.rift-round-summary__player-name {
+    font-weight: var(--rift-font-weight-semibold);
+    display: flex;
+    align-items: center;
+}
+
+.rift-round-summary__player-level {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: var(--rift-primary);
+    border-radius: 50%;
+    color: var(--rift-text-color-light);
+    font-size: var(--rift-font-size-xs);
+    font-weight: var(--rift-font-weight-bold);
+    text-align: center;
+    line-height: 24px;
+    margin-right: var(--rift-space-sm);
+}
+
+/* Map section */
+.rift-round-summary__map {
+    width: 30%;
+    background-color: var(--rift-ui-background);
+    border-left: 1px solid var(--rift-border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.rift-round-summary__map-title {
+    padding: var(--rift-space-sm) var(--rift-space-md);
+    font-weight: var(--rift-font-weight-semibold);
+    font-size: var(--rift-font-size-md);
+    border-bottom: 1px solid var(--rift-border-color);
+    background-color: var(--rift-ui-background-dark);
+}
+
+.rift-round-summary__map-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.rift-round-summary__heatmap-toggle {
+    position: absolute;
+    top: var(--rift-space-sm);
+    right: var(--rift-space-sm);
+    z-index: 1;
+    background-color: var(--rift-ui-background);
+    border: 1px solid var(--rift-border-color);
+    border-radius: var(--rift-border-radius-sm);
+    padding: var(--rift-space-xs) var(--rift-space-sm);
+    font-size: var(--rift-font-size-xs);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.rift-round-summary__heatmap-toggle-icon {
+    width: 14px;
+    height: 14px;
+    background-color: var(--rift-primary);
+    border-radius: var(--rift-border-radius-xs);
+    margin-right: var(--rift-space-xs);
+}
+
+/* Round summary footer */
+.rift-round-summary__footer {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--rift-space-md) var(--rift-space-lg);
+    background-color: var(--rift-ui-background-dark);
+    border-top: 1px solid var(--rift-border-color);
+}
+
+.rift-round-summary__info {
+    display: flex;
+    align-items: center;
+    color: var(--rift-text-color-muted);
+    font-size: var(--rift-font-size-sm);
+}
+
+.rift-round-summary__map-name {
+    margin-right: var(--rift-space-lg);
+}
+
+.rift-round-summary__duration {
+    display: flex;
+    align-items: center;
+}
+
+.rift-round-summary__duration-icon {
+    margin-right: var(--rift-space-xs);
+}
+
+.rift-round-summary__actions {
+    display: flex;
+    gap: var(--rift-space-md);
+}
+
+.rift-round-summary__button {
+    padding: var(--rift-space-sm) var(--rift-space-lg);
+    border: none;
+    border-radius: var(--rift-border-radius);
+    font-family: var(--rift-font-body);
+    font-weight: var(--rift-font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    cursor: pointer;
+    transition: all var(--rift-duration-fast) ease;
+}
+
+.rift-round-summary__button--primary {
+    background-color: var(--rift-primary);
+    color: var(--rift-text-color-light);
+}
+
+.rift-round-summary__button--primary:hover {
+    background-color: var(--rift-primary-dark);
+}
+
+.rift-round-summary__button--secondary {
+    background-color: var(--rift-ui-background-light);
+    color: var(--rift-text-color);
+    border: 1px solid var(--rift-border-color);
+}
+
+.rift-round-summary__button--secondary:hover {
+    background-color: var(--rift-ui-background);
+}
+
+/* Animations for elements */
+@keyframes rift-slide-in {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.rift-round-summary__animate {
+    animation: rift-slide-in var(--rift-duration-normal) ease-out forwards;
+    opacity: 0;
+}
+
+.rift-round-summary__animate--delay-1 {
+    animation-delay: 0.1s;
+}
+
+.rift-round-summary__animate--delay-2 {
+    animation-delay: 0.2s;
+}
+
+.rift-round-summary__animate--delay-3 {
+    animation-delay: 0.3s;
+}
+
+.rift-round-summary__animate--delay-4 {
+    animation-delay: 0.4s;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+    .rift-round-summary__content {
+        flex-direction: column;
+    }
+    
+    .rift-round-summary__map {
+        width: 100%;
+        height: 300px;
+        border-left: none;
+        border-top: 1px solid var(--rift-border-color);
+    }
+    
+    .rift-round-summary__stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .rift-round-summary__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rift-round-summary__outcome {
+        margin-left: 0;
+        margin-top: var(--rift-space-xs);
+    }
+    
+    .rift-round-summary__footer {
+        flex-direction: column;
+        gap: var(--rift-space-md);
+    }
+    
+    .rift-round-summary__actions {
+        width: 100%;
+    }
+    
+    .rift-round-summary__button {
+        flex: 1;
+    }
+    
+    .rift-round-summary__stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .rift-round-summary__rewards-list {
+        justify-content: space-between;
+    }
+    
+    .rift-round-summary__reward {
+        flex: 0 0 calc(50% - var(--rift-space-sm));
+    }
+    
+    .rift-round-summary__tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: var(--rift-space-xs);
+    }
+    
+    .rift-round-summary__achievement {
+        min-width: unset;
+        max-width: unset;
+        width: 100%;
+    }
+}

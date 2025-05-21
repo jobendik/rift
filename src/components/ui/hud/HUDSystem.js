@@ -14,6 +14,7 @@ import CrosshairSystem from './CrosshairSystem.js';
 import MinimapSystem from './MinimapSystem.js';
 import StaminaSystem from './StaminaSystem.js';
 import CompassDisplay from './CompassDisplay.js';
+import WeaponWheel from './WeaponWheel.js';
 
 export class HUDSystem extends UIComponent {
     /**
@@ -38,7 +39,8 @@ export class HUDSystem extends UIComponent {
             crosshair: null,
             compass: null,
             minimap: null,
-            stamina: null
+            stamina: null,
+            weaponWheel: null
         };
         
         // Container elements for different screen regions
@@ -185,6 +187,10 @@ export class HUDSystem extends UIComponent {
             showCardinalMarkers: true
         });
         this.addChild(this.components.compass);
+        
+        // Weapon wheel (full screen overlay, not attached to a specific container)
+        this.components.weaponWheel = new WeaponWheel(this.world);
+        this.addChild(this.components.weaponWheel);
     }
     
     /**

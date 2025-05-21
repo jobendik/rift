@@ -1,0 +1,216 @@
+/**
+ * _powerup-display.css
+ * Styles for the PowerupDisplay component that shows active buffs and status effects
+ */
+
+.rift-powerups {
+  position: absolute;
+  right: var(--rift-hud-margin);
+  top: calc(var(--rift-hud-margin) + 100px); /* Below other common HUD elements */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: var(--rift-z-index-hud);
+  pointer-events: none;
+}
+
+.rift-powerups__container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+/* Individual powerup item */
+.rift-powerup {
+  display: flex;
+  align-items: center;
+  background-color: var(--rift-ui-background);
+  border: 1px solid var(--rift-ui-border);
+  border-radius: var(--rift-border-radius);
+  padding: 6px 10px;
+  max-width: 200px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.rift-powerup--entering {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: rift-powerup-enter var(--rift-duration-normal) forwards;
+}
+
+.rift-powerup--exiting {
+  animation: rift-powerup-exit var(--rift-duration-normal) forwards;
+}
+
+.rift-powerup--expiring {
+  animation: rift-powerup-expiring 0.8s infinite alternate;
+}
+
+/* Powerup type variations */
+.rift-powerup--damage {
+  border-color: var(--rift-danger);
+  background-color: rgba(244, 67, 54, 0.15);
+}
+
+.rift-powerup--speed {
+  border-color: var(--rift-secondary);
+  background-color: rgba(51, 168, 255, 0.15);
+}
+
+.rift-powerup--armor {
+  border-color: var(--rift-primary);
+  background-color: rgba(230, 57, 70, 0.15);
+}
+
+.rift-powerup--health {
+  border-color: var(--rift-success);
+  background-color: rgba(76, 175, 80, 0.15);
+}
+
+.rift-powerup--ammo {
+  border-color: var(--rift-warning);
+  background-color: rgba(255, 152, 0, 0.15);
+}
+
+.rift-powerup--invisible {
+  border-color: var(--rift-text-color);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.rift-powerup__icon {
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+}
+
+.rift-powerup__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+
+.rift-powerup__name {
+  font-family: var(--rift-font-hud);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--rift-text-color);
+  text-shadow: var(--rift-text-shadow);
+}
+
+.rift-powerup__timer {
+  position: relative;
+  height: 3px;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rift-powerup__timer-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--rift-primary);
+  transition: width 0.1s linear;
+}
+
+.rift-powerup--damage .rift-powerup__timer-bar {
+  background-color: var(--rift-danger);
+}
+
+.rift-powerup--speed .rift-powerup__timer-bar {
+  background-color: var(--rift-secondary);
+}
+
+.rift-powerup--armor .rift-powerup__timer-bar {
+  background-color: var(--rift-primary);
+}
+
+.rift-powerup--health .rift-powerup__timer-bar {
+  background-color: var(--rift-success);
+}
+
+.rift-powerup--ammo .rift-powerup__timer-bar {
+  background-color: var(--rift-warning);
+}
+
+.rift-powerup--invisible .rift-powerup__timer-bar {
+  background-color: var(--rift-text-color);
+}
+
+.rift-powerup__timer-text {
+  font-family: var(--rift-font-hud);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: var(--rift-text-shadow);
+  position: absolute;
+  right: 0;
+  top: -14px;
+  padding: 0 2px;
+}
+
+/* Animations */
+@keyframes rift-powerup-enter {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rift-powerup-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes rift-powerup-expiring {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-powerups {
+    right: 10px;
+    top: 80px;
+  }
+  
+  .rift-powerup {
+    max-width: 150px;
+    padding: 4px 8px;
+  }
+  
+  .rift-powerup__icon {
+    font-size: 14px;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+  }
+  
+  .rift-powerup__name {
+    font-size: 12px;
+  }
+}

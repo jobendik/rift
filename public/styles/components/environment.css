@@ -1,0 +1,30 @@
+/* Environment Components
+   ============================= */
+
+/* Import individual component styles */
+@import './environment/_weather.css';
+@import './environment/_objective-marker.css';
+@import './environment/_danger-zone.css';
+@import './environment/_powerup-display.css';
+
+/* Global environment styles */
+.rift-environment {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--rift-z-index-environment);
+  overflow: hidden;
+}
+
+/* Environment content container */
+.rift-environment__content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}

@@ -1,0 +1,407 @@
+/**
+ * Mission Briefing Component Styles
+ * Styling for the mission briefing screen
+ */
+
+/* Mission briefing container */
+.rift-mission-briefing {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    color: var(--rift-text-color);
+    font-family: var(--rift-font-display);
+}
+
+/* Mission header */
+.rift-mission-briefing__header {
+    display: flex;
+    align-items: center;
+    padding: var(--rift-space-md) var(--rift-space-lg);
+    background-color: var(--rift-ui-background-dark);
+    border-bottom: 1px solid var(--rift-border-color);
+}
+
+.rift-mission-briefing__title {
+    flex: 1;
+    font-size: var(--rift-font-size-xl);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    margin: 0;
+}
+
+.rift-mission-briefing__status {
+    padding: var(--rift-space-xs) var(--rift-space-md);
+    border-radius: var(--rift-border-radius-sm);
+    font-size: var(--rift-font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    font-weight: var(--rift-font-weight-bold);
+    margin-left: var(--rift-space-md);
+}
+
+.rift-mission-briefing__status--active {
+    background-color: var(--rift-success);
+    color: var(--rift-text-color-light);
+}
+
+.rift-mission-briefing__status--pending {
+    background-color: var(--rift-warning);
+    color: var(--rift-text-color-dark);
+}
+
+.rift-mission-briefing__status--completed {
+    background-color: var(--rift-completed);
+    color: var(--rift-text-color-light);
+}
+
+.rift-mission-briefing__status--failed {
+    background-color: var(--rift-danger);
+    color: var(--rift-text-color-light);
+}
+
+/* Mission content */
+.rift-mission-briefing__content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Mission details */
+.rift-mission-briefing__details {
+    flex: 1;
+    padding: var(--rift-space-lg);
+    overflow-y: auto;
+    background-color: var(--rift-ui-background-light);
+}
+
+.rift-mission-briefing__description {
+    margin-bottom: var(--rift-space-lg);
+    line-height: 1.6;
+    color: var(--rift-text-color-muted);
+}
+
+.rift-mission-briefing__difficulty {
+    margin-bottom: var(--rift-space-md);
+    display: flex;
+    align-items: center;
+}
+
+.rift-mission-briefing__difficulty-label {
+    font-weight: var(--rift-font-weight-semibold);
+    margin-right: var(--rift-space-sm);
+}
+
+.rift-mission-briefing__difficulty-stars {
+    display: flex;
+}
+
+.rift-mission-briefing__difficulty-star {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    background-color: var(--rift-secondary);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.rift-mission-briefing__difficulty-star--inactive {
+    background-color: var(--rift-ui-background-dark);
+}
+
+/* Mission objectives */
+.rift-mission-briefing__objectives {
+    margin-top: var(--rift-space-md);
+    margin-bottom: var(--rift-space-lg);
+}
+
+.rift-mission-briefing__objectives-title {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-semibold);
+    margin-bottom: var(--rift-space-sm);
+    color: var(--rift-secondary);
+}
+
+.rift-mission-briefing__objective-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.rift-mission-briefing__objective {
+    padding: var(--rift-space-sm) 0;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--rift-border-color-light);
+}
+
+.rift-mission-briefing__objective-check {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--rift-border-color);
+    border-radius: var(--rift-border-radius-sm);
+    margin-right: var(--rift-space-md);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rift-mission-briefing__objective--completed .rift-mission-briefing__objective-check {
+    border-color: var(--rift-success);
+    background-color: var(--rift-success);
+}
+
+.rift-mission-briefing__objective--completed .rift-mission-briefing__objective-check::after {
+    content: '';
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 5px;
+    height: 10px;
+    border-bottom: 2px solid var(--rift-text-color-light);
+    border-right: 2px solid var(--rift-text-color-light);
+}
+
+.rift-mission-briefing__objective--completed .rift-mission-briefing__objective-text {
+    text-decoration: line-through;
+    color: var(--rift-text-color-muted);
+}
+
+.rift-mission-briefing__objective-text {
+    flex: 1;
+}
+
+.rift-mission-briefing__objective-location {
+    display: flex;
+    align-items: center;
+    color: var(--rift-text-color-muted);
+    font-size: var(--rift-font-size-sm);
+    margin-left: var(--rift-space-md);
+    cursor: pointer;
+    transition: color var(--rift-duration-fast) ease;
+}
+
+.rift-mission-briefing__objective-location:hover {
+    color: var(--rift-secondary);
+}
+
+.rift-mission-briefing__objective-location-icon {
+    margin-right: var(--rift-space-xs);
+}
+
+/* Mission rewards */
+.rift-mission-briefing__rewards {
+    margin-top: var(--rift-space-lg);
+}
+
+.rift-mission-briefing__rewards-title {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-semibold);
+    margin-bottom: var(--rift-space-sm);
+    color: var(--rift-secondary);
+}
+
+.rift-mission-briefing__rewards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rift-space-md);
+}
+
+.rift-mission-briefing__reward {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--rift-space-sm);
+    background-color: var(--rift-ui-background);
+    border-radius: var(--rift-border-radius);
+    min-width: 100px;
+    text-align: center;
+    border: 1px solid var(--rift-border-color);
+}
+
+.rift-mission-briefing__reward-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--rift-space-xs);
+    background-color: var(--rift-primary-light);
+    border-radius: var(--rift-border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rift-mission-briefing__reward-value {
+    font-size: var(--rift-font-size-lg);
+    font-weight: var(--rift-font-weight-bold);
+    color: var(--rift-primary);
+}
+
+.rift-mission-briefing__reward-label {
+    font-size: var(--rift-font-size-xs);
+    color: var(--rift-text-color-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+}
+
+/* Mission map panel */
+.rift-mission-briefing__map {
+    width: 40%;
+    background-color: var(--rift-ui-background);
+    border-left: 1px solid var(--rift-border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.rift-mission-briefing__map-container {
+    width: 100%;
+    height: 100%;
+}
+
+.rift-mission-briefing__map-controls {
+    position: absolute;
+    bottom: var(--rift-space-md);
+    right: var(--rift-space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--rift-space-xs);
+}
+
+.rift-mission-briefing__map-button {
+    width: 40px;
+    height: 40px;
+    background-color: var(--rift-ui-background);
+    border: 1px solid var(--rift-border-color);
+    border-radius: var(--rift-border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--rift-duration-fast) ease;
+    color: var(--rift-text-color);
+}
+
+.rift-mission-briefing__map-button:hover {
+    background-color: var(--rift-ui-background-light);
+}
+
+/* Mission footer */
+.rift-mission-briefing__footer {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--rift-space-md) var(--rift-space-lg);
+    background-color: var(--rift-ui-background-dark);
+    border-top: 1px solid var(--rift-border-color);
+}
+
+.rift-mission-briefing__info {
+    display: flex;
+    align-items: center;
+    color: var(--rift-text-color-muted);
+    font-size: var(--rift-font-size-sm);
+}
+
+.rift-mission-briefing__location {
+    margin-right: var(--rift-space-lg);
+}
+
+.rift-mission-briefing__time {
+    display: flex;
+    align-items: center;
+}
+
+.rift-mission-briefing__time-icon {
+    margin-right: var(--rift-space-xs);
+}
+
+.rift-mission-briefing__actions {
+    display: flex;
+    gap: var(--rift-space-md);
+}
+
+.rift-mission-briefing__button {
+    padding: var(--rift-space-sm) var(--rift-space-lg);
+    border: none;
+    border-radius: var(--rift-border-radius);
+    font-family: var(--rift-font-body);
+    font-weight: var(--rift-font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--rift-letter-spacing-wide);
+    cursor: pointer;
+    transition: all var(--rift-duration-fast) ease;
+}
+
+.rift-mission-briefing__button--primary {
+    background-color: var(--rift-primary);
+    color: var(--rift-text-color-light);
+}
+
+.rift-mission-briefing__button--primary:hover {
+    background-color: var(--rift-primary-dark);
+}
+
+.rift-mission-briefing__button--secondary {
+    background-color: var(--rift-ui-background-light);
+    color: var(--rift-text-color);
+    border: 1px solid var(--rift-border-color);
+}
+
+.rift-mission-briefing__button--secondary:hover {
+    background-color: var(--rift-ui-background);
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+    .rift-mission-briefing__content {
+        flex-direction: column;
+    }
+    
+    .rift-mission-briefing__map {
+        width: 100%;
+        height: 300px;
+        border-left: none;
+        border-top: 1px solid var(--rift-border-color);
+    }
+}
+
+@media (max-width: 768px) {
+    .rift-mission-briefing__rewards-list {
+        flex-direction: column;
+        gap: var(--rift-space-sm);
+    }
+    
+    .rift-mission-briefing__reward {
+        flex-direction: row;
+        text-align: left;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .rift-mission-briefing__reward-icon {
+        margin-bottom: 0;
+        margin-right: var(--rift-space-sm);
+    }
+    
+    .rift-mission-briefing__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rift-mission-briefing__status {
+        margin-left: 0;
+        margin-top: var(--rift-space-xs);
+    }
+    
+    .rift-mission-briefing__footer {
+        flex-direction: column;
+        gap: var(--rift-space-md);
+    }
+    
+    .rift-mission-briefing__actions {
+        width: 100%;
+    }
+    
+    .rift-mission-briefing__button {
+        flex: 1;
+    }
+}

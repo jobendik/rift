@@ -15,6 +15,9 @@
 @import './components/screens.css';
 @import './components/messages.css';
 @import './components/combat.css';
+@import './components/notifications.css';
+@import './components/menus.css';
+@import './components/progression.css';
 
 /* Global variables */
 :root {

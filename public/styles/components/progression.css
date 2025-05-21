@@ -1,0 +1,91 @@
+/**
+ * Main progression system styles
+ * This file imports all individual progression component styles
+ */
+
+@import './progression/_experience-bar.css';
+@import './progression/_player-rank.css';
+@import './progression/_skill-points.css';
+
+/* Main progression container */
+.rift-progression {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: var(--rift-spacing-md, 12px);
+}
+
+/* Layout variations */
+.rift-progression--horizontal {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Positioning variations */
+.rift-progression--top {
+  top: 0;
+}
+
+.rift-progression--bottom {
+  bottom: 0;
+}
+
+/* Hidden elements */
+.rift-hidden {
+  display: none !important;
+}
+
+/* Common animations */
+@keyframes pulse-glow {
+  0% {
+    filter: drop-shadow(0 0 2px var(--rift-primary));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px var(--rift-primary));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px var(--rift-primary));
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

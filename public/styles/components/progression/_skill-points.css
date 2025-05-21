@@ -1,0 +1,188 @@
+/**
+ * Skill points display styles for RIFT UI
+ */
+
+/* Skill points container */
+.rift-skill-points {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--rift-border-radius, 5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  font-family: var(--rift-font-hud, 'Rajdhani', sans-serif);
+  color: var(--rift-text-color, #ffffff);
+}
+
+/* Skill points icon */
+.rift-skill-points__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--rift-warning, #ff9800);
+  color: var(--rift-text-color, #ffffff);
+  border-radius: 50%;
+  font-size: 18px;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Value container */
+.rift-skill-points__value-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Label */
+.rift-skill-points__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+/* Value display */
+.rift-skill-points__value {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1;
+  color: var(--rift-warning, #ff9800);
+  text-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+/* Spend button */
+.rift-skill-points__button {
+  background-color: var(--rift-warning, #ff9800);
+  color: #000;
+  border: none;
+  border-radius: var(--rift-border-radius, 5px);
+  padding: 6px 12px;
+  font-family: var(--rift-font-hud, 'Rajdhani', sans-serif);
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rift-skill-points__button:hover {
+  background-color: var(--rift-warning-glow, rgba(255, 152, 0, 0.7));
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+}
+
+.rift-skill-points__button:active {
+  transform: scale(0.95);
+}
+
+/* Disabled button state */
+.rift-skill-points__button--disabled {
+  background-color: #555;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.rift-skill-points__button--disabled:hover {
+  background-color: #555;
+  box-shadow: none;
+}
+
+/* Animation states */
+.rift-skill-points--adding {
+  animation: skill-points-pulse 0.5s ease;
+}
+
+.rift-skill-points__icon--glow {
+  animation: skill-points-icon-glow 1.5s ease;
+}
+
+.rift-skill-points__value--pulse {
+  animation: skill-points-value-pulse 0.5s ease;
+}
+
+/* Floating number that appears when skill points are added */
+.rift-skill-points__floating-number {
+  font-weight: bold;
+  font-size: 20px;
+  position: absolute;
+  color: var(--rift-warning, #ff9800);
+  text-shadow: 0 0 5px rgba(255, 152, 0, 0.8);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+@keyframes skill-points-pulse {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 152, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 152, 0, 0);
+  }
+}
+
+@keyframes skill-points-icon-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+  }
+}
+
+@keyframes skill-points-value-pulse {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+  }
+  50% {
+    transform: scale(1.2);
+    text-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-skill-points {
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .rift-skill-points__value-container {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .rift-skill-points__button {
+    width: 100%;
+  }
+}

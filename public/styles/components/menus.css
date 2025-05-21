@@ -1,0 +1,12 @@
+/**
+ * Menu System Styles
+ * This file imports all menu-related component styles
+ */
+
+/* Import individual menu component styles */
+@import './menus/_screen-manager.css';
+@import './menus/_weapon-wheel.css';
+@import './menus/_world-map.css';
+@import './menus/_mission-briefing.css';
+@import './menus/_round-summary.css';
+/* Additional menu component imports will be added as they are created */

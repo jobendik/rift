@@ -1,0 +1,298 @@
+/**
+ * Weapon Wheel Component Styles
+ * Radial menu for weapon selection with visual feedback
+ */
+
+/* Main container */
+.rift-weapon-wheel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--rift-z-index-screens);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out),
+              visibility 0s linear var(--rift-duration-fast);
+}
+
+/* Active state */
+.rift-weapon-wheel--active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+/* Wheel backdrop */
+.rift-weapon-wheel__backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--rift-overlay-background);
+  backdrop-filter: blur(var(--rift-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--rift-backdrop-blur));
+  z-index: -1;
+}
+
+/* Wheel container */
+.rift-weapon-wheel__container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  transform: scale(0.9);
+  transition: transform var(--rift-duration-normal) var(--rift-ease-out);
+}
+
+.rift-weapon-wheel--active .rift-weapon-wheel__container {
+  transform: scale(1);
+}
+
+/* Center hub */
+.rift-weapon-wheel__hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--rift-ui-background);
+  border: 2px solid var(--rift-primary);
+  box-shadow: 0 0 15px var(--rift-primary-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rift-text-color);
+  font-family: var(--rift-font-display);
+  font-size: var(--rift-font-size-xl);
+  z-index: 2;
+}
+
+/* Segments container */
+.rift-weapon-wheel__segments {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Individual segment */
+.rift-weapon-wheel__segment {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+/* Segment highlight */
+.rift-weapon-wheel__segment-highlight {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-7px, -65px) rotate(45deg);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--rift-ui-border);
+  transition: background-color var(--rift-duration-fast) var(--rift-ease-out),
+              border-color var(--rift-duration-fast) var(--rift-ease-out);
+  z-index: -1;
+}
+
+/* Hover state */
+.rift-weapon-wheel__segment:hover .rift-weapon-wheel__segment-highlight {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--rift-primary);
+}
+
+/* Selected state */
+.rift-weapon-wheel__segment--selected .rift-weapon-wheel__segment-highlight {
+  background-color: rgba(230, 57, 70, 0.2);
+  border-color: var(--rift-primary);
+  box-shadow: 0 0 10px var(--rift-primary-glow);
+}
+
+/* Unavailable state */
+.rift-weapon-wheel__segment--unavailable {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rift-weapon-wheel__segment--unavailable .rift-weapon-wheel__segment-highlight {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: var(--rift-text-disabled);
+}
+
+/* Weapon icon */
+.rift-weapon-wheel__icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -130px); /* Offset from center */
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rift-text-color);
+  font-size: var(--rift-font-size-xl);
+  z-index: 2;
+  transition: transform var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-weapon-wheel__segment:hover .rift-weapon-wheel__icon {
+  transform: translate(-50%, -135px) scale(1.1); /* Slightly move up and scale on hover */
+}
+
+.rift-weapon-wheel__icon img {
+  max-width: 100%;
+  max-height: 100%;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.7));
+}
+
+/* Weapon label */
+.rift-weapon-wheel__label {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-lg);
+  color: var(--rift-text-color);
+  text-shadow: var(--rift-text-shadow);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out),
+              transform var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-weapon-wheel__segment:hover .rift-weapon-wheel__label,
+.rift-weapon-wheel__segment--selected .rift-weapon-wheel__label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Weapon info panel */
+.rift-weapon-wheel__info {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  padding: var(--rift-space-md);
+  background-color: var(--rift-ui-background);
+  border: 1px solid var(--rift-ui-border);
+  border-radius: var(--rift-border-radius);
+  box-shadow: var(--rift-shadow-lg);
+  text-align: center;
+  opacity: 0;
+  transition: opacity var(--rift-duration-normal) var(--rift-ease-out);
+}
+
+.rift-weapon-wheel--active .rift-weapon-wheel__info {
+  opacity: 1;
+}
+
+/* Weapon name */
+.rift-weapon-wheel__weapon-name {
+  font-family: var(--rift-font-display);
+  font-size: var(--rift-font-size-xl);
+  font-weight: var(--rift-font-weight-bold);
+  color: var(--rift-text-color);
+  margin-bottom: var(--rift-space-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--rift-letter-spacing-wide);
+}
+
+/* Weapon stats */
+.rift-weapon-wheel__stats {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--rift-space-sm) 0;
+}
+
+.rift-weapon-wheel__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rift-weapon-wheel__stat-label {
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-xs);
+  color: var(--rift-text-secondary);
+  margin-bottom: var(--rift-space-xs);
+  text-transform: uppercase;
+}
+
+.rift-weapon-wheel__stat-value {
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-md);
+  color: var(--rift-text-color);
+}
+
+/* Ammo display */
+.rift-weapon-wheel__ammo {
+  margin-top: var(--rift-space-sm);
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-lg);
+  color: var(--rift-ammo);
+}
+
+/* Key hint */
+.rift-weapon-wheel__key-hint {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-family: var(--rift-font-hud);
+  font-size: var(--rift-font-size-md);
+  color: var(--rift-text-secondary);
+  text-shadow: var(--rift-text-shadow);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .rift-weapon-wheel__container {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .rift-weapon-wheel__hub {
+    width: 60px;
+    height: 60px;
+    font-size: var(--rift-font-size-lg);
+  }
+  
+  .rift-weapon-wheel__icon {
+    transform: translate(-50%, -100px);
+    width: 50px;
+    height: 50px;
+  }
+  
+  .rift-weapon-wheel__segment:hover .rift-weapon-wheel__icon {
+    transform: translate(-50%, -105px) scale(1.1);
+  }
+  
+  .rift-weapon-wheel__segment-highlight {
+    width: 100px;
+    height: 100px;
+    transform: translate(-7px, -50px) rotate(45deg);
+  }
+}

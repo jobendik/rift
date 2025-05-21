@@ -1,0 +1,168 @@
+/**
+ * Experience bar styles for RIFT UI
+ */
+
+/* Experience bar container */
+.rift-experience {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px;
+  gap: 10px;
+  position: relative;
+  font-family: var(--rift-font-hud, 'Rajdhani', sans-serif);
+  color: var(--rift-text-color, #ffffff);
+}
+
+/* Level indicator */
+.rift-experience__level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background-color: var(--rift-primary, #e63946);
+  color: var(--rift-text-color, #ffffff);
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 18px;
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.5);
+  flex-shrink: 0;
+  transition: transform 0.2s ease-out, background-color 0.2s ease;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+/* XP Bar container */
+.rift-experience__bar {
+  flex: 1;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* XP Fill */
+.rift-experience__fill {
+  height: 100%;
+  width: 0;
+  background-color: var(--rift-secondary, #33a8ff);
+  background-image: linear-gradient(
+    90deg,
+    var(--rift-secondary-glow, rgba(51, 168, 255, 0.7)) 0%,
+    var(--rift-secondary, #33a8ff) 50%,
+    var(--rift-secondary-glow, rgba(51, 168, 255, 0.7)) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+  position: relative;
+}
+
+/* Add subtle animated gradient */
+.rift-experience__fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* XP Value */
+.rift-experience__value {
+  font-size: 14px;
+  font-weight: bold;
+  min-width: 80px;
+  text-align: center;
+  color: var(--rift-text-color, #ffffff);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Level Up Overlay */
+.rift-experience__level-up {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  animation: fade-in-out 2s ease-in-out;
+}
+
+/* Level Up Text */
+.rift-experience__level-up-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--rift-primary, #e63946);
+  text-shadow: 0 0 10px var(--rift-primary-glow, rgba(230, 57, 70, 0.7));
+  animation: bounce 0.5s ease-out;
+  letter-spacing: 2px;
+}
+
+/* Animations */
+.rift-experience__fill--level-up {
+  background-color: var(--rift-primary, #e63946);
+  background-image: linear-gradient(
+    90deg,
+    var(--rift-primary-glow, rgba(230, 57, 70, 0.7)) 0%,
+    var(--rift-primary, #e63946) 50%,
+    var(--rift-primary-glow, rgba(230, 57, 70, 0.7)) 100%
+  );
+  animation: pulse-glow 1s infinite;
+}
+
+.rift-experience__level--level-up {
+  animation: bounce 0.5s ease-out infinite;
+  background-color: var(--rift-primary-glow, rgba(230, 57, 70, 0.7));
+}
+
+/* Shimmer animation for XP bar fill */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-experience {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .rift-experience__level {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .rift-experience__bar {
+    width: 100%;
+  }
+  
+  .rift-experience__value {
+    font-size: 12px;
+  }
+}

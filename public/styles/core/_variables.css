@@ -147,6 +147,8 @@
   /* Z-Index Layers */
   --rift-z-index-base: 100;
   --rift-z-index-hud: 800;
+  --rift-z-index-markers: 850;
+  --rift-z-index-screens: 850;
   --rift-z-index-notifications: 900;
   --rift-z-index-modal: 950;
   --rift-z-index-overlay: 980;
@@ -227,4 +229,23 @@
   /* HUD Element Borders */
   --rift-hud-border-width: 3px;
   --rift-hud-box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  
+  /* ========== MENU SYSTEM ========== */
+  
+  /* Screen Variables */
+  --rift-screen-background: rgba(10, 10, 10, 0.85);
+  --rift-overlay-background: rgba(0, 0, 0, 0.7);
+  --rift-backdrop-blur: 5px;
+  --rift-screen-max-width: 1200px;
+  --rift-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Modal Variables */
+  --rift-modal-background: rgba(30, 30, 30, 0.95);
+  --rift-modal-border-color: var(--rift-primary);
+  --rift-modal-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+  
+  /* Focus Outline */
+  --rift-focus-outline-color: var(--rift-primary);
+  --rift-focus-outline-width: 2px;
+  --rift-focus-outline-offset: 2px;
 }

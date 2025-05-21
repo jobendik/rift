@@ -1,0 +1,190 @@
+/**
+ * Player rank styles for RIFT UI
+ */
+
+/* Rank container */
+.rift-rank {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--rift-border-radius, 5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  transition: all 0.3s ease;
+  font-family: var(--rift-font-hud, 'Rajdhani', sans-serif);
+  color: var(--rift-text-color, #ffffff);
+}
+
+/* Icon container */
+.rift-rank__icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+/* Rank icon */
+.rift-rank__icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--rift-primary, #e63946);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* Rank text container */
+.rift-rank__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Rank name */
+.rift-rank__name {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--rift-text-color, #ffffff);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Rank tier indicators (stars, etc) */
+.rift-rank__tier {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Individual rank tier indicator (star, pip, etc) */
+.rift-rank__tier-indicator {
+  color: var(--rift-primary, #e63946);
+  font-size: 14px;
+  text-shadow: 0 0 5px var(--rift-primary-glow, rgba(230, 57, 70, 0.7));
+}
+
+/* Rank specific icons - placeholders that can use background images */
+.rift-rank__icon--rookie {
+  background-color: #6c757d;
+  background-image: radial-gradient(circle at center, #8d959d 0%, #6c757d 70%);
+  border-color: #adb5bd;
+}
+
+.rift-rank__icon--soldier {
+  background-color: #117960;
+  background-image: radial-gradient(circle at center, #20c997 0%, #117960 70%);
+  border-color: #20c997;
+}
+
+.rift-rank__icon--corporal {
+  background-color: #0062cc;
+  background-image: radial-gradient(circle at center, #0d6efd 0%, #0062cc 70%);
+  border-color: #0d6efd;
+}
+
+.rift-rank__icon--sergeant {
+  background-color: #6f42c1;
+  background-image: radial-gradient(circle at center, #6f42c1 0%, #5133ab 70%);
+  border-color: #7c4dca;
+}
+
+.rift-rank__icon--lieutenant {
+  background-color: #d63384;
+  background-image: radial-gradient(circle at center, #e83e8c 0%, #d63384 70%);
+  border-color: #e83e8c;
+}
+
+.rift-rank__icon--captain {
+  background-color: #fd7e14;
+  background-image: radial-gradient(circle at center, #fd7e14 0%, #ca6408 70%);
+  border-color: #fd7e14;
+}
+
+.rift-rank__icon--major {
+  background-color: #198754;
+  background-image: radial-gradient(circle at center, #20c997 0%, #198754 70%);
+  border-color: #20c997;
+}
+
+.rift-rank__icon--colonel {
+  background-color: #dc3545;
+  background-image: radial-gradient(circle at center, #dc3545 0%, #a71d2a 70%);
+  border-color: #dc3545;
+}
+
+.rift-rank__icon--general {
+  background-color: #ffc107;
+  background-image: radial-gradient(circle at center, #ffd700 0%, #ffc107 70%);
+  border-color: #ffd700;
+}
+
+/* Animation states */
+.rift-rank--rank-up {
+  box-shadow: 0 0 20px var(--rift-primary-glow, rgba(230, 57, 70, 0.7));
+}
+
+.rift-rank--rank-up .rift-rank__name {
+  animation: glow-text 1.5s ease-in-out;
+}
+
+.rift-rank--rank-up .rift-rank__tier-indicator {
+  animation: pulse-star 1.5s ease-in-out;
+}
+
+/* Animations */
+@keyframes glow-text {
+  0%, 100% {
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  }
+  50% {
+    text-shadow: 0 0 10px var(--rift-primary, #e63946);
+  }
+}
+
+@keyframes pulse-star {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .rift-rank {
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+  }
+  
+  .rift-rank__text {
+    text-align: center;
+  }
+  
+  .rift-rank__tier {
+    justify-content: center;
+  }
+}

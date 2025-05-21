@@ -51,6 +51,8 @@ export const UIConfig = {
     zIndex: {
         base: 100,
         hud: 800,
+        markers: 850,
+        screens: 850,
         notifications: 900,
         modal: 950,
         overlay: 980,
@@ -228,12 +230,88 @@ export const UIConfig = {
     
     // Experience and progression
     xp: {
+        // Basic XP settings
         baseXpPerLevel: 1000,
         levelScalingFactor: 1.2,
-        trippleKill: 150,
-        killingSpree: 250,
-        dominating: 500,
-        unstoppable: 750
+        maxLevel: 100,
+        
+        // XP rewards for actions
+        xpRewards: {
+            kill: 100,
+            headshot: 50,
+            assist: 50,
+            objective: 200,
+            victory: 500,
+            match: 100,
+            trippleKill: 150,
+            killingSpree: 250,
+            dominating: 500,
+            unstoppable: 750
+        },
+        
+        // Skill points
+        enableSkillPoints: true,
+        skillPointsPerLevel: 1,
+        skillPointsAllowSpending: true,
+        
+        // UI display settings
+        displayLevelUp: true,
+        displayXpGain: true,
+        showXpInHUD: true,
+        hudPosition: 'bottom', // 'top', 'bottom'
+        hudLayout: 'horizontal', // 'horizontal', 'vertical'
+        
+        // Rank system
+        ranks: [
+            { minLevel: 1, name: 'Rookie', tier: 1, icon: 'rookie' },
+            { minLevel: 5, name: 'Soldier', tier: 2, icon: 'soldier' },
+            { minLevel: 10, name: 'Corporal', tier: 3, icon: 'corporal' },
+            { minLevel: 15, name: 'Sergeant', tier: 4, icon: 'sergeant' },
+            { minLevel: 20, name: 'Lieutenant', tier: 5, icon: 'lieutenant' },
+            { minLevel: 25, name: 'Captain', tier: 6, icon: 'captain' },
+            { minLevel: 30, name: 'Major', tier: 7, icon: 'major' },
+            { minLevel: 40, name: 'Colonel', tier: 8, icon: 'colonel' },
+            { minLevel: 50, name: 'General', tier: 9, icon: 'general' }
+        ]
+    },
+    
+    // Weapon Wheel
+    weaponWheel: {
+        size: 400, // px
+        hubSize: 80, // px
+        showAmmo: true,
+        showStats: true,
+        showLabels: true,
+        transitionDuration: 0.2, // seconds
+        backdropBlur: '5px',
+        overlayOpacity: 0.7,
+        segmentHighlightColor: 'rgba(230, 57, 70, 0.2)',
+        pauseGameWhenActive: true
+    },
+    
+    // World Map
+    worldMap: {
+        title: 'World Map',
+        maxZoom: 3.0,
+        minZoom: 0.5,
+        zoomStep: 0.25,
+        worldToMapScale: 0.1, // conversion from world coordinates to map pixels
+        mapOriginOffset: { x: 1000, y: 1000 }, // center point of the map image
+        enableFogOfWar: true,
+        centerOnPlayer: true,
+        highlightCurrentArea: true,
+        pauseGameWhenActive: true,
+        markerSizes: {
+            player: 30,
+            objective: {
+                primary: 24,
+                secondary: 20
+            },
+            waypoint: {
+                active: 24,
+                normal: 20
+            }
+        }
     },
     
     // Minimap
@@ -298,9 +376,172 @@ export const UIConfig = {
     
     // Weather effects
     weather: {
-        rainDropCount: 50,
-        rainDropLength: { min: 10, max: 25 }, // px
-        rainDropSpeed: { min: 3, max: 5 } // px/frame
+        // General settings
+        enabled: true,
+        transitionDuration: 2.0, // seconds to transition between weather states
+        updateInterval: 100, // ms between particle updates
+        pauseWhenGamePaused: true,
+        affectsLighting: true,
+        
+        // Z-index layers
+        zIndex: {
+            base: 300,
+            weather: 310,
+            overlay: 315,
+            lightning: 320
+        },
+        
+        // Rain settings
+        rain: {
+            enabled: true,
+            dropCount: {
+                light: 100,
+                moderate: 200,
+                heavy: 400,
+                storm: 600
+            },
+            dropHeight: { min: 10, max: 25 }, // px
+            dropAngle: { min: 10, max: 20 }, // degrees
+            dropDrift: { min: 10, max: 30 }, // horizontal drift in vw
+            duration: { min: 0.5, max: 1.2 }, // seconds for fall animation
+            opacity: { min: 0.5, max: 0.8 },
+            splashEnabled: true,
+            splashParticles: { min: 2, max: 5 },
+            splashOpacity: 0.5,
+            screenOverlayOpacity: 0.6,
+            appliesScreenOverlay: true
+        },
+        
+        // Snow settings
+        snow: {
+            enabled: true,
+            flakeCount: {
+                light: 50,
+                moderate: 100,
+                heavy: 200,
+                storm: 300
+            },
+            flakeSize: { min: 2, max: 6 }, // px
+            duration: { min: 5, max: 10 }, // seconds for fall animation
+            horizontalDrift: { min: 20, max: 80 }, // vw
+            wobbleAmount: { min: 5, max: 15 }, // px for side to side movement
+            opacity: { min: 0.7, max: 1.0 },
+            screenOverlayOpacity: 0.2,
+            appliesScreenOverlay: true
+        },
+        
+        // Fog settings
+        fog: {
+            enabled: true,
+            density: { 
+                light: 0.1,
+                moderate: 0.2,
+                heavy: 0.35,
+                storm: 0.5
+            },
+            color: 'rgba(200, 200, 255, 0.15)',
+            layerCount: 3,
+            layerOpacity: { min: 0.2, max: 0.6 },
+            driftSpeed: { min: 20, max: 80 }, // seconds for full cycle
+            visibilityReduction: {
+                light: 0.05,
+                moderate: 0.15,
+                heavy: 0.3,
+                storm: 0.5
+            },
+            screenOverlayOpacity: 0.15,
+            appliesScreenOverlay: true
+        },
+        
+        // Lightning settings
+        lightning: {
+            enabled: true,
+            flashDuration: { min: 0.05, max: 0.2 }, // seconds
+            flashIntensity: { min: 0.3, max: 0.8 },
+            interval: { min: 3, max: 15 }, // seconds between flashes
+            flashCount: { min: 1, max: 4 }, // flashes per strike
+            flashDecay: 0.7, // intensity multiplier for subsequent flashes
+            thunderDelay: { min: 0.5, max: 4 }, // seconds after lightning
+            screenShakeEnabled: true,
+            screenShakeIntensity: 0.3
+        },
+        
+    // Audio settings
+    audio: {
+        enabled: true,
+        rainVolume: { 
+            light: 0.2, 
+            moderate: 0.4, 
+            heavy: 0.7, 
+            storm: 1.0 
+        },
+        windVolume: { 
+            light: 0.1, 
+            moderate: 0.3, 
+            heavy: 0.6, 
+            storm: 0.9 
+        },
+        thunderVolume: 0.8,
+        fadeTime: 2.0 // seconds to fade audio in/out
+    },
+    
+    // Danger zone settings
+    dangerZone: {
+        enabled: true,
+        defaultSize: 200, // px diameter for circular zones
+        maxDisplayDistance: 100, // maximum distance to display zones in world units
+        proximityThreshold: 15, // world units - when player gets this close, show proximity warning
+        criticalThreshold: 5, // world units - when player gets this close, show critical warning
+        pulseSpeed: 2.0, // pulses per second
+        flashSpeed: 4.0, // flashes per second for warnings
+        showLabel: true, // whether to show text label
+        showIcon: true, // whether to show icon
+        fadeDistance: 5, // distance in world units over which zone fades in/out
+        types: {
+            radiation: {
+                damageRate: 5, // health points per second
+                damageDelay: 0.5, // seconds before damage starts
+                color: 'rgba(83, 236, 51, 0.3)',
+                icon: 'radiation'
+            },
+            fire: {
+                damageRate: 10,
+                damageDelay: 0.1,
+                color: 'rgba(255, 100, 20, 0.25)',
+                icon: 'fire'
+            },
+            electrical: {
+                damageRate: 15,
+                damageDelay: 0,
+                color: 'rgba(75, 180, 255, 0.25)',
+                icon: 'electrical'
+            },
+            poison: {
+                damageRate: 3,
+                damageDelay: 1.0,
+                color: 'rgba(150, 75, 200, 0.25)',
+                icon: 'poison'
+            },
+            explosive: {
+                damageRate: 50,
+                damageDelay: 2.0,
+                color: 'rgba(255, 60, 0, 0.25)',
+                icon: 'explosive'
+            },
+            generic: {
+                damageRate: 5,
+                damageDelay: 0.5,
+                color: 'rgba(255, 0, 0, 0.2)',
+                icon: 'generic'
+            }
+        },
+        zIndex: {
+            base: 320,
+            icon: 321,
+            label: 322,
+            proximity: 980
+        }
+    }
     },
     
     // Blood effects
@@ -314,6 +555,90 @@ export const UIConfig = {
         splatterScreenMarginPercent: 0.3,
         splatterLingerDuration: 2000, // ms
         splatterFadeoutDuration: 500 // ms
+    },
+    
+    // Menu System
+    menus: {
+        // Screen Manager
+        screens: {
+            backdropBlur: '5px',
+            overlayBackground: 'rgba(0, 0, 0, 0.7)',
+            screenBackground: 'rgba(10, 10, 10, 0.85)',
+            maxWidth: 1200, // px
+            defaultTransition: 'fade', // 'fade', 'slide-left', 'slide-right', 'scale'
+            transitionDuration: 0.3, // seconds
+            standardEasing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        },
+        
+        // Mission Briefing
+        missionBriefing: {
+            title: 'Mission Briefing',
+            pauseGameWhenActive: true,
+            showMap: true,
+            mapDefaultZoom: 1.0,
+            enableObjectiveTracking: true,
+            defaultDifficulty: 3, // 1-5 stars
+            statusColors: {
+                active: 'var(--rift-success)',
+                pending: 'var(--rift-warning)',
+                completed: 'var(--rift-completed, #6d77f6)',
+                failed: 'var(--rift-danger)'
+            },
+            objectives: {
+                showLocationButton: true,
+                markOnMap: true,
+                prioritizePrimary: true
+            },
+            rewards: {
+                showXpReward: true,
+                showItemRewards: true,
+                animateRewards: true
+            }
+        },
+        
+        // Round Summary
+        roundSummary: {
+            title: 'Round Summary',
+            pauseGameWhenActive: true,
+            showMap: true,
+            mapDefaultZoom: 0.75,
+            enableHeatmap: true,
+            defaultTab: 'performance', // 'performance', 'leaderboard', 'rewards'
+            showPlayerHighlight: true,
+            animateStats: true,
+            animationDelay: 0.1, // seconds between stat animations
+            outcomeColors: {
+                victory: 'var(--rift-success)',
+                defeat: 'var(--rift-danger)',
+                draw: 'var(--rift-warning)'
+            },
+            sections: {
+                performance: true,
+                achievements: true,
+                progression: true,
+                rewards: true,
+                leaderboard: true
+            },
+            continuationOptions: {
+                nextRound: true,
+                mainMenu: true,
+                customize: false
+            }
+        },
+        
+        // Modals
+        modal: {
+            background: 'rgba(30, 30, 30, 0.95)',
+            borderColor: '#e63946', // matches --rift-primary
+            shadow: '0 5px 25px rgba(0, 0, 0, 0.5)'
+        },
+        
+        // Focus Management
+        focus: {
+            outlineColor: '#e63946', // matches --rift-primary
+            outlineWidth: 2, // px
+            outlineOffset: 2 // px
+        }
     },
     
     // Debug

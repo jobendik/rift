@@ -39,6 +39,7 @@ flowchart TD
     UIComponent --> Menus[Menu Components]
     UIComponent --> Notifications[Notification Components]
     UIComponent --> Feedback[Feedback Components]
+    UIComponent --> Environment[Environment Components]
     
     HUD --> Health[HealthDisplay]
     HUD --> Ammo[AmmoDisplay]
@@ -59,6 +60,10 @@ flowchart TD
     Feedback --> DamageEffects[DamageEffects]
     Feedback --> ScreenShake[ScreenShakeSystem]
     Feedback --> DamageNumbers[DamageNumbers]
+    
+    Environment --> Weather[WeatherSystem]
+    Environment --> Objectives[ObjectiveMarkerSystem]
+    Environment --> Danger[DangerZone]
 ```
 
 ## Implemented Design Patterns
@@ -572,11 +577,39 @@ The current implementation has followed a clear path:
    - ✅ Established CSS structure for notification components
    - ✅ Integrated notification system with UIManager
 
-13. 🔄 Next: Implement menu system:
-   - 🔄 Create `ScreenManager` for screen transitions
-   - ⏳ Implement `WeaponWheel` for weapon selection
-   - ⏳ Design `WorldMap` for overview navigation
-   - ⏳ Develop `MissionBriefing` for mission details
-   - ⏳ Create `RoundSummary` for end-of-round statistics
+13. ✅ Complete menu system implementation:
+   - ✅ Created `ScreenManager` for screen transitions and modal dialogs
+   - ✅ Implemented screen registration system with options for:
+     - Transitions (fade, slide-left, slide-right, scale)
+     - Title and content templates
+     - Back navigation controls
+     - Callback hooks for screen show/hide events
+   - ✅ Created modal dialog system with:
+     - Backdrop overlay with optional click-to-close
+     - Focus trapping for keyboard accessibility
+     - Close button and escape key support
+   - ✅ Added history tracking for back navigation between screens
+   - ✅ Implemented keyboard navigation with focus management
+   - ✅ Created CSS with BEM methodology and responsive design
+   - ✅ Integrated ScreenManager with UIManager
+   - ✅ Implemented `WeaponWheel` for radial weapon selection
+   - ✅ Designed and built `WorldMap` for overview navigation with pan/zoom functionality
+   - ✅ Developed `MissionBriefing` for mission details and objectives
+   - ✅ Created `RoundSummary` for end-of-round statistics and performance metrics
+   - ✅ Established `MenuSystem` as central manager for all menu components
 
-14. ⏳ Coming: Performance optimization and accessibility features
+14. ✅ Implement progression system:
+   - ✅ Created `ProgressionSystem` to manage XP, levels, and skill points
+   - ✅ Implemented `ExperienceBar` for visualizing progression with animations
+   - ✅ Added `PlayerRank` for displaying rank with badge and title
+   - ✅ Developed `SkillPointsDisplay` for skill point allocation and management
+   - ✅ Integrated progression system with UIManager
+
+15. 🔄 Implement environmental systems:
+   - ✅ Created `EnvironmentSystem` as coordinator for environmental UI components
+   - ✅ Implemented `WeatherSystem` for rain, snow, fog and other weather effects
+   - ✅ Added `ObjectiveMarkerSystem` for waypoints, markers, and world indicators
+   - ✅ Implemented `DangerZone` for hazardous area visualization with proximity warnings
+   - 🔄 Next: Implement `PowerupDisplay` for active buffs and status effects
+
+16. ⏳ Coming: Enhanced combat feedback, audio integration, performance optimization and accessibility features
