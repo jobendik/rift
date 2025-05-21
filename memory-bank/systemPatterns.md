@@ -40,30 +40,83 @@ flowchart TD
     UIComponent --> Notifications[Notification Components]
     UIComponent --> Feedback[Feedback Components]
     UIComponent --> Environment[Environment Components]
+    UIComponent --> Progression[Progression Components]
     
     HUD --> Health[HealthDisplay]
     HUD --> Ammo[AmmoDisplay]
     HUD --> Minimap[MinimapSystem]
     HUD --> Crosshair[CrosshairSystem]
+    HUD --> Stamina[StaminaSystem]
+    HUD --> Compass[CompassDisplay]
+    HUD --> Weapon[WeaponWheel]
     
-    Menus --> WeaponWheel[WeaponWheel]
     Menus --> WorldMap[WorldMap]
     Menus --> RoundSummary[RoundSummary]
     Menus --> MissionBriefing[MissionBriefing]
+    Menus --> ScreenManager[ScreenManager]
+    Menus --> MenuSystem[MenuSystem]
     
     Notifications --> KillFeed[KillFeed]
     Notifications --> EventBanner[EventBanner]
-    Notifications --> Achievements[AchievementSystem]
+    Notifications --> Achievements[AchievementDisplay]
     Notifications --> Messages[NotificationManager]
+    Notifications --> NotificationSystem[NotificationSystem]
     
-    Feedback --> HitMarkers[HitIndicator]
-    Feedback --> DamageEffects[DamageEffects]
-    Feedback --> ScreenShake[ScreenShakeSystem]
-    Feedback --> DamageNumbers[DamageNumbers]
+    Feedback --> Standard[Standard Feedback]
+    Feedback --> Enhanced[Enhanced Feedback]
+    
+    Standard --> HitIndicator[HitIndicator]
+    Standard --> DamageIndicator[DamageIndicator]
+    Standard --> DamageNumbers[DamageNumbers]
+    Standard --> ScreenEffects[ScreenEffects]
+    Standard --> FootstepIndicator[FootstepIndicator]
+    
+    Enhanced --> EnhancedHitIndicator[EnhancedHitIndicator]
+    Enhanced --> EnhancedDamageIndicator[EnhancedDamageIndicator]
+    Enhanced --> DynamicCrosshairSystem[DynamicCrosshairSystem]
+    Enhanced --> AdvancedScreenEffects[AdvancedScreenEffects]
     
     Environment --> Weather[WeatherSystem]
     Environment --> Objectives[ObjectiveMarkerSystem]
     Environment --> Danger[DangerZone]
+    Environment --> Powerups[PowerupDisplay]
+    Environment --> EnvironmentSystem[EnvironmentSystem]
+    
+    Progression --> XP[ExperienceBar]
+    Progression --> Rank[PlayerRank]
+    Progression --> Skills[SkillPointsDisplay]
+    Progression --> ProgressionSystem[ProgressionSystem]
+```
+
+### Event Flow
+```mermaid
+flowchart TD
+    WeaponSystem -- "weapon:fired" --> DynamicCrosshairSystem
+    WeaponSystem -- "hit:registered" --> EnhancedHitIndicator
+    WeaponSystem -- "hit:critical" --> EnhancedHitIndicator
+    WeaponSystem -- "hit:headshot" --> EnhancedHitIndicator
+    WeaponSystem -- "enemy:killed" --> EnhancedHitIndicator
+    WeaponSystem -- "enemy:killed" --> KillFeed
+    WeaponSystem -- "enemy:killed" --> XP[XPSystem]
+    
+    Enemy -- "player:damaged" --> EnhancedDamageIndicator
+    Enemy -- "player:damaged" --> ScreenEffects
+    Enemy -- "player:damaged" --> HealthDisplay
+    
+    HealthSystem -- "health:changed" --> HealthDisplay
+    HealthSystem -- "health:critical" --> ScreenEffects
+    HealthSystem -- "health:healed" --> ScreenEffects
+    
+    MovementSystem -- "footstep:detected" --> FootstepIndicator
+    MovementSystem -- "player:sprint" --> StaminaSystem
+    MovementSystem -- "player:movement" --> DynamicCrosshairSystem
+    MovementSystem -- "player:stance" --> DynamicCrosshairSystem
+    
+    InputHandler -- "input:keydown" --> UIManager
+    InputHandler -- "input:escape" --> MenuSystem
+    InputHandler -- "input:mousemove" --> DynamicCrosshairSystem
+    
+    TargetingSystem -- "target:change" --> DynamicCrosshairSystem
 ```
 
 ## Implemented Design Patterns
@@ -199,6 +252,95 @@ class EventManager {
 }
 ```
 
+### Event Standardization (Phase 4)
+
+As part of Phase 4 refinement, a comprehensive Event Standardization system has been designed with:
+
+#### Event Naming Convention
+```
+[namespace]:[action]
+```
+
+Where:
+- `namespace` identifies the source/domain (e.g., player, weapon, health)
+- `action` describes what happened (e.g., damaged, killed, updated)
+
+Example events:
+- `health:changed` - Player health value changed
+- `weapon:fired` - Weapon was fired
+- `enemy:killed` - Enemy was eliminated
+
+#### Standardized System Namespaces
+
+The system defines a set of standardized namespaces for clarity and organization:
+
+| Namespace | Description | Example Events |
+|-----------|-------------|----------------|
+| `player` | Player entity events | `player:spawn`, `player:death`, `player:movement` |
+| `health` | Health-related events | `health:damaged`, `health:healed`, `health:critical` |
+| `weapon` | Weapon system events | `weapon:fired`, `weapon:reload`, `weapon:switch` |
+| `ammo` | Ammunition events | `ammo:low`, `ammo:depleted`, `ammo:added` |
+| `enemy` | Enemy-related events | `enemy:spotted`, `enemy:damaged`, `enemy:killed` |
+| `hit` | Hit detection events | `hit:registered`, `hit:critical`, `hit:headshot` |
+| `combat` | Combat state events | `combat:started`, `combat:ended`, `combat:intensity` |
+| `ui` | UI state changes | `ui:show`, `ui:hide`, `ui:resize` |
+
+#### Standard Event Payload Structure
+
+All events follow a standardized payload structure:
+
+```javascript
+{
+  type: string,        // Event type (e.g., "health:changed")
+  timestamp: number,   // Time of the event (performance.now())
+  // Additional event-specific data...
+}
+```
+
+Specialized payload structures exist for different event types:
+
+1. **State Change Events**
+```javascript
+{
+  type: "namespace:changed",
+  timestamp: performance.now(),
+  value: newValue,     // Current value
+  previous: oldValue,  // Previous value
+  delta: change,       // Amount changed (optional)
+  max: maximum,        // Maximum possible value (optional)
+  source: source       // What caused the change (optional)
+}
+```
+
+2. **Combat Events**
+```javascript
+{
+  type: "namespace:action",
+  timestamp: performance.now(),
+  source: {            // Source entity
+    id: string,        // Entity ID
+    type: string,      // Entity type (player, enemy, etc.)
+    name: string,      // Entity name (optional)
+    position: Vector3  // 3D position (optional)
+  },
+  target: {            // Target entity (similar to source)
+    id: string,
+    type: string,
+    name: string,
+    position: Vector3
+  },
+  weapon: {            // Weapon used (optional)
+    id: string,
+    type: string,
+    name: string
+  },
+  damage: number,      // Damage amount (optional)
+  isCritical: boolean, // Critical hit (optional)
+  isHeadshot: boolean, // Headshot (optional)
+  direction: Vector3   // Direction vector (optional)
+}
+```
+
 ### Factory Pattern
 
 The `DOMFactory` implementation creates DOM elements with consistent styling and structure:
@@ -312,51 +454,151 @@ class UIManager {
 }
 ```
 
-### Input Handler Pattern
+### Enhanced Feedback System Pattern
 
-The `InputHandler` centralizes input processing for UI interactions:
+The Enhanced Combat Feedback system implements a layered feedback approach with:
+
+1. **Component Specialization**
+   - Base components (HitIndicator, DamageIndicator) provide core functionality
+   - Enhanced components extend base functionality with advanced features
+   - UIConfig flags control which implementation to use
 
 ```javascript
-class InputHandler {
-    constructor(uiManager) {
-        this.uiManager = uiManager;
-        this.isEnabled = false;
-        
-        // Track state
-        this.pointerPosition = { x: 0, y: 0 };
-        this.pointerNormalized = { x: 0, y: 0 }; // -1 to 1
-        this.isPointerDown = false;
-        this.activePointerButton = -1;
-        this.keysDown = new Set();
-        this.gestureStartDistance = 0;
-        this.gestureScale = 1;
-        this.hoveredElements = [];
-        
-        // ... bind methods
+// CombatSystem uses conditional initialization based on config
+_initComponents() {
+    // Check if enhanced hit indicator is enabled in UIConfig
+    const useEnhancedHit = UIConfig.enhancedCombat && UIConfig.enhancedCombat.hitIndicator;
+    
+    if (useEnhancedHit) {
+        // Initialize enhanced hit indicator
+        this.enhancedHitIndicator = new EnhancedHitIndicator({
+            container: this.element
+        });
+        this.enhancedHitIndicator.init();
+        this.addChild(this.enhancedHitIndicator);
+    } else {
+        // Initialize legacy hit indicator
+        this.hitIndicator = new HitIndicator({
+            container: this.element,
+            hitDuration: this.config.hitDuration || 500
+        });
+        this.hitIndicator.init();
+        this.addChild(this.hitIndicator);
     }
     
-    // Lifecycle
-    enable() { /* ... */ }
-    disable() { /* ... */ }
-    dispose() { /* ... */ }
+    // Similar pattern for other components...
+}
+```
+
+2. **Layered Architecture** 
+   - Components like DynamicCrosshairSystem use a layered approach for separation of concerns:
+
+```javascript
+_createCrosshairLayers() {
+    // Create layers in order from bottom to top
+    const layerTypes = ['base', 'spread', 'center', 'hitmarker', 'context'];
     
-    // Event handlers
-    _onMouseMove(event) { /* ... */ }
-    _onMouseDown(event) { /* ... */ }
-    _onMouseUp(event) { /* ... */ }
-    _onContextMenu(event) { /* ... */ }
-    _onKeyDown(event) { /* ... */ }
-    _onKeyUp(event) { /* ... */ }
-    _onBlur() { /* ... */ }
-    _onTouchStart(event) { /* ... */ }
-    _onTouchMove(event) { /* ... */ }
-    _onTouchEnd(event) { /* ... */ }
+    layerTypes.forEach(type => {
+        this.layers[type] = DOMFactory.createElement('div', {
+            className: `rift-dynamic-crosshair__layer rift-dynamic-crosshair__layer--${type}`,
+            parent: this.element
+        });
+        
+        // Create specific elements for each layer
+        if (type === 'spread') {
+            // Create spread indicators
+            ['top', 'right', 'bottom', 'left'].forEach(direction => {
+                DOMFactory.createElement('div', {
+                    className: `rift-dynamic-crosshair__spread rift-dynamic-crosshair__spread--${direction}`,
+                    parent: this.layers[type]
+                });
+            });
+        } else if (type === 'center') {
+            // Create center dot
+            DOMFactory.createElement('div', {
+                className: 'rift-dynamic-crosshair__center',
+                parent: this.layers[type]
+            });
+        }
+        // ... other layer-specific elements
+    });
+}
+```
+
+3. **State-Based Styling**
+   - CSS variables and class toggling for dynamic visual changes:
+
+```javascript
+_setCrosshairState(state, target = null) {
+    // Remove all state classes
+    this.element.classList.remove(
+        'rift-dynamic-crosshair--default',
+        'rift-dynamic-crosshair--enemy',
+        'rift-dynamic-crosshair--friendly',
+        'rift-dynamic-crosshair--interactive'
+    );
     
-    // Utility methods
-    isKeyDown(key) { /* ... */ }
-    isAnyKeyDown(keys) { /* ... */ }
-    getCursorPosition() { /* ... */ }
-    getNormalizedCursorPosition() { /* ... */ }
+    // Add current state class
+    this.element.classList.add(`rift-dynamic-crosshair--${state}`);
+    this.currentState = state;
+    
+    // Update context hint if applicable
+    if (state === 'interactive' && target && target.action) {
+        this._showContextHint(target.action);
+    } else {
+        this._hideContextHint();
+    }
+    
+    // Update crosshair color based on state
+    const stateColor = this.config.states?.[state] || this.config.states?.default || 'rgba(255, 255, 255, 0.8)';
+    this.element.style.setProperty('--crosshair-color', stateColor);
+}
+```
+
+4. **Enhanced CSS Pattern**
+   - CSS variables for dynamic property changes
+   - Compound selectors for state-specific styling
+   - Hardware-accelerated properties for performance
+
+```css
+.rift-dynamic-crosshair {
+    --crosshair-color: var(--rift-crosshair-default);
+    --crosshair-size: var(--rift-crosshair-size);
+    --crosshair-thickness: var(--rift-crosshair-thickness);
+    --crosshair-spread: 0px;
+    --crosshair-opacity: 1;
+    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--crosshair-size);
+    height: var(--crosshair-size);
+    transition: --crosshair-spread 0.1s var(--rift-easing-out);
+    pointer-events: none;
+}
+
+.rift-dynamic-crosshair--enemy {
+    --crosshair-color: var(--rift-crosshair-enemy);
+}
+
+.rift-dynamic-crosshair--critical-potential .rift-dynamic-crosshair__center {
+    box-shadow: var(--crosshair-critical-glow);
+}
+
+.rift-dynamic-crosshair__spread {
+    position: absolute;
+    background-color: var(--crosshair-color);
+    width: var(--crosshair-thickness);
+    height: var(--crosshair-thickness);
+    opacity: var(--crosshair-opacity);
+    transition: transform 0.1s var(--rift-easing-out);
+}
+
+.rift-dynamic-crosshair__spread--top {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, calc(-1 * var(--crosshair-spread)));
 }
 ```
 
@@ -516,100 +758,29 @@ _updateAnimations(delta) {
         
         if (!anim.isActive || anim.isComplete) continue;
         
-        // ... animation update logic with easing
+        if (anim.startTime === null) {
+            anim.startTime = now;
+            continue;
+        }
+        
+        // Calculate progress (0-1)
+        const elapsed = now - anim.startTime;
+        const rawProgress = Math.min(1, elapsed / anim.duration);
+        
+        // Apply easing
+        anim.progress = this._applyEasing(rawProgress, anim.easing);
+        
+        // Call update function
+        anim.update(anim.progress);
+        
+        // Check if complete
+        if (rawProgress >= 1) {
+            anim.isComplete = true;
+            
+            // Call complete callback if provided
+            if (anim.complete && typeof anim.complete === 'function') {
+                anim.complete();
+            }
+        }
     }
 }
-```
-
-## Implementation Path
-
-The current implementation has followed a clear path:
-
-1. ✅ Create the core infrastructure (UIComponent, EventManager, DOMFactory, InputHandler)
-2. ✅ Implement new UIManager as orchestrator
-3. ✅ Establish CSS foundation with variables
-4. ✅ Create component-specific CSS files (health display, hud layout)
-5. ✅ Build core HUD components:
-   - ✅ Created `HUDSystem` as a coordinator for all HUD elements
-   - ✅ Implemented `HealthDisplay` component with various health states and animations
-   - ✅ Added HUD layout system with positioning containers
-   - ✅ Integrated HUDSystem into UIManager
-6. ✅ Implement additional HUD components:
-   - ✅ Created `AmmoDisplay` component with magazine visualization
-   - ✅ Implemented ammunition state handling (low ammo, reloading)
-   - ✅ Added bullet visualizer with weapon-specific styling
-7. ✅ Implement crosshair component:
-   - ✅ Created `CrosshairSystem` component with dynamic spread mechanics
-   - ✅ Implemented hit markers with critical/headshot variations
-   - ✅ Added contextual states for enemy targeting
-   - ✅ Integrated weapon-specific crosshair styles
-8. ✅ Implement minimap component:
-   - ✅ Created `MinimapSystem` component integrating existing functionality
-   - ✅ Implemented BEM-based CSS with responsive design
-   - ✅ Added interactive features (zoom, rotate, expand)
-   - ✅ Integrated with event system for notifications
-   - ✅ Created specialized icons for players, enemies, items, and objectives
-9. ✅ Implement stamina and compass components:
-   - ✅ Created `StaminaSystem` component for sprint mechanics
-   - ✅ Implemented visual feedback for various stamina states
-   - ✅ Added `CompassDisplay` component with orientation and waypoint support
-   - ✅ Integrated both systems with existing HUD layout
-10. ✅ Begin implementing combat feedback systems:
-   - ✅ Created `CombatSystem` as a coordinator for combat feedback components
-   - ✅ Implemented `HitIndicator` component for hit confirmation feedback
-   - ✅ Added support for regular, critical, and headshot hit markers
-   - ✅ Implemented directional damage indicators for situational awareness
-   - ✅ Created kill confirmation animations for feedback
-   - ✅ Established CSS structure for combat-related components
-11. ✅ Implement combat feedback systems:
-   - ✅ Implemented `DamageIndicator` component for directional damage awareness
-   - ✅ Created `DamageNumbers` component for floating combat text
-   - ✅ Added `ScreenEffects` component for damage flash, healing effects, and screen shake
-   - ✅ Implemented `FootstepIndicator` for directional awareness of nearby movement
-   - ✅ Integrated all components with `CombatSystem` coordinator
-
-12. ✅ Implement notification system:
-   - ✅ Created `NotificationSystem` as coordinator for all notification components
-   - ✅ Implemented `NotificationManager` for general game notifications
-   - ✅ Added `KillFeed` component for kill events and kill streaks
-   - ✅ Created `EventBanner` component for major game events and round outcomes
-   - ✅ Implemented `AchievementDisplay` for achievement unlocks and milestones
-   - ✅ Established CSS structure for notification components
-   - ✅ Integrated notification system with UIManager
-
-13. ✅ Complete menu system implementation:
-   - ✅ Created `ScreenManager` for screen transitions and modal dialogs
-   - ✅ Implemented screen registration system with options for:
-     - Transitions (fade, slide-left, slide-right, scale)
-     - Title and content templates
-     - Back navigation controls
-     - Callback hooks for screen show/hide events
-   - ✅ Created modal dialog system with:
-     - Backdrop overlay with optional click-to-close
-     - Focus trapping for keyboard accessibility
-     - Close button and escape key support
-   - ✅ Added history tracking for back navigation between screens
-   - ✅ Implemented keyboard navigation with focus management
-   - ✅ Created CSS with BEM methodology and responsive design
-   - ✅ Integrated ScreenManager with UIManager
-   - ✅ Implemented `WeaponWheel` for radial weapon selection
-   - ✅ Designed and built `WorldMap` for overview navigation with pan/zoom functionality
-   - ✅ Developed `MissionBriefing` for mission details and objectives
-   - ✅ Created `RoundSummary` for end-of-round statistics and performance metrics
-   - ✅ Established `MenuSystem` as central manager for all menu components
-
-14. ✅ Implement progression system:
-   - ✅ Created `ProgressionSystem` to manage XP, levels, and skill points
-   - ✅ Implemented `ExperienceBar` for visualizing progression with animations
-   - ✅ Added `PlayerRank` for displaying rank with badge and title
-   - ✅ Developed `SkillPointsDisplay` for skill point allocation and management
-   - ✅ Integrated progression system with UIManager
-
-15. 🔄 Implement environmental systems:
-   - ✅ Created `EnvironmentSystem` as coordinator for environmental UI components
-   - ✅ Implemented `WeatherSystem` for rain, snow, fog and other weather effects
-   - ✅ Added `ObjectiveMarkerSystem` for waypoints, markers, and world indicators
-   - ✅ Implemented `DangerZone` for hazardous area visualization with proximity warnings
-   - 🔄 Next: Implement `PowerupDisplay` for active buffs and status effects
-
-16. ⏳ Coming: Enhanced combat feedback, audio integration, performance optimization and accessibility features

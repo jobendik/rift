@@ -2,815 +2,472 @@
 
 ## Technologies Used
 
-### Core Web Technologies
-- **JavaScript (ES6+)**: Primary programming language for UI components
-- **CSS3**: Styling and animations for UI elements
-- **HTML5**: Structure for DOM-based UI elements
+The RIFT FPS UI/CSS redesign is a web-based implementation using modern web technologies:
 
-### Game Engine Integration
-- **Three.js**: 3D rendering library used for game world and some UI elements
-- **Custom Game Loop**: Handles update cycles for the game and UI
-- **WebGL**: Underlying rendering technology for Three.js components
+### Core Technologies
 
-### Development Tools
-- **PowerShell**: Required for project command-line operations
-- **Vite**: Module bundler and development server
-- **ESLint**: JavaScript code linting
-- **VS Code**: Primary development environment
+- **HTML/CSS/JavaScript**: The UI system is built using standard web technologies for maximum compatibility and performance.
+- **CSS Custom Properties**: Extensive use of CSS variables for theming and consistency.
+- **BEM Methodology**: Block-Element-Modifier pattern for CSS to maintain a scalable and maintainable codebase.
 
-### Third-Party Libraries
-- **dat.GUI**: Used for debug UI panels
-- **Web Fonts**: Rajdhani, Orbitron, and Exo 2 for specialized UI typography
+### Frameworks and Libraries
 
-## Development Setup
+- **Three.js**: Used for the 3D rendering of the game world. The UI systems interface with the Three.js scene.
+- **Custom Component System**: A lightweight, purpose-built component-based architecture for UI elements.
+- **Web Components**: Leveraging modern browser APIs for encapsulated UI components.
 
-### Environment Requirements
-- **Node.js**: Version 16+ for development tools
-- **PowerShell**: Required for build scripts and asset management
-- **Modern Browser**: With WebGL support for testing
+## Development Environment
 
-### Project Structure
+### Tools
+
+- **Visual Studio Code**: Primary code editor with extensions for JavaScript, CSS, and HTML.
+- **PowerShell**: For build scripts and automating development tasks.
+- **Vite**: Fast, modern frontend development server and bundler.
+
+### Browser Support
+
+- **Modern Browsers**: Targeting modern browsers with good WebGL support (Chrome, Firefox, Edge).
+- **Mobile Support**: Limited mobile considerations for potential future expansion.
+
+## Project Structure
+
+### Directory Organization
+
+- **src/**: Source code
+  - **components/**: UI components
+    - **ui/**: UI-specific components
+      - **hud/**: Heads-up display components
+      - **combat/**: Combat feedback components
+      - **notifications/**: Notification system components
+      - **menus/**: Menu system components
+      - **progression/**: Progression system components
+      - **environment/**: Environmental UI components
+  - **core/**: Core systems and managers
+  - **utils/**: Utility functions and helpers
+  - **controls/**: Player control systems
+  - **entities/**: Game entity classes
+  - **weapons/**: Weapon system classes
+  - **effects/**: Visual effects
+
+- **public/**: Static assets
+  - **assets/**: Game assets (textures, models, etc.)
+  - **styles/**: CSS files
+    - **core/**: Foundation styles (_variables.css, _reset.css, etc.)
+    - **components/**: Component-specific styles
+    - **utils/**: Utility styles
+    - **responsive/**: Responsive design styles
+
+### Naming Conventions
+
+- **JavaScript**:
+  - Classes use PascalCase (e.g., `HealthDisplay`)
+  - Methods and variables use camelCase (e.g., `updateHealth()`)
+  - Constants use UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`)
+
+- **CSS**:
+  - Following BEM methodology with `rift-` prefix
+  - Block: `rift-health-display`
+  - Element: `rift-health-display__bar`
+  - Modifier: `rift-health-display__bar--critical`
+
+- **File Names**:
+  - JavaScript: PascalCase for components (e.g., `HealthDisplay.js`)
+  - CSS: kebab-case with underscore prefix for partials (e.g., `_health-display.css`)
+
+## CSS Architecture
+
+### Foundation
+
+- **_variables.css**: Global CSS variables for colors, spacing, typography, etc.
+- **_reset.css**: Base reset and normalization styles
+- **_typography.css**: Typography system and text styles
+- **_animations.css**: Global animation keyframes and transitions
+- **_layout.css**: Layout utilities and structure
+
+### Utilities
+
+- **_mixins.css**: Reusable custom property sets
+- **_helpers.css**: Utility classes for common patterns
+
+### Responsive Design
+
+- **_desktop.css**: Styles for large screens (≥1201px)
+- **_tablet.css**: Styles for medium screens (769px-1200px)
+- **_mobile.css**: Styles for small screens (≤768px)
+
+### Components
+
+Each UI component has its own CSS file following the structure:
+- **hud/**: HUD component styles (e.g., `_health.css`, `_ammo.css`)
+- **combat/**: Combat feedback styles (e.g., `_hit-indicator.css`, `_damage-indicator.css`)
+- **notifications/**: Notification styles (e.g., `_notification-manager.css`, `_kill-feed.css`)
+- **menus/**: Menu system styles (e.g., `_screen-manager.css`, `_world-map.css`)
+- **progression/**: Progression styles (e.g., `_experience-bar.css`, `_player-rank.css`)
+- **environment/**: Environmental UI styles (e.g., `_weather.css`, `_objective-marker.css`)
+
+## JavaScript Architecture
+
+### Core Systems
+
+- **UIComponent**: Base class for all UI components with lifecycle methods:
+  - `init()`: Setup and initial rendering
+  - `update(delta)`: Handle regular updates with delta time
+  - `render()`: Update DOM representation
+  - `dispose()`: Clean up resources and event listeners
+
+- **EventManager**: Centralized pub/sub system for component communication:
+  - `subscribe(eventName, handler)`: Subscribe to events
+  - `publish(eventName, data)`: Publish events with data
+  - `unsubscribe(eventName, handler)`: Remove subscriptions
+  - Automatic cleanup via component lifecycle
+
+- **DOMFactory**: Factory pattern for consistent DOM creation:
+  - `createElement(type, options)`: Create DOM elements
+  - `createContainer(id, options)`: Create container elements
+  - BEM methodology support with `rift-` prefix
+
+- **UIManager**: Orchestrator for all UI subsystems:
+  - Manages lifecycle for all UI components
+  - Handles view changes (game, menu, pause)
+  - Size management for responsive layouts
+  - Performance monitoring
+
+- **InputHandler**: User input management:
+  - Mouse, keyboard, and touch event handling
+  - Normalized coordinates and gestures
+  - Event emission for input actions
+
+### Component System
+
+- **Component Hierarchy**:
+  - **UIComponent**: Base class for all components
+    - **SystemComponent**: Managers for groups of related components
+      - **HUDSystem**: Manages HUD components
+      - **CombatSystem**: Manages combat feedback
+      - **NotificationSystem**: Manages notifications
+      - **MenuSystem**: Manages menu screens
+      - **ProgressionSystem**: Manages progression display
+      - **EnvironmentSystem**: Manages environmental UI
+
+- **Component Communication**:
+  - Event-driven architecture using EventManager
+  - Standardized event format with namespaces
+  - Automatic subscription tracking and cleanup
+
+### System Integration
+
+- **World Class**: Main game state and logic
+  - Contains player, level, entities, systems
+  - Provides data for UI components
+
+- **AssetManager**: Asset loading and caching
+  - Textures, sounds, models, and UI assets
+  - Preloading and just-in-time loading strategies
+
+- **WeaponSystem**: Manages weapons and combat
+  - Provides ammunition, weapon state for UI
+  - Combat events for hit indicators, damage
+
+## Enhanced Combat Feedback System
+
+The Enhanced Combat Feedback System is a significant Phase 4 improvement that builds upon the existing combat feedback foundation. Three out of four planned components have been fully implemented, with the fourth component (AdvancedScreenEffects) pending implementation.
+
+### Components
+
+1. **EnhancedDamageIndicator**: Advanced directional damage awareness ✅ **IMPLEMENTED**
+   - Type-specific indicators for different damage types (bullet, explosive, melee, etc.)
+   - Intensity scaling based on damage amount
+   - Distance representation via visual cues
+   - Multi-stage fade system for improved clarity
+   - Support for multiple simultaneous damage sources
+
+2. **EnhancedHitIndicator**: Improved hit confirmation system ✅ **IMPLEMENTED**
+   - Different visuals for body shots, critical hits, headshots, and kills
+   - Dynamic animation sequences for hit confirmation
+   - Visual scaling based on damage amount
+   - Special kill confirmation indicators
+   - Multi-kill recognition for successive kills
+
+3. **DynamicCrosshairSystem**: Contextual crosshair system ✅ **IMPLEMENTED**
+   - Real-time spread visualization based on weapon accuracy and movement
+   - Contextual color changes based on target type (enemy, friendly, interactive)
+   - Shape changes based on interaction context
+   - Weapon state integration (reloading, empty, switching)
+   - Subtle indication for potential critical hits on vulnerable areas
+   - Multi-kill feedback for successive eliminations
+   - Layered architecture for separation of concerns:
+     - Base layer for core crosshair elements
+     - Spread layer for dynamic accuracy visualization
+     - Center layer for dot and critical hit indication
+     - Hit marker layer for hit feedback
+     - Context layer for interactive elements and hints
+
+4. **AdvancedScreenEffects**: Enhanced screen feedback ⏳ **PENDING**
+   - Directional screen shake reflecting impact direction
+   - Variable effect intensity based on damage type and amount
+   - Multi-layer effects (vignette, color shift, blur)
+   - Hardware-accelerated animations for performance
+   - Special effects for critical states and powerups
+
+### Technical Implementation
+
+- **CSS Integration**:
+  - Utilizes CSS Custom Properties extensively for dynamic adjustments
+  - Hardware-accelerated animations using transform and opacity
+  - Carefully managed stacking contexts with z-index
+  - BEM methodology with consistent naming convention
+  - Standard class naming patterns implemented across all enhanced feedback components
+
+- **Configuration System**:
+  - All visual parameters configurable via UIConfig.js
+  - Mirrored CSS variables for consistent appearance
+  - Tunable intensity, timing, and visual parameters
+  - Feature flags for enabling/disabling enhanced components
+
+- **Event System Integration**:
+  - Standardized event naming following `namespace:action` pattern
+  - Consistent payload structures for different event types
+  - Event flow documentation and clear communication paths
+  - Clean event handling with automatic cleanup
+
+- **Component Integration**:
+  - CombatSystem updated to conditionally use enhanced or standard components based on UIConfig settings
+  - Graceful fallbacks to legacy components if needed
+  - Consistent API across both standard and enhanced versions
+  - Standardized method naming for consistent interfaces
+
+## Event Standardization System
+
+The Event Standardization System is a comprehensive approach to event management implemented as part of Phase 4 refinement. A detailed documentation has been created, with implementation in progress.
+
+### Event Naming Convention
+
+All events now follow a standardized naming pattern:
 ```
-/
-├── public/                # Static assets and built files
-│   ├── assets/            # Game assets (models, textures, etc.)
-│   │   ├── animations/    # Animation data files
-│   │   ├── audios/        # Sound effects and music
-│   │   ├── config/        # Configuration files
-│   │   ├── hud/           # HUD-specific assets
-│   │   ├── models/        # 3D models
-│   │   ├── navmeshes/     # Navigation mesh data
-│   │   └── textures/      # Texture files
-│   │
-│   ├── styles/            # CSS files
-│   │   ├── index.css      # Entry point for CSS
-│   │   ├── main.css       # Main styles (deprecated, being refactored)
-│   │   ├── /components/   # Component-specific styles
-│   │   │   ├── /hud/      # HUD component styles
-│   │   │   │   ├── _health.css  # Health display styles - implemented
-│   │   │   │   ├── _ammo.css    # Ammo display styles - implemented
-│   │   │   │   └── _layout.css  # HUD layout styles - implemented
-│   │   │   ├── /combat/   # Combat feedback styles
-│   │   │   ├── /notifications/ # Notification styles
-│   │   │   ├── /menus/    # Menu system styles
-│   │   │   └── /effects/  # Visual effect styles
-│   │   ├── /core/         # Core styles
-│   │   │   ├── _variables.css  # CSS variables - implemented
-│   │   │   ├── _reset.css      # Base resets - implemented
-│   │   │   ├── _typography.css # Text styles - implemented
-│   │   │   ├── _animations.css # Animation keyframes - implemented
-│   │   │   └── _layout.css     # Layout utilities - implemented
-│   │   ├── /responsive/   # Responsive breakpoints
-│   │   │   ├── _desktop.css    # Large screen styles - implemented
-│   │   │   ├── _tablet.css     # Medium screen styles - implemented
-│   │   │   └── _mobile.css     # Small screen styles - implemented
-│   │   └── /utils/        # Utility styles
-│   │       ├── _mixins.css     # CSS props and functions - implemented
-│   │       └── _helpers.css    # Utility classes - implemented
-│   │
-│   ├── index.html         # Main HTML entry point
-│   └── main.js            # Built JavaScript bundle
-│
-├── src/                   # Source code
-│   ├── components/        # UI Components
-│   │   └── ui/            # UI-specific components
-│   │       ├── UIComponent.js # Base component class - implemented
-│   │       ├── minimap/   # Minimap components
-│   │       └── screens/   # Screen components
-│   │
-│   ├── controls/          # Input control systems
-│   ├── core/              # Core game systems
-│   │   ├── EventManager.js # Event system - implemented
-│   │   ├── UIConfig.js    # UI configuration - implemented
-│   │   └── UIManager.js   # New UI manager - implemented
-│   ├── effects/           # Visual effects
-│   ├── entities/          # Game entities
-│   ├── etc/               # Miscellaneous utilities
-│   ├── evaluators/        # AI evaluators
-│   ├── goals/             # AI goals
-│   ├── triggers/          # Game event triggers
-│   ├── utils/             # Utility functions
-│   │   ├── DOMFactory.js  # DOM element factory - implemented
-│   │   └── InputHandler.js # Input handling - implemented
-│   ├── weapons/           # Weapon systems
-│   └── main.js            # Main entry point
-│
-├── div/                   # Documentation and miscellaneous
-├── memory-bank/           # Project documentation
-├── .gitignore
-├── copyAssetsToPublic.ps1 # PowerShell script for asset management
-├── jsconfig.json
-├── package.json
-├── package-lock.json
-└── vite.config.js
+[namespace]:[action]
 ```
 
-### Build and Run Commands
+Where:
+- `namespace` identifies the source/domain (e.g., player, weapon, health)
+- `action` describes what happened (e.g., damaged, killed, updated)
 
-The primary development workflow uses these PowerShell commands:
+Example events:
+- `health:changed` - Player health value changed
+- `weapon:fired` - Weapon was fired
+- `enemy:killed` - Enemy was eliminated
 
-- **Start Development Server**: `npm run dev`
-- **Copy Assets**: `.\copyAssetsToPublic.ps1` 
-- **Build for Production**: `npm run build`
+### Standardized System Namespaces
 
-## Technical Constraints
+The system defines a set of standardized namespaces for clarity and organization:
 
-### Browser Compatibility
-- The game targets modern browsers with WebGL support
-- No requirement to support legacy browsers
-- Must maintain 60FPS on mid-range hardware
+| Namespace | Description | Example Events |
+|-----------|-------------|----------------|
+| `player` | Player entity events | `player:spawn`, `player:death`, `player:movement` |
+| `health` | Health-related events | `health:damaged`, `health:healed`, `health:critical` |
+| `weapon` | Weapon system events | `weapon:fired`, `weapon:reload`, `weapon:switch` |
+| `ammo` | Ammunition events | `ammo:low`, `ammo:depleted`, `ammo:added` |
+| `enemy` | Enemy-related events | `enemy:spotted`, `enemy:damaged`, `enemy:killed` |
+| `hit` | Hit detection events | `hit:registered`, `hit:critical`, `hit:headshot` |
+| `combat` | Combat state events | `combat:started`, `combat:ended`, `combat:intensity` |
+| `ui` | UI state changes | `ui:show`, `ui:hide`, `ui:resize` |
 
-### Performance Budgets
-- **Main Thread Budget**: <16ms per frame for UI operations
-- **Memory Usage**: Stable memory footprint without leaks
-- **Asset Loading**: Optimized for progressive loading
-- **DOM Nodes**: Limited to essential elements to avoid performance degradation
-- **Animation Performance**: CSS animations preferred over JavaScript where possible
+### Standard Event Payload Structure
 
-### Technical Limitations
-- **Three.js Integration**: UI elements must coordinate with Three.js rendering
-- **Event Handling**: Need to manage both DOM and game events
-- **Asset Loading**: UI must gracefully handle loading states
-- **Mobile Support**: Not a primary target, but architecture should not preclude future mobile adaptation
+All events follow a standardized payload structure with specialized formats for different event types:
 
-## Current Technical Implementation
-
-### Core Architecture Implementation
-
-The core architecture of the UI system has been implemented with these key components:
-
-1. **UIComponent Base Class**:
-   - Comprehensive lifecycle methods (init, update, render, dispose)
-   - Event subscription management with automatic cleanup
-   - DOM element creation and management
-   - Component hierarchy with parent/child relationships
-   - Animation system with easing functions
-   - State management
-   - BEM methodology integration
-   - Visibility controls
-
-2. **EventManager**:
-   - Centralized pub/sub system
-   - Subscription tracking with unique IDs
-   - Debug mode for event logging
-   - Error boundary for event handlers
-   - Event statistics and utility methods
-   - Standardized event format with timestamps
-
-3. **DOMFactory**:
-   - Factory pattern for consistent DOM creation
-   - BEM methodology support with "rift-" prefix
-   - Helper methods for common UI elements (buttons, notifications, etc.)
-   - Standardized style application
-   - Support for parent-child element relationships
-
-4. **UIManager (new)**:
-   - System orchestration architecture
-   - Component registration system
-   - Lifecycle management for subsystems
-   - Performance monitoring with FPS counter
-   - View state management (game, menu, pause)
-   - Size and responsive layout management
-
-5. **InputHandler**:
-   - Centralized input processing
-   - Support for mouse, keyboard, and touch events
-   - Gesture recognition (pinch)
-   - Normalized coordinate system
-   - Event delegation for efficiency
-   - Weapon wheel integration with right-click
-   - Key bindings for game actions
-
-6. **CSS Variables**:
-   - Comprehensive variable set in `_variables.css`
-   - Color system with primary, secondary, and status colors
-   - Typography system with specialized game fonts
-   - Spacing system with consistent scaling
-   - Animation timing variables
-   - Game-specific UI variables
-
-### Technical Implementation Patterns
-
-Several key technical patterns have been established in the implementation:
-
-1. **MinimapSystem Implementation**:
-   ```javascript
-   class MinimapSystem extends UIComponent {
-       constructor(options) {
-           super(options);
-           this.world = options.world;
-           this.minimapConfig = this.config.minimap;
-           
-           // Minimap state
-           this.isExpanded = false;
-           this.zoomLevel = 1;
-           this.isRotating = false;
-           
-           // DOM references
-           this.minimapContainer = null;
-           this.minimapCanvas = null;
-           this.minimapIcons = {};
-           this.controls = {};
-           
-           // Initialize state
-           this.state = {
-               playerPosition: { x: 0, y: 0, z: 0 },
-               playerRotation: 0,
-               enemies: [],
-               items: [],
-               objectives: []
-           };
-       }
-       
-       init() {
-           // Create main container
-           this._createMinimapElements();
-           
-           // Initialize controls
-           this._initControls();
-           
-           // Register event handlers
-           this.registerEvents({
-               'minimap:toggle': this._onToggleExpand,
-               'minimap:zoom': this._onZoom,
-               'minimap:rotate': this._onToggleRotate,
-               'player:position': this._onPlayerPositionUpdate,
-               'enemy:spotted': this._onEnemySpotted,
-               'item:discovered': this._onItemDiscovered
-           });
-           
-           // Set initial state
-           this.render();
-       }
-       
-       update(delta) {
-           if (!this.world) return;
-           
-           // Update player position and rotation
-           const player = this.world.player;
-           if (player) {
-               // Update state with new data
-               this.setState({
-                   playerPosition: player.position,
-                   playerRotation: player.rotation.y,
-                   enemies: this._getVisibleEnemies(),
-                   items: this._getItems(),
-                   objectives: this._getObjectives()
-               }, false);
-           }
-           
-           // Update animations
-           this._updateAnimations(delta);
-           
-           // Update canvas
-           this._updateCanvas();
-       }
-       
-       // Additional methods for functionality
-       toggleExpand() { /* ... */ }
-       zoom(direction) { /* ... */ }
-       toggleRotation() { /* ... */ }
-       
-       // Private methods
-       _createMinimapElements() { /* ... */ }
-       _initControls() { /* ... */ }
-       _updateCanvas() { /* ... */ }
-       _getVisibleEnemies() { /* ... */ }
-       _getItems() { /* ... */ }
-       _getObjectives() { /* ... */ }
-       
-       // Event handlers
-       _onToggleExpand() { /* ... */ }
-       _onZoom(event) { /* ... */ }
-       _onToggleRotate() { /* ... */ }
-       _onPlayerPositionUpdate(event) { /* ... */ }
-       _onEnemySpotted(event) { /* ... */ }
-       _onItemDiscovered(event) { /* ... */ }
-   }
-   ```
-
-2. **Component Lifecycle**:
-   ```javascript
-   class UIComponent {
-       init() { /* Initialize component */ }
-       update(delta) { /* Update state */ }
-       render() { /* Update DOM */ }
-       dispose() { /* Cleanup resources */ }
-   }
-   ```
-
-2. **Event-Based Communication**:
-   ```javascript
-   // Publishing
-   EventManager.emit('event:type', { data: value });
-   
-   // Subscribing
-   component.subscribe('event:type', (event) => {
-       // Handle event
-   });
-   ```
-
-3. **Automatic Resource Management**:
-   ```javascript
-   dispose() {
-       // Dispose children first
-       this.children.forEach(child => child.dispose());
-       
-       // Unsubscribe from all events
-       this.unregisterAllEvents();
-       
-       // Remove from DOM
-       if (this.element && this.element.parentNode) {
-           this.element.parentNode.removeChild(this.element);
-       }
-   }
-   ```
-
-4. **BEM CSS Methodology**:
-   ```css
-   .rift-block {}
-   .rift-block__element {}
-   .rift-block__element--modifier {}
-   ```
-
-5. **Component State Management**:
-   ```javascript
-   setState(newState, render = true) {
-       this.state = { ...this.state, ...newState };
-       
-       if (render) {
-           this.render();
-       }
-   }
-   ```
-
-### CSS Implementation
-
-The CSS implementation now features a comprehensive and structured approach:
-
-1. **Core CSS Files**:
-
-   **CSS Variables Structure** in `_variables.css`:
-   ```css
-   :root {
-     /* COLOR SCHEME */
-     --rift-primary: #e63946;
-     --rift-primary-glow: rgba(230, 57, 70, 0.7);
-     
-     /* TYPOGRAPHY */
-     --rift-font-hud: 'Rajdhani', 'Orbitron', sans-serif;
-     
-     /* SPACING */
-     --rift-space-md: 1rem;
-     
-     /* ANIMATIONS */
-     --rift-duration-fast: 0.2s;
-     
-     /* GAME UI */
-     --rift-crosshair-size: 24px;
-   }
-   ```
-
-   **Reset and Base Styles** in `_reset.css`:
-   ```css
-   /* Basic reset */
-   * {
-     margin: 0;
-     padding: 0;
-     box-sizing: border-box;
-   }
-   
-   /* Document styles */
-   html, body {
-     width: 100%;
-     height: 100%;
-     overflow: hidden;
-     font-family: var(--rift-font-body);
-     background-color: var(--rift-background);
-     color: var(--rift-text-color);
-   }
-   ```
-
-   **Typography System** in `_typography.css`:
-   ```css
-   /* HUD Text */
-   .rift-hud-text {
-     font-family: var(--rift-font-hud);
-     letter-spacing: var(--rift-letter-spacing-wide);
-   }
-   
-   .rift-hud-text--lg {
-     font-size: var(--rift-font-size-xl);
-     font-weight: var(--rift-font-weight-semibold);
-   }
-   ```
-
-   **Animation System** in `_animations.css`:
-   ```css
-   /* Hit marker flash */
-   @keyframes rift-hit-marker {
-     0% { opacity: 1; transform: scale(0.8); }
-     50% { opacity: 1; transform: scale(1.1); }
-     100% { opacity: 0; transform: scale(1); }
-   }
-   
-   /* Animation utility classes */
-   .rift-animate-pulse {
-     animation: rift-pulse var(--rift-duration-slow) infinite;
-   }
-   ```
-
-   **Layout System** in `_layout.css`:
-   ```css
-   /* HUD container */
-   .rift-hud {
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     pointer-events: none;
-     z-index: var(--rift-z-index-hud);
-   }
-   
-   /* HUD corners positioning */
-   .rift-hud__top-left {
-     position: absolute;
-     top: var(--rift-hud-margin);
-     left: var(--rift-hud-margin);
-     z-index: var(--rift-z-index-hud);
-   }
-   ```
-
-2. **Utility Systems**:
-
-   **Helper Classes** in `_helpers.css`:
-   ```css
-   /* Visibility helpers */
-   .rift-hidden { display: none !important; }
-   .rift-invisible { visibility: hidden !important; }
-   
-   /* Color helpers */
-   .rift-color-primary { color: var(--rift-primary); }
-   .rift-bg-primary { background-color: var(--rift-primary); }
-   ```
-
-   **Responsive Breakpoints** in responsive files:
-   ```css
-   /* In _mobile.css */
-   @media (max-width: 768px) {
-     .rift-hide-mobile { display: none !important; }
-     
-     .rift-minimap {
-       width: calc(var(--rift-minimap-size) * 0.8);
-       height: calc(var(--rift-minimap-size) * 0.8);
-     }
-   }
-   ```
-
-3. **Component Implementation** in `components/hud/_health.css`:
-   ```css
-   .rift-health {
-     display: flex;
-     align-items: center;
-     padding: var(--rift-hud-padding);
-     background-color: var(--rift-ui-background);
-     border: var(--rift-hud-border-width) solid var(--rift-health);
-     border-radius: var(--rift-border-radius);
-   }
-   
-   .rift-health__bar--critical {
-     background-color: var(--rift-health-critical);
-     animation: rift-pulse var(--rift-duration-slow) infinite;
-   }
-   ```
-
-4. **JavaScript Configuration Mirror**:
-   ```javascript
-   export const UIConfig = {
-     colors: {
-       primary: '#e63946',
-       primaryGlow: 'rgba(230, 57, 70, 0.7)',
-     },
-     
-     fonts: {
-       hud: "'Rajdhani', 'Orbitron', sans-serif",
-     }
-   };
-   ```
-
-## Technical Opportunities
-
-### Architecture Enhancements
-- **Component Registry**: Create a central registry for all UI components
-- **Template System**: Implement HTML-based templates for complex component structures
-- **Animation Manager**: Move animations from JS to CSS where appropriate for performance
-- **State Synchronization**: Implement better patterns for state synchronization between components
-
-### Performance Optimizations
-- **Element Pooling**: Implement pooling for frequently created/destroyed elements
-- **Batch DOM Operations**: Group DOM mutations to minimize layout recalculations
-- **Rendering Strategy**: Use CSS transforms and opacity for animations
-- **Visibility Optimization**: Skip updates for offscreen components
-
-### Developer Experience Improvements
-- **Component Testing**: Create isolated testing environment for components
-- **Visual Testing**: Implement screenshot-based regression testing
-- **Performance Monitoring**: Add detailed performance tracking for components
-- **Documentation**: Generate API documentation from JSDoc comments
-
-## Integration Points with Game Systems
-
-### World Object
+1. **State Change Events**
 ```javascript
-// The world object is passed to UIManager and provides access to:
-world = {
-  player: Player,           // Player entity with health, weapons, etc.
-  competitors: [],          // All entities in the world (includes player)
-  assetManager: AssetManager, // Handles loading assets
-  fpsControls: FPSControls, // Player input control system
-  camera: Camera,          // Main game camera
-  scene: Scene,            // Three.js scene
-  debug: Boolean,          // Whether debug mode is active
-  isGamePaused: Boolean,   // Whether game is paused
-  gameStats: Object        // Game statistics (kills, deaths, etc.)
-  // ...other properties and methods
+{
+  type: "namespace:changed",
+  timestamp: performance.now(),
+  value: newValue,     // Current value
+  previous: oldValue,  // Previous value
+  delta: change,       // Amount changed (optional)
+  max: maximum,        // Maximum possible value (optional)
+  source: source       // What caused the change (optional)
 }
 ```
 
-### Event-Based Integration
-The implemented EventManager allows for decoupled communication:
-
+2. **Combat Events**
 ```javascript
-// Game system emits events
-EventManager.emit('health:changed', { value: newHealth, previous: oldHealth });
-
-// UI components react to events
-healthComponent.subscribe('health:changed', (event) => {
-  // Update health display
-});
+{
+  type: "namespace:action",
+  timestamp: performance.now(),
+  source: {            // Source entity
+    id: string,        // Entity ID
+    type: string,      // Entity type (player, enemy, etc.)
+    name: string,      // Entity name (optional)
+    position: Vector3  // 3D position (optional)
+  },
+  target: {            // Target entity (similar to source)
+    id: string,
+    type: string,
+    name: string,
+    position: Vector3
+  },
+  weapon: {            // Weapon used (optional)
+    id: string,
+    type: string,
+    name: string
+  },
+  damage: number,      // Damage amount (optional)
+  isCritical: boolean, // Critical hit (optional)
+  isHeadshot: boolean, // Headshot (optional)
+  direction: Vector3   // Direction vector (optional)
+}
 ```
 
-## Technical Implementation Status
+3. **Notification Events**
+```javascript
+{
+  type: "namespace:notify",
+  timestamp: performance.now(),
+  message: string,     // The notification message
+  category: string,    // Category (info, warning, error, success)
+  duration: number,    // Display duration in ms (optional)
+  priority: number,    // Priority level (optional)
+  icon: string,        // Icon identifier (optional)
+  actions: Array       // Available actions (optional)
+}
+```
 
-### HUD Components 
-All planned HUD components have been implemented:
+4. **Player Progress Events**
+```javascript
+{
+  type: "namespace:progress",
+  timestamp: performance.now(),
+  amount: number,      // Amount of progress
+  source: string,      // Source of the progress
+  total: number,       // Total required for completion
+  level: number,       // Current level or tier (optional)
+  rewards: Array       // Associated rewards (optional)
+}
+```
 
-1. **HealthDisplay**
-   - Health value and bar visualization with states
-   - Low health and critical health warnings
-   - Screen flash effects for damage and healing
-   - Critical health overlay effect
-   - Automatic cleanup of screen effects when component is disposed
+## Technical Constraints
 
-2. **HUDSystem**
-   - Coordinator for all HUD elements
-   - Positional containers for different screen regions
-   - Child component management and updates
-   - Responsive layout adjustments
-   - Integration with world object for data
+### Performance Considerations
 
-3. **AmmoDisplay**
-   - Current and total ammo visualization
-   - Magazine view with bullet indicators
-   - Low ammo warning state
-   - Reloading animation and state handling
-   - Weapon type-specific styling
+- **DOM Operations**: Batch DOM operations to prevent layout thrashing
+- **Animation Performance**: Use CSS transforms and opacity for hardware acceleration
+- **Event Handling**: Debounce handlers for frequent events
+- **Visual Updates**: Use requestAnimationFrame for animations
+- **Element Pooling**: Reuse elements for frequently created/destroyed UI elements (planned for implementation)
+- **Visibility Optimization**: Avoid updating off-screen elements
 
-4. **CrosshairSystem**
-   - Dynamic crosshair based on weapon spread
-   - Hit markers with critical and headshot variations
-   - Enemy targeting state changes
-   - Weapon-specific crosshair styles
-   - Contextual coloring for different targets
+### Browser Compatibility
 
-5. **MinimapSystem**
-   - Interactive minimap with zoom and rotate functions
-   - Enemy and item tracking
-   - Responsive design for different screen sizes
-   - Integration with event system for notifications
-   - Specialized icons for game entities
+- **Target Browsers**: Modern versions of Chrome, Firefox, Edge
+- **CSS Features**: Using widely-supported CSS features with minimal fallbacks
+- **JavaScript Features**: ES6+ features with compatibility considerations
 
-6. **StaminaSystem**
-   - Sprint mechanics visualization
-   - Stamina depletion and regeneration indicators
-   - Visual feedback for state changes
-   - Integration with player movement system
+### Mobile Considerations
 
-7. **CompassDisplay**
-   - Directional awareness with heading
-   - Waypoint markers for objectives
-   - Friend/foe indicators
-   - Integration with navigation system
+- **Touch Input**: Support for touch gestures where appropriate
+- **Screen Sizes**: Responsive design for potential future mobile adaptation
+- **Performance**: Optimizing for mobile GPUs and processors
 
-### Feedback Systems
-All planned feedback components have been implemented:
+## Documentation and Best Practices
 
-1. **CombatSystem**
-   - Coordinator for all combat feedback components
-   - Integration with game systems for event handling
-   - Testing capabilities for component demonstration
-   - Performance optimization for combat scenarios
+### Code Documentation
 
-2. **HitIndicator**
-   - Hit confirmation feedback
-   - Critical and headshot hit markers
-   - Kill confirmation animations
-   - Integration with weapon system
+- **JSDoc Comments**: For all classes and public methods
+- **Implementation Notes**: Important considerations documented in code
+- **Event Documentation**: Clear documentation of published and subscribed events
 
-3. **DamageIndicator**
-   - 360-degree directional damage visualization
-   - Intensity based on damage amount
-   - Duration scaling for clarity
-   - Stacking for multiple damage sources
+### CSS Documentation
 
-4. **DamageNumbers**
-   - Floating damage indicators for different damage types
-   - Normal, critical, headshot, and kill damage numbers
-   - Animation system for rising and fading
-   - Stacking for rapid consecutive hits
-   - Element pooling for performance
+- **Component Documentation**: Purpose and usage of each component
+- **Variable Documentation**: Meaning and usage of CSS variables
+- **Animation Documentation**: Description of animations and transitions
 
-5. **ScreenEffects**
-   - Damage flash effect for player damage
-   - Healing glow effect for health recovery
-   - Screen shake system with intensity and decay
-   - Vignette effect for low health
-   - Hardware-accelerated CSS animations
+### Performance Guidelines
 
-6. **FootstepIndicator**
-   - Directional awareness for movement sounds
-   - Friend/foe differentiation with visual styling
-   - Distance-based intensity scaling
-   - Continuous tracking for running vs. single steps
-   - Performance-optimized animation system
+- **Animation Performance**: Use transform and opacity for animations
+- **DOM Manipulation**: Minimize DOM operations and batch when possible
+- **Event Handling**: Proper cleanup of event listeners
+- **Memory Management**: Clear references when disposing components
 
-### Notification System
-All planned notification components have been implemented:
+## Integration Points
 
-1. **NotificationSystem**
-   - Coordinator for all notification components
-   - Integration with UIManager for global access
-   - Configuration through UIConfig
-   - Event subscription management
+### Three.js Integration
 
-2. **NotificationManager**
-   - General game notification handling
-   - Support for different notification types
-   - Queue management with priority
-   - Stacking of similar notifications
-   - Configurable display duration and positioning
+- **Coordinate Systems**: Converting between 3D world and 2D screen coordinates
+- **Raycast Integration**: Using raycasts for world interaction with UI
+- **Marker System**: Connecting world entities with UI markers
 
-3. **KillFeed**
-   - Real-time feed of player eliminations
-   - Kill streak announcements
-   - Weapon and headshot indicators
-   - Self-kill and team kill differentiation
-   - Configurable display duration and fade effects
+### Game Logic Integration
 
-4. **EventBanner**
-   - High-visibility event announcements
-   - Support for different event types with styling
-   - Round outcome announcements
-   - Optional timer countdowns
-   - Queue management for sequential announcements
+- **Player State**: Health, ammo, stamina from Player class
+- **Weapon State**: Current weapon, ammunition from WeaponSystem
+- **Combat Events**: Hit registration, damage from combat system
+- **Notification Events**: Game events triggering UI notifications
 
-5. **AchievementDisplay**
-   - Achievement popup system with types
-   - Progress tracking visualization
-   - Queue management for multiple achievements
-   - Configurable display timers
-   - Dismiss controls for user interaction
+## Future Technical Considerations
 
-### CSS Implementation
-Complete implementation of component-specific CSS following BEM methodology:
+### Planned Technical Improvements
 
-1. **Core CSS**
-   - Comprehensive variables in `_variables.css`
-   - Reset and base styles in `_reset.css`
-   - Typography system in `_typography.css`
-   - Animation keyframes in `_animations.css`
-   - Layout structures in `_layout.css`
+- **Element Pooling System**: For high-frequency UI elements (Phase 4)
+- **Performance Profiling**: Identifying and optimizing bottlenecks (Phase 4)
+- **Animation System Enhancements**: More sophisticated animation sequences
+- **Audio Integration**: UI sound effects and audio feedback (Phase 4)
+- **Accessibility Features**: Color blind modes, UI scaling, etc.
 
-2. **Component CSS**
-   - HUD components in `/components/hud/`
-   - Combat feedback in `/components/combat/`
-   - Notifications in `/components/notifications/`
-   - Utility classes in `/utils/`
-   - Responsive breakpoints in `/responsive/`
+### Technical Debt Items
 
-3. **Animation System**
-   ```css
-   /* In _animations.css */
-   @keyframes rift-pulse {
-     0% { opacity: var(--opacity-min); }
-     50% { opacity: var(--opacity-max); }
-     100% { opacity: var(--opacity-min); }
-   }
-   
-   /* In component CSS */
-   .rift-health__bar--critical {
-     animation: rift-pulse var(--rift-duration-slow) infinite;
-     --opacity-min: 0.6;
-     --opacity-max: 1;
-   }
-   ```
+- **Event System Standardization**: Implementation of comprehensive event naming standards in progress (Phase 4)
+- **CSS Organization**: Further modularization of CSS components
+- **Component Consistency**: Standardizing implementation patterns across components
+- **Documentation Completeness**: Ensuring comprehensive documentation of all systems
 
-### Next Technical Implementation: Menu System
+### Phase 4 Technical Implementations
 
-The next phase focuses on implementing the Menu System components:
+1. **Enhanced Combat Feedback System**: 75% complete
+   - ✅ EnhancedDamageIndicator component
+   - ✅ EnhancedHitIndicator component
+   - ✅ DynamicCrosshairSystem component
+   - ⏳ AdvancedScreenEffects component (pending)
 
-1. **ScreenManager**
-   - Screen transitions and state management
-   - Modal handling for overlays
-   - Focus management for keyboard navigation
-   - Background blur effects for depth
+2. **Event System Standardization**: Documentation complete, implementation pending
+   - ✅ Comprehensive documentation with naming conventions and payload structures
+   - ✅ System namespace definitions and event flow documentation
+   - ⏳ Implementation of standardized event names across components
+   - ⏳ Refactoring of event payload structures
+   - ⏳ Addition of event debugging and monitoring tools
 
-2. **WeaponWheel**
-   - Radial menu for weapon selection
-   - Visual feedback for available/unavailable weapons
-   - Quick selection through directional input
-   - Weapon stats and ammunition display
+3. **Performance Optimization**: Planning complete, implementation pending
+   - ⏳ Profiling of UI components during intensive gameplay
+   - ⏳ Element pooling system for frequently created elements
+   - ⏳ Batch DOM operations for high-frequency updates
+   - ⏳ Animation optimization
+   - ⏳ Memory leak identification and fixes
 
-3. **WorldMap**
-   - Overview navigation with zoom functionality
-   - Objective markers and waypoints
-   - Player position tracking
-   - Area discovery and fog-of-war
+4. **Audio Integration**: Planning pending
+   - ⏳ Research into UI sound integration best practices
+   - ⏳ Audio feedback architecture document
+   - ⏳ Audio event system design
+   - ⏳ Spatial audio integration strategy
 
-4. **MissionBriefing**
-   - Mission objective display
-   - Narrative elements and story presentation
-   - Visual cues for mission difficulty
-   - Reward information and completion criteria
+## Known Technical Issues
 
-5. **RoundSummary**
-   - End-of-round statistics display
-   - Player performance metrics
-   - Progression and XP visualization
-   - Achievements and milestones earned
+1. **Enhanced Combat Feedback Implementation**
+   - ✅ Fixed: CSS class name mismatches between JS and CSS files
+   - ✅ Fixed: Method name standardization (clearAllIndicators)
+   - ✅ Verified: All CSS variables properly defined
 
-## Technical Success Metrics
+2. **Event Standardization**
+   - Need to implement standardized event naming conventions across components
+   - Need to refactor existing components to use standardized payload structures
+   - Need to update event subscription code to match the new patterns
 
-The technical implementation will be measured against these metrics:
+3. **Performance Considerations**
+   - Balance between CSS and JavaScript animations needs optimization
+   - Element pooling needed for frequently created/destroyed elements
+   - DOM batch operations needed for frequently updated elements
+   - Performance monitoring during intensive gameplay scenarios
 
-1. **Code Quality**:
-   - ✅ UIComponent base class with clear lifecycle methods
-   - ✅ EventManager with subscription tracking and cleanup
-   - ✅ DOMFactory for consistent element creation
-   - ✅ UIManager as system orchestrator
-   - ✅ CSS architecture following BEM methodology
-   - ⏳ Individual component implementations with single responsibilities
-
-2. **Performance**:
-   - ✅ FPS counter implementation for monitoring
-   - ✅ CSS animation system for declarative animations
-   - ✅ JavaScript animation system for dynamic animations
-   - ⏳ Efficient DOM manipulation
-   - ⏳ Memory leak prevention
-   - ⏳ Consistent 60fps during gameplay
-
-3. **Maintainability**:
-   - ✅ Clear separation of concerns in architecture
-   - ✅ Consistent patterns for component development
-   - ✅ Proper event-based communication
-   - ✅ Modular CSS with clear organization
-   - ⏳ Code documentation with JSDoc
-   - ⏳ Additional component-specific CSS files
-
-4. **Feature Completeness**:
-   - ✅ Core architecture implementation
-   - ✅ CSS foundation implementation
-   - ✅ HUD components implementation
-   - ✅ Feedback systems implementation
-   - ✅ Notification system implementation
-   - ⏳ Menu system implementation
-
-## Implementation Notes
-
-### Current Technical Strengths
-- The UIComponent base class is very robust with comprehensive lifecycle methods
-- EventManager provides a solid foundation for decoupled communication
-- DOMFactory ensures consistent DOM creation and styling
-- UIManager successfully implements the orchestrator pattern
-- CSS architecture provides a maintainable and scalable foundation
-- Design system with variables enables consistent styling
-- Responsive design system adapts to different screen sizes
-- Animation system allows for both CSS and JS animations
-
-### Technical Challenges to Address
-- Event naming conventions need to be standardized
-- Animation strategy (CSS vs JS) needs to be determined case-by-case for optimal performance
-- Integration between DOM-based UI and Three.js needs clarification
-- Element pooling for frequently created/destroyed elements
-- Testing strategy for components
-
-### Next Technical Implementation Steps
-- Begin implementing the Menu System components, starting with ScreenManager
-- Create CSS foundation for menu-specific components in `/styles/components/menus/`
-- Develop component framework for screen transitions and modal handling
-- Implement WeaponWheel component with radial selection interface
-- Design WorldMap component with overview navigation
-- Create MissionBriefing and RoundSummary components
-- Develop testing strategy for menu system components
-- Implement focus management for keyboard navigation
+4. **Integration Challenges**
+   - Coordinating hit detection with visual feedback
+   - Timing animations with gameplay events
+   - Ensuring accurate directional information for markers and indicators
+   - Integration between DOM-based UI and Three.js rendered elements

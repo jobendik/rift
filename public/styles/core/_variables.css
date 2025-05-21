@@ -196,6 +196,65 @@
   --rift-damage-indicator-opacity: 0.7;
   --rift-damage-indicator-size: 120px;
   
+  /* Enhanced Damage Types */
+  --rift-damage-bullet: rgba(255, 0, 0, 0.8);
+  --rift-damage-explosive: rgba(255, 140, 0, 0.8);
+  --rift-damage-melee: rgba(255, 255, 0, 0.8);
+  --rift-damage-fire: rgba(255, 80, 0, 0.8);
+  --rift-damage-energy: rgba(0, 200, 255, 0.8);
+  --rift-damage-default: rgba(255, 0, 0, 0.8);
+  
+  /* Enhanced Damage Indicator */
+  --rift-damage-indicator-bullet-color: var(--rift-damage-bullet);
+  --rift-damage-indicator-explosive-color: var(--rift-damage-explosive);
+  --rift-damage-indicator-melee-color: var(--rift-damage-melee);
+  --rift-damage-indicator-fire-color: var(--rift-damage-fire);
+  --rift-damage-indicator-energy-color: var(--rift-damage-energy);
+  --rift-damage-indicator-base-opacity: 0.85;
+  --rift-damage-indicator-close-scale: 1.2;
+  --rift-damage-indicator-medium-scale: 1.0;
+  --rift-damage-indicator-far-scale: 0.8;
+  --rift-damage-indicator-pulse-duration: 0.8s;
+  
+  /* Enhanced Hit Indicators */
+  --rift-hit-normal: rgba(255, 255, 255, 0.9);
+  --rift-hit-critical: rgba(255, 200, 0, 0.9);
+  --rift-hit-headshot: rgba(255, 50, 50, 0.9);
+  --rift-hit-kill: rgba(255, 0, 0, 0.9);
+  --rift-hit-base-opacity: 0.9;
+  --rift-hit-base-scale: 1.0;
+  --rift-hit-pulse-duration: 0.4s;
+  --rift-hit-multi-kill-scale: 1.2;
+  --rift-hit-multi-kill-color: rgba(255, 0, 255, 0.9);
+  --rift-easing-snap: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  --rift-easing-out: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --rift-easing-elastic: cubic-bezier(0.2, 0.8, 0.0, 1.2);
+  
+  /* Dynamic Crosshair System */
+  --rift-crosshair-default: rgba(255, 255, 255, 0.8);
+  --rift-crosshair-enemy: rgba(255, 50, 50, 0.9);
+  --rift-crosshair-friendly: rgba(50, 255, 50, 0.9);
+  --rift-crosshair-interactive: rgba(50, 200, 255, 0.9);
+  --rift-crosshair-critical-glow: 0 0 8px var(--rift-hit-critical);
+  --rift-crosshair-empty: rgba(255, 60, 60, 0.9);
+  --rift-crosshair-base-spread: 2px;
+  --rift-crosshair-max-spread: 30px;
+  --rift-crosshair-pistol-spread: 4px;
+  --rift-crosshair-rifle-spread: 6px;
+  --rift-crosshair-shotgun-spread: 8px;
+  --rift-crosshair-multi-kill-double: var(--rift-hit-kill);
+  --rift-crosshair-multi-kill-triple: var(--rift-warning);
+  --rift-crosshair-multi-kill-quad: var(--rift-success);
+  --rift-crosshair-multi-kill-chain: var(--rift-secondary);
+  
+  /* Advanced Screen Effects */
+  --rift-damage-vignette: 128, 0, 0; /* RGB values for vignette */
+  --rift-damage-vignette-rgb: 128, 0, 0; /* RGB values for vignette */
+  --rift-damage-flash: rgba(255, 0, 0, 0.3);
+  --rift-heal-flash: rgba(76, 175, 80, 0.3);
+  --rift-damage-fire: rgba(255, 80, 0, 0.7);
+  --rift-damage-explosive: rgba(255, 160, 0, 0.7);
+  
   /* Damage Numbers */
   --rift-damage-numbers-color: white;
   --rift-damage-numbers-normal-color: white;

@@ -4,6 +4,7 @@
  * Main import file for all combat-related UI components including:
  * - Hit indicators
  * - Damage indicators
+ * - Enhanced damage indicators
  * - Damage numbers
  * - Screen effects
  * - Footstep indicators
@@ -12,6 +13,9 @@
 /* Import all combat component styles */
 @import url('./combat/_hit-indicator.css');
 @import url('./combat/_damage-indicator.css');
+@import url('./combat/_enhanced-damage-indicator.css');
+@import url('./combat/_enhanced-hit-indicator.css');
+@import url('./combat/_dynamic-crosshair.css');
 @import url('./combat/_damage-numbers.css');
 @import url('./combat/_screen-effects.css');
 @import url('./combat/_footstep-indicator.css');

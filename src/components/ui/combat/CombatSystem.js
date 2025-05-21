@@ -17,6 +17,9 @@
 import UIComponent from '../UIComponent.js';
 import HitIndicator from './HitIndicator.js';
 import DamageIndicator from './DamageIndicator.js';
+import { EnhancedDamageIndicator } from './EnhancedDamageIndicator.js';
+import { EnhancedHitIndicator } from './EnhancedHitIndicator.js';
+import { DynamicCrosshairSystem } from './DynamicCrosshairSystem.js';
 import DamageNumbers from './DamageNumbers.js';
 import ScreenEffects from './ScreenEffects.js';
 import FootstepIndicator from './FootstepIndicator.js';
@@ -41,7 +44,10 @@ class CombatSystem extends UIComponent {
 
         // Component references
         this.hitIndicator = null;
+        this.enhancedHitIndicator = null;
         this.damageIndicator = null;
+        this.enhancedDamageIndicator = null;
+        this.dynamicCrosshair = null;
         this.damageNumbers = null;
         
         // Screen effects for damage, healing, etc.
@@ -83,7 +89,10 @@ class CombatSystem extends UIComponent {
 
         // Update components
         if (this.hitIndicator) this.hitIndicator.update(delta);
+        if (this.enhancedHitIndicator) this.enhancedHitIndicator.update(delta);
         if (this.damageIndicator) this.damageIndicator.update(delta);
+        if (this.enhancedDamageIndicator) this.enhancedDamageIndicator.update(delta);
+        if (this.dynamicCrosshair) this.dynamicCrosshair.update(delta);
         if (this.damageNumbers) this.damageNumbers.update(delta);
         
         // Update screen effects
@@ -114,7 +123,10 @@ class CombatSystem extends UIComponent {
     dispose() {
         // Dispose children first
         if (this.hitIndicator) this.hitIndicator.dispose();
+        if (this.enhancedHitIndicator) this.enhancedHitIndicator.dispose();
         if (this.damageIndicator) this.damageIndicator.dispose();
+        if (this.enhancedDamageIndicator) this.enhancedDamageIndicator.dispose();
+        if (this.dynamicCrosshair) this.dynamicCrosshair.dispose();
         if (this.damageNumbers) this.damageNumbers.dispose();
         
         // Dispose screen effects
@@ -134,28 +146,67 @@ class CombatSystem extends UIComponent {
      * @private
      */
     _initComponents() {
-        // Create Hit Indicator
-        this.hitIndicator = new HitIndicator({
-            container: this.element,
-            hitDuration: this.config.hitDuration || 500,
-            directionDuration: this.config.directionDuration || 800,
-            killDuration: this.config.killDuration || 1000
-        });
-        this.hitIndicator.init();
-        this.addChild(this.hitIndicator);
+        // Check if enhanced hit indicator is enabled in UIConfig
+        const useEnhancedHit = UIConfig.enhancedCombat && UIConfig.enhancedCombat.hitIndicator;
         
-        // Initialize damage indicator
-        const damageConfig = this.config.damageIndicator || {};
-        this.damageIndicator = new DamageIndicator({
-            container: this.element,
-            maxIndicators: damageConfig.maxIndicators || 8,
-            baseDuration: damageConfig.baseDuration ? damageConfig.baseDuration * 1000 : 1200,
-            minOpacity: damageConfig.minOpacity || 0.3,
-            maxOpacity: damageConfig.maxOpacity || 0.9,
-            indicatorWidth: damageConfig.indicatorWidth || 120
-        });
-        this.damageIndicator.init();
-        this.addChild(this.damageIndicator);
+        if (useEnhancedHit) {
+            // Initialize enhanced hit indicator
+            this.enhancedHitIndicator = new EnhancedHitIndicator({
+                container: this.element
+                // Config is loaded from UIConfig.enhancedCombat.hitIndicator in the component itself
+            });
+            this.enhancedHitIndicator.init();
+            this.addChild(this.enhancedHitIndicator);
+        } else {
+            // Initialize legacy hit indicator
+            this.hitIndicator = new HitIndicator({
+                container: this.element,
+                hitDuration: this.config.hitDuration || 500,
+                directionDuration: this.config.directionDuration || 800,
+                killDuration: this.config.killDuration || 1000
+            });
+            this.hitIndicator.init();
+            this.addChild(this.hitIndicator);
+        }
+        
+        // Check if enhanced combat feedback is enabled in UIConfig
+        const useEnhancedDamage = UIConfig.enhancedCombat && UIConfig.enhancedCombat.damageIndicator;
+        
+        if (useEnhancedDamage) {
+            // Initialize enhanced damage indicator
+            this.enhancedDamageIndicator = new EnhancedDamageIndicator({
+                container: this.element
+                // Config is loaded from UIConfig.enhancedCombat.damageIndicator in the component itself
+            });
+            this.enhancedDamageIndicator.init();
+            this.addChild(this.enhancedDamageIndicator);
+        } else {
+            // Initialize legacy damage indicator
+            const damageConfig = this.config.damageIndicator || {};
+            this.damageIndicator = new DamageIndicator({
+                container: this.element,
+                maxIndicators: damageConfig.maxIndicators || 8,
+                baseDuration: damageConfig.baseDuration ? damageConfig.baseDuration * 1000 : 1200,
+                minOpacity: damageConfig.minOpacity || 0.3,
+                maxOpacity: damageConfig.maxOpacity || 0.9,
+                indicatorWidth: damageConfig.indicatorWidth || 120
+            });
+            this.damageIndicator.init();
+            this.addChild(this.damageIndicator);
+        }
+        
+        // Check if enhanced crosshair system is enabled in UIConfig
+        const useEnhancedCrosshair = UIConfig.enhancedCombat && UIConfig.enhancedCombat.crosshair;
+        
+        if (useEnhancedCrosshair) {
+            // Initialize dynamic crosshair system
+            this.dynamicCrosshair = new DynamicCrosshairSystem({
+                container: this.element
+                // Config is loaded from UIConfig.enhancedCombat.crosshair in the component itself
+            });
+            this.dynamicCrosshair.init();
+            this.addChild(this.dynamicCrosshair);
+        }
         
         // Initialize damage numbers
         const numbersConfig = this.config.damageNumbers || {};
@@ -205,7 +256,19 @@ class CombatSystem extends UIComponent {
     _onGamePaused() {
         // Pause any ongoing animations or visual feedback
         if (this.hitIndicator) this.hitIndicator.clearAllIndicators();
+        if (this.enhancedHitIndicator && typeof this.enhancedHitIndicator.clearAllIndicators === 'function') {
+            this.enhancedHitIndicator.clearAllIndicators();
+        }
         if (this.damageIndicator) this.damageIndicator.clearAllIndicators();
+        if (this.enhancedDamageIndicator && typeof this.enhancedDamageIndicator.clearAllIndicators === 'function') {
+            this.enhancedDamageIndicator.clearAllIndicators();
+        }
+        if (this.dynamicCrosshair) {
+            // Reset crosshair to default state
+            this.dynamicCrosshair._setCrosshairState('default');
+            this.dynamicCrosshair.spreadFactor = 1.0;
+            this.dynamicCrosshair._applyCrosshairSpread();
+        }
         if (this.damageNumbers) this.damageNumbers.clearAllNumbers();
         
         // Clear screen effects
@@ -229,6 +292,12 @@ class CombatSystem extends UIComponent {
      * @public
      */
     testHitIndicator(type = 'normal') {
+        // Check if we're using enhanced or regular hit indicators
+        if (this.enhancedHitIndicator) {
+            this.testEnhancedHitIndicator(type);
+            return;
+        }
+        
         if (!this.hitIndicator) return;
         
         switch (type) {
@@ -254,44 +323,162 @@ class CombatSystem extends UIComponent {
                 break;
         }
     }
+
+    /**
+     * Test method for showing dynamic crosshair features
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} feature - Feature to test ('spread', 'state', 'hit', 'critical', 'multikill')
+     * @param {string} value - Value for the specific feature
+     */
+    testDynamicCrosshair(feature = 'spread', value = null) {
+        if (!this.dynamicCrosshair) return;
+        
+        this.dynamicCrosshair.testCrosshair(feature, value);
+    }
+
+    /**
+     * Test method for showing enhanced hit indicator
+     * For development/debugging only
+     * @public
+     * 
+     * @param {string} type - Type of hit marker ('normal', 'critical', 'headshot', 'kill', 'multi', 'sequence')
+     * @param {number} damage - Optional damage amount to simulate
+     * @param {string} multiKillType - Optional multi-kill type ('double', 'triple', 'quad', 'chain')
+     */
+    testEnhancedHitIndicator(type = 'normal', damage = null, multiKillType = null) {
+        if (!this.enhancedHitIndicator) return;
+        
+        // Calculate a damage amount if not provided
+        const damageAmount = damage !== null ? damage : Math.floor(Math.random() * 40) + 5;
+        
+        switch (type) {
+            case 'normal':
+                this.enhancedHitIndicator.testHitMarker('normal', damageAmount);
+                break;
+            case 'critical':
+                this.enhancedHitIndicator.testHitMarker('critical', damageAmount * 1.5);
+                break;
+            case 'headshot':
+                this.enhancedHitIndicator.testHitMarker('headshot', damageAmount * 2);
+                break;
+            case 'kill':
+                this.enhancedHitIndicator.testHitMarker('kill', damageAmount);
+                break;
+            case 'multi':
+                const multiTypes = ['double', 'triple', 'quad', 'chain'];
+                const selectedType = multiKillType || multiTypes[Math.floor(Math.random() * multiTypes.length)];
+                
+                // Get kill count from type
+                let multiKillCount = 2; // Default for double
+                if (selectedType === 'triple') multiKillCount = 3;
+                if (selectedType === 'quad') multiKillCount = 4;
+                if (selectedType === 'chain') multiKillCount = 5 + Math.floor(Math.random() * 3); // 5-7 kills
+                
+                this.enhancedHitIndicator.testMultiKill(multiKillCount);
+                break;
+            case 'sequence':
+                // Test a sequence of kills for multi-kill
+                const sequenceKillCount = multiKillType ? parseInt(multiKillType) : 4;
+                const interval = 500; // 500ms between kills
+                
+                this.enhancedHitIndicator.testKillSequence(sequenceKillCount, interval);
+                break;
+        }
+        
+        console.log(`Enhanced hit indicator test: ${type} hit with ${damageAmount} damage`);
+    }
     
     /**
      * Test method for showing damage indicator
      * For development/debugging only
      * @public
      */
-    testDamageIndicator(intensity = 'medium', angle = null) {
-        if (!this.damageIndicator) return;
-        
-        // Generate a random angle if not provided (0-360 degrees)
-        const damageAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
-        
-        // Map intensity string to damage values
-        let damageAmount;
-        switch (intensity) {
-            case 'low':
-                damageAmount = Math.floor(Math.random() * 9) + 1; // 1-9
-                break;
-            case 'medium':
-                damageAmount = Math.floor(Math.random() * 15) + 10; // 10-24
-                break;
-            case 'high':
-                damageAmount = Math.floor(Math.random() * 25) + 25; // 25-49
-                break;
-            case 'critical':
-                damageAmount = Math.floor(Math.random() * 50) + 50; // 50-99
-                break;
-            default:
-                damageAmount = Math.floor(Math.random() * 30) + 10; // 10-39
+    testDamageIndicator(intensity = 'medium', angle = null, damageType = 'bullet') {
+        // Check if we're using enhanced or regular damage indicators
+        if (this.enhancedDamageIndicator) {
+            // Generate a random angle if not provided (0-360 degrees)
+            const damageAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
+            
+            // Map intensity string to damage values
+            let damageAmount;
+            switch (intensity) {
+                case 'low':
+                    damageAmount = Math.floor(Math.random() * 9) + 1; // 1-9
+                    break;
+                case 'medium':
+                    damageAmount = Math.floor(Math.random() * 15) + 10; // 10-24
+                    break;
+                case 'high':
+                    damageAmount = Math.floor(Math.random() * 25) + 25; // 25-49
+                    break;
+                case 'critical':
+                    damageAmount = Math.floor(Math.random() * 50) + 50; // 50-99
+                    break;
+                default:
+                    damageAmount = Math.floor(Math.random() * 30) + 10; // 10-39
+            }
+            
+            // Convert angle to direction vector (x,z for world coordinate system)
+            const radians = (damageAngle * Math.PI) / 180;
+            const direction = {
+                x: Math.cos(radians),
+                z: Math.sin(radians)
+            };
+            
+            // Create a mock damage event
+            const damageEvent = {
+                source: {
+                    position: {
+                        x: direction.x * 10, // 10 units away in the direction
+                        y: 0,
+                        z: direction.z * 10
+                    }
+                },
+                damage: damageAmount,
+                direction: direction,
+                damageType: damageType,
+                sourceId: `test_${Date.now()}`
+            };
+            
+            // Trigger the player damage event
+            this.enhancedDamageIndicator._onPlayerDamaged(damageEvent);
+            
+            console.log(`Enhanced damage indicator test: ${damageAmount} ${damageType} damage from ${damageAngle}°`);
+        } else if (this.damageIndicator) {
+            // Use legacy damage indicator
+            
+            // Generate a random angle if not provided (0-360 degrees)
+            const damageAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
+            
+            // Map intensity string to damage values
+            let damageAmount;
+            switch (intensity) {
+                case 'low':
+                    damageAmount = Math.floor(Math.random() * 9) + 1; // 1-9
+                    break;
+                case 'medium':
+                    damageAmount = Math.floor(Math.random() * 15) + 10; // 10-24
+                    break;
+                case 'high':
+                    damageAmount = Math.floor(Math.random() * 25) + 25; // 25-49
+                    break;
+                case 'critical':
+                    damageAmount = Math.floor(Math.random() * 50) + 50; // 50-99
+                    break;
+                default:
+                    damageAmount = Math.floor(Math.random() * 30) + 10; // 10-39
+            }
+            
+            // Show the damage indicator
+            this.damageIndicator.showDamageFrom({
+                angle: damageAngle,
+                damage: damageAmount
+            });
+            
+            console.log(`Damage indicator test: ${damageAmount} damage from ${damageAngle}°`);
         }
-        
-        // Show the damage indicator
-        this.damageIndicator.showDamageFrom({
-            angle: damageAngle,
-            damage: damageAmount
-        });
-        
-        console.log(`Damage indicator test: ${damageAmount} damage from ${damageAngle}°`);
     }
     
     /**

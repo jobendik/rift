@@ -132,6 +132,191 @@ export const UIConfig = {
         screenShakeDamageScalar: 40
     },
     
+    // Enhanced Combat Feedback
+    enhancedCombat: {
+        // Enhanced Damage Indicator
+        damageIndicator: {
+            // Type-specific settings
+            types: {
+                bullet: { 
+                    color: 'rgba(255, 0, 0, 0.8)',
+                    duration: 1.0, // seconds
+                    className: 'rift-damage-indicator--bullet'
+                },
+                explosive: { 
+                    color: 'rgba(255, 140, 0, 0.8)',
+                    duration: 1.5, // seconds
+                    className: 'rift-damage-indicator--explosive' 
+                },
+                melee: { 
+                    color: 'rgba(255, 255, 0, 0.8)',
+                    duration: 0.8, // seconds
+                    className: 'rift-damage-indicator--melee' 
+                },
+                fire: { 
+                    color: 'rgba(255, 80, 0, 0.8)',
+                    duration: 1.2, // seconds
+                    className: 'rift-damage-indicator--fire' 
+                },
+                energy: { 
+                    color: 'rgba(0, 200, 255, 0.8)',
+                    duration: 1.2, // seconds
+                    className: 'rift-damage-indicator--energy' 
+                }
+            },
+            // Distance representation
+            distance: {
+                close: { scale: 1.2, maxDistance: 5 },  // world units
+                medium: { scale: 1.0, maxDistance: 15 }, // world units
+                far: { scale: 0.8, maxDistance: Infinity } // world units
+            },
+            // Animation settings
+            animation: {
+                pulseDuration: 0.8, // seconds
+                fadeIn: 0.1, // seconds
+                fadeOut: 0.3, // seconds
+                pulseFrequency: 1.5 // pulses per second for high damage
+            },
+            // Core settings
+            baseOpacity: 0.85,
+            minAngleDifference: 15, // degrees - minimum angle between indicators
+            maxIndicators: 8, // maximum simultaneous indicators 
+            stackSimilar: true, // combine indicators from similar sources
+            stackWindow: 300 // ms - window for stacking similar damage sources
+        },
+        
+        // Enhanced Hit Indicator
+        hitIndicator: {
+            // Hit type settings
+            types: {
+                normal: {
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    duration: 0.3, // seconds
+                    baseScale: 0.9,
+                    baseOpacity: 0.9,
+                    className: 'rift-hit-marker--normal'
+                },
+                critical: {
+                    color: 'rgba(255, 200, 0, 0.9)',
+                    duration: 0.4, // seconds
+                    baseScale: 1.1,
+                    baseOpacity: 0.95,
+                    className: 'rift-hit-marker--critical'
+                },
+                headshot: {
+                    color: 'rgba(255, 50, 50, 0.9)',
+                    duration: 0.5, // seconds
+                    baseScale: 1.15,
+                    baseOpacity: 1.0,
+                    className: 'rift-hit-marker--headshot'
+                },
+                kill: {
+                    color: 'rgba(255, 0, 0, 0.9)',
+                    duration: 0.7, // seconds
+                    baseScale: 1.3,
+                    baseOpacity: 1.0,
+                    className: 'rift-hit-marker--kill'
+                }
+            },
+            // Multi-kill settings
+            multiKill: {
+                timeWindow: 1.5, // seconds between kills to count as multi-kill
+                resetDelay: 2.0, // seconds before resetting kill counter
+                scale: 1.2, // scale for multi-kill indicator
+                color: 'rgba(255, 0, 255, 0.9)', // color for multi-kill
+                // Thresholds for different multi-kill types
+                thresholds: {
+                    double: 2,
+                    triple: 3,
+                    quad: 4,
+                    chain: 5
+                }
+            },
+            // Animation settings
+            animation: {
+                duration: 0.4, // seconds
+                easingIn: 'cubic-bezier(0.4, 0.0, 0.2, 1.0)', // snap
+                easingOut: 'cubic-bezier(0.0, 0.0, 0.2, 1.0)', // out
+                easingElastic: 'cubic-bezier(0.2, 0.8, 0.0, 1.2)' // elastic
+            }
+        },
+        
+        // Dynamic Crosshair System
+        crosshair: {
+            // State colors
+            states: {
+                default: 'rgba(255, 255, 255, 0.8)',
+                enemy: 'rgba(255, 50, 50, 0.9)',
+                friendly: 'rgba(50, 255, 50, 0.9)',
+                interactive: 'rgba(50, 200, 255, 0.9)',
+                critical: '0 0 8px rgba(255, 200, 0, 0.9)'
+            },
+            // Spread settings
+            spread: {
+                baseSpread: 2, // pixels
+                maxSpread: 30, // pixels
+                recoveryRate: 0.2, // per second
+                movementFactor: 1.5, // multiplier when moving
+                jumpFactor: 2.0, // multiplier when jumping
+                fireFactor: 1.0, // additional spread per shot
+                recoverDelay: 0.1 // seconds before recovery starts
+            },
+            // Weapon state integration
+            weaponStates: {
+                reloading: {
+                    animation: 'rotate',
+                    duration: 2.0 // seconds (adjust based on weapon reload time)
+                },
+                switching: {
+                    animation: 'fade',
+                    duration: 0.3 // seconds
+                },
+                empty: {
+                    color: 'rgba(255, 60, 60, 0.9)',
+                    pulseRate: 2.0 // pulses per second
+                }
+            },
+            // Animation settings
+            animation: {
+                transitionSpeed: 0.1, // seconds
+                criticalPulse: 0.5, // seconds per pulse when potential critical hit
+                contextualFade: 0.2 // seconds to fade between contextual states
+            }
+        },
+        
+        // Advanced Screen Effects
+        screenEffects: {
+            // Damage flash settings
+            damageFlash: {
+                baseDuration: 0.3, // seconds
+                intensityFactor: 0.7, // max opacity
+                types: {
+                    default: 'rgba(255, 0, 0, 0.3)',
+                    fire: 'rgba(255, 80, 0, 0.3)',
+                    explosive: 'rgba(255, 160, 0, 0.3)',
+                    energy: 'rgba(0, 150, 255, 0.3)'
+                }
+            },
+            // Vignette settings
+            vignette: {
+                healthThreshold: 0.5, // percentage of max health to start showing vignette
+                maxIntensity: 0.95, // maximum opacity
+                pulseEnabled: true, // enable pulsing at low health
+                pulseRate: 1.5, // pulses per second at critical health
+                pulseThreshold: 0.25, // health percentage to start pulsing
+                color: '128, 0, 0' // RGB values for vignette
+            },
+            // Screen shake settings
+            screenShake: {
+                directionFactor: 0.4, // how much direction influences shake
+                noiseFactorX: 0.6, // how much random noise influences X shake
+                noiseFactorY: 0.6, // how much random noise influences Y shake
+                maxDuration: 0.8, // maximum seconds of shake
+                perlinSpeed: 0.01 // speed multiplier for perlin noise
+            }
+        }
+    },
+    
     // Footstep indicator settings
     footstepIndicator: {
         baseDuration: 0.8, // seconds

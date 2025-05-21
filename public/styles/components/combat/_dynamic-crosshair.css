@@ -1,0 +1,359 @@
+/**
+ * RIFT FPS UI - Dynamic Crosshair Component
+ * 
+ * This file contains styles for the enhanced dynamic crosshair component.
+ * Part of the Enhanced Combat Feedback System.
+ *
+ * Features:
+ * - Dynamic spread visualization based on weapon accuracy
+ * - Contextual color changes based on target type
+ * - Contextual shape changes based on interaction context
+ * - Weapon state integration (reloading, overheating)
+ * - Subtle indication for potential critical hits
+ * - Layered crosshair elements
+ */
+
+/* Dynamic Crosshair container */
+.rift-dynamic-crosshair {
+  --crosshair-color: var(--rift-crosshair-default);
+  --crosshair-size: var(--rift-crosshair-size, 24px);
+  --crosshair-thickness: var(--rift-crosshair-thickness, 2px);
+  --crosshair-spread: 0px;
+  --crosshair-opacity: 1;
+  --hit-intensity: 1;
+  --hit-scale: 1;
+  
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--crosshair-size);
+  height: var(--crosshair-size);
+  pointer-events: none;
+  z-index: var(--rift-z-index-hud);
+  transition: --crosshair-spread calc(var(--rift-duration-fast) * 1s) var(--rift-ease-out);
+}
+
+/* Crosshair layers */
+.rift-dynamic-crosshair__layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Base layer for background elements */
+.rift-dynamic-crosshair__layer--base {
+  z-index: 1;
+}
+
+/* Spread indicators layer */
+.rift-dynamic-crosshair__layer--spread {
+  z-index: 2;
+}
+
+/* Center dot layer */
+.rift-dynamic-crosshair__layer--center {
+  z-index: 3;
+}
+
+/* Hit marker layer */
+.rift-dynamic-crosshair__layer--hitmarker {
+  z-index: 4;
+}
+
+/* Context hint layer */
+.rift-dynamic-crosshair__layer--context {
+  z-index: 5;
+}
+
+/* Spread indicators */
+.rift-dynamic-crosshair__spread {
+  position: absolute;
+  background-color: var(--crosshair-color);
+  width: var(--crosshair-thickness);
+  height: var(--crosshair-thickness);
+  opacity: var(--crosshair-opacity);
+  transition: transform var(--rift-duration-fast) var(--rift-ease-out),
+              background-color var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+.rift-dynamic-crosshair__spread--top {
+  top: 0;
+  left: 50%;
+  height: var(--crosshair-spread);
+  transform: translate(-50%, calc(-1 * var(--crosshair-spread)));
+}
+
+.rift-dynamic-crosshair__spread--right {
+  top: 50%;
+  right: 0;
+  width: var(--crosshair-spread);
+  transform: translate(var(--crosshair-spread), -50%);
+}
+
+.rift-dynamic-crosshair__spread--bottom {
+  bottom: 0;
+  left: 50%;
+  height: var(--crosshair-spread);
+  transform: translate(-50%, var(--crosshair-spread));
+}
+
+.rift-dynamic-crosshair__spread--left {
+  top: 50%;
+  left: 0;
+  width: var(--crosshair-spread);
+  transform: translate(calc(-1 * var(--crosshair-spread)), -50%);
+}
+
+/* Center dot */
+.rift-dynamic-crosshair__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--crosshair-thickness) * 1.5);
+  height: calc(var(--crosshair-thickness) * 1.5);
+  background-color: var(--crosshair-color);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  transition: background-color var(--rift-duration-fast) var(--rift-ease-out),
+              box-shadow var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* Hit marker */
+.rift-dynamic-crosshair__hit-marker-line {
+  position: absolute;
+  background-color: var(--rift-hitmarker-color);
+  opacity: 0;
+  transition: opacity var(--rift-duration-fast) var(--rift-ease-out),
+              background-color var(--rift-duration-fast) var(--rift-ease-out),
+              transform var(--rift-duration-fast) var(--rift-ease-out);
+}
+
+/* Hit marker horizontal lines */
+.rift-dynamic-crosshair__hit-marker-line--horizontal-left,
+.rift-dynamic-crosshair__hit-marker-line--horizontal-right {
+  top: 50%;
+  height: var(--rift-hitmarker-thickness);
+  width: calc(var(--crosshair-size) / 4);
+  transform: translateY(-50%) scaleX(0);
+}
+
+.rift-dynamic-crosshair__hit-marker-line--horizontal-left {
+  right: 50%;
+  transform-origin: right center;
+}
+
+.rift-dynamic-crosshair__hit-marker-line--horizontal-right {
+  left: 50%;
+  transform-origin: left center;
+}
+
+/* Hit marker vertical lines */
+.rift-dynamic-crosshair__hit-marker-line--vertical-top,
+.rift-dynamic-crosshair__hit-marker-line--vertical-bottom {
+  left: 50%;
+  width: var(--rift-hitmarker-thickness);
+  height: calc(var(--crosshair-size) / 4);
+  transform: translateX(-50%) scaleY(0);
+}
+
+.rift-dynamic-crosshair__hit-marker-line--vertical-top {
+  bottom: 50%;
+  transform-origin: center bottom;
+}
+
+.rift-dynamic-crosshair__hit-marker-line--vertical-bottom {
+  top: 50%;
+  transform-origin: center top;
+}
+
+/* Hit marker active state */
+.rift-dynamic-crosshair__hit-marker--active .rift-dynamic-crosshair__hit-marker-line {
+  opacity: calc(1 * var(--hit-intensity));
+}
+
+/* Hit marker horizontal active */
+.rift-dynamic-crosshair__hit-marker--active .rift-dynamic-crosshair__hit-marker-line--horizontal-left,
+.rift-dynamic-crosshair__hit-marker--active .rift-dynamic-crosshair__hit-marker-line--horizontal-right {
+  transform: translateY(-50%) scaleX(1);
+}
+
+/* Hit marker vertical active */
+.rift-dynamic-crosshair__hit-marker--active .rift-dynamic-crosshair__hit-marker-line--vertical-top,
+.rift-dynamic-crosshair__hit-marker--active .rift-dynamic-crosshair__hit-marker-line--vertical-bottom {
+  transform: translateX(-50%) scaleY(1);
+}
+
+/* Hit marker types */
+.rift-dynamic-crosshair__hit-marker--normal .rift-dynamic-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-color);
+}
+
+.rift-dynamic-crosshair__hit-marker--critical .rift-dynamic-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-critical);
+  animation: rift-pulse 0.3s ease-in-out;
+}
+
+.rift-dynamic-crosshair__hit-marker--headshot .rift-dynamic-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-headshot);
+  animation: rift-pulse 0.4s ease-in-out;
+}
+
+.rift-dynamic-crosshair__hit-marker--kill .rift-dynamic-crosshair__hit-marker-line {
+  background-color: var(--rift-hitmarker-kill);
+  animation: rift-pulse 0.5s var(--rift-ease-elastic);
+}
+
+/* Context hint */
+.rift-dynamic-crosshair__context-hint {
+  position: absolute;
+  bottom: calc(-1 * var(--crosshair-size));
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: var(--crosshair-color);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  display: none;
+  font-family: var(--rift-font-hud);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* State modifiers */
+.rift-dynamic-crosshair--default {
+  --crosshair-color: var(--rift-crosshair-default, rgba(255, 255, 255, 0.8));
+}
+
+.rift-dynamic-crosshair--enemy {
+  --crosshair-color: var(--rift-crosshair-enemy, rgba(255, 50, 50, 0.9));
+}
+
+.rift-dynamic-crosshair--friendly {
+  --crosshair-color: var(--rift-crosshair-friendly, rgba(50, 255, 50, 0.9));
+}
+
+.rift-dynamic-crosshair--interactive {
+  --crosshair-color: var(--rift-crosshair-interactive, rgba(50, 200, 255, 0.9));
+}
+
+/* Critical potential indicator */
+.rift-dynamic-crosshair--critical-potential .rift-dynamic-crosshair__center {
+  box-shadow: var(--rift-crosshair-critical, 0 0 8px rgba(255, 200, 0, 0.9));
+  animation: rift-crosshair-critical-pulse 0.5s infinite alternate ease-in-out;
+}
+
+/* Weapon state indicators */
+.rift-dynamic-crosshair--reloading .rift-dynamic-crosshair__layer--spread {
+  animation: rift-crosshair-reload 2s linear;
+}
+
+.rift-dynamic-crosshair--empty .rift-dynamic-crosshair__spread,
+.rift-dynamic-crosshair--empty .rift-dynamic-crosshair__center {
+  background-color: var(--rift-crosshair-empty, rgba(255, 60, 60, 0.9));
+  animation: rift-crosshair-empty-pulse 0.5s infinite alternate ease-in-out;
+}
+
+.rift-dynamic-crosshair--switching .rift-dynamic-crosshair__layer--spread {
+  opacity: 0.3;
+  transition: opacity 0.3s var(--rift-ease-out);
+}
+
+/* Multi-kill indicator */
+.rift-dynamic-crosshair__multi-kill {
+  --multi-kill-scale: 1;
+  position: absolute;
+  top: calc(var(--crosshair-size) * 1.5);
+  left: 50%;
+  transform: translate(-50%, 0) scale(0);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--rift-hitmarker-kill);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: var(--rift-font-hud);
+  text-transform: uppercase;
+  font-weight: bold;
+  white-space: nowrap;
+  animation: rift-multi-kill 0.8s var(--rift-ease-elastic) forwards;
+}
+
+.rift-dynamic-crosshair__multi-kill--double {
+  color: var(--rift-hitmarker-kill, rgba(255, 50, 50, 0.9));
+}
+
+.rift-dynamic-crosshair__multi-kill--triple {
+  color: var(--rift-warning, #ff9800);
+}
+
+.rift-dynamic-crosshair__multi-kill--quad {
+  color: var(--rift-success, #4caf50);
+}
+
+.rift-dynamic-crosshair__multi-kill--chain {
+  color: var(--rift-secondary, #33a8ff);
+  --multi-kill-scale: 1.2;
+}
+
+/* Weapon type modifiers */
+.rift-dynamic-crosshair--pistol {
+  --crosshair-base-spread: 4px;
+}
+
+.rift-dynamic-crosshair--rifle {
+  --crosshair-base-spread: 6px;
+}
+
+.rift-dynamic-crosshair--shotgun {
+  --crosshair-base-spread: 8px;
+}
+
+.rift-dynamic-crosshair--sniper .rift-dynamic-crosshair__spread {
+  opacity: 0.6;
+}
+
+.rift-dynamic-crosshair--sniper .rift-dynamic-crosshair__center {
+  width: calc(var(--crosshair-thickness) * 0.5);
+  height: calc(var(--crosshair-thickness) * 0.5);
+}
+
+/* Stance modifiers */
+.rift-dynamic-crosshair--crouching .rift-dynamic-crosshair__spread {
+  opacity: 0.9;
+}
+
+.rift-dynamic-crosshair--prone .rift-dynamic-crosshair__spread {
+  opacity: 0.8;
+}
+
+/* Animations */
+@keyframes rift-crosshair-critical-pulse {
+  0% { box-shadow: 0 0 4px var(--rift-crosshair-critical, rgba(255, 200, 0, 0.7)); }
+  100% { box-shadow: 0 0 8px var(--rift-crosshair-critical, rgba(255, 200, 0, 0.9)); }
+}
+
+@keyframes rift-crosshair-empty-pulse {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@keyframes rift-crosshair-reload {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rift-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+@keyframes rift-multi-kill {
+  0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
+  20% { transform: translate(-50%, 0) scale(var(--multi-kill-scale, 1.1)); opacity: 1; }
+  100% { transform: translate(-50%, 0) scale(var(--multi-kill-scale, 1)); opacity: 1; }
+}

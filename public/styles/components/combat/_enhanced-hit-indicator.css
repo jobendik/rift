@@ -1,0 +1,220 @@
+/**
+ * Enhanced Hit Indicator Styles
+ * 
+ * Provides styling for the enhanced hit markers with:
+ * - Different visuals for body shots, critical hits, headshots, and kills
+ * - Dynamic animation sequences
+ * - Visual scaling based on damage
+ * - Multi-kill recognition
+ */
+
+.rift-enhanced-hit-indicators {
+    /* Full-screen positioning at center */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: var(--rift-z-index-hit-indicators, 850);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Base hit marker */
+.rift-enhanced-hit-marker {
+    --hit-intensity: 1;
+    --hit-scale: 1;
+    --hit-color: var(--rift-hit-normal);
+    --hit-segment-length: 7px;
+    --hit-segment-width: 2px;
+    --hit-center-size: 3px;
+    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: var(--rift-crosshair-size);
+    height: var(--rift-crosshair-size);
+    opacity: 0;
+    transition: transform 0.1s var(--rift-easing-snap), opacity 0.3s var(--rift-easing-out);
+}
+
+/* Hit marker visibility class */
+.rift-enhanced-hit-marker--visible {
+    opacity: calc(var(--hit-intensity) * var(--hit-base-opacity));
+    transform: translate(-50%, -50%) scale(var(--hit-scale));
+}
+
+/* Hit marker fadeout */
+.rift-enhanced-hit-marker--fadeout {
+    opacity: 0;
+    transition: opacity 0.3s var(--rift-easing-out), transform 0.3s var(--rift-easing-out);
+}
+
+/* Hit marker segments */
+.rift-enhanced-hit-marker__segment {
+    position: absolute;
+    background-color: var(--hit-color);
+}
+
+/* Top segment */
+.rift-enhanced-hit-marker__segment--top {
+    top: 0;
+    left: 50%;
+    height: var(--hit-segment-length);
+    width: var(--hit-segment-width);
+    transform: translateX(-50%);
+}
+
+/* Right segment */
+.rift-enhanced-hit-marker__segment--right {
+    top: 50%;
+    right: 0;
+    height: var(--hit-segment-width);
+    width: var(--hit-segment-length);
+    transform: translateY(-50%);
+}
+
+/* Bottom segment */
+.rift-enhanced-hit-marker__segment--bottom {
+    bottom: 0;
+    left: 50%;
+    height: var(--hit-segment-length);
+    width: var(--hit-segment-width);
+    transform: translateX(-50%);
+}
+
+/* Left segment */
+.rift-enhanced-hit-marker__segment--left {
+    top: 50%;
+    left: 0;
+    height: var(--hit-segment-width);
+    width: var(--hit-segment-length);
+    transform: translateY(-50%);
+}
+
+/* Center dot */
+.rift-enhanced-hit-marker__segment--center {
+    top: 50%;
+    left: 50%;
+    width: var(--hit-center-size);
+    height: var(--hit-center-size);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+}
+
+/* Hit type specific styles */
+.rift-enhanced-hit-marker.rift-hit-marker--normal {
+    --hit-color: var(--rift-hit-normal, #ffffff);
+    --hit-base-opacity: 0.9;
+    --hit-base-scale: 0.9;
+}
+
+.rift-enhanced-hit-marker.rift-hit-marker--critical {
+    --hit-color: var(--rift-hit-critical, #ffb300);
+    --hit-base-opacity: 0.95;
+    --hit-base-scale: 1.1;
+    --hit-segment-length: 8px;
+    --hit-center-size: 4px;
+}
+
+.rift-enhanced-hit-marker.rift-hit-marker--headshot {
+    --hit-color: var(--rift-hit-headshot, #ff3232);
+    --hit-base-opacity: 1;
+    --hit-base-scale: 1.15;
+    --hit-segment-length: 9px;
+    --hit-center-size: 4px;
+}
+
+.rift-enhanced-hit-marker.rift-hit-marker--kill {
+    --hit-color: var(--rift-hit-kill, #ff0000);
+    --hit-base-opacity: 1;
+    --hit-base-scale: 1.3;
+    --hit-segment-length: 10px;
+    --hit-segment-width: 3px;
+    --hit-center-size: 5px;
+    animation: rift-hit-kill 0.6s var(--rift-easing-elastic);
+}
+
+/* Animation keyframes for hit markers */
+@keyframes rift-hit-kill {
+    0% { transform: translate(-50%, -50%) scale(0.8); }
+    50% { transform: translate(-50%, -50%) scale(1.5); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Multi-kill indicator */
+.rift-enhanced-multi-kill {
+    --multi-kill-scale: 1;
+    --multi-kill-color: var(--rift-hit-kill);
+    
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, 0) scale(0);
+    padding: 4px 12px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--multi-kill-color, #ff0000);
+    border-radius: 4px;
+    opacity: 0;
+    transition: transform 0.3s var(--rift-easing-elastic), opacity 0.3s var(--rift-easing-out);
+}
+
+/* Multi-kill visibility */
+.rift-enhanced-multi-kill--visible {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(var(--multi-kill-scale));
+}
+
+/* Multi-kill fadeout */
+.rift-enhanced-multi-kill--fadeout {
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(var(--multi-kill-scale));
+    transition: opacity 0.5s var(--rift-easing-out), transform 0.5s var(--rift-easing-out);
+}
+
+/* Multi-kill text */
+.rift-enhanced-multi-kill__text {
+    font-family: var(--rift-font-display);
+    font-size: 16px;
+    color: var(--multi-kill-color, #ff0000);
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Multi-kill type specific styles */
+.rift-enhanced-multi-kill--double {
+    --multi-kill-color: #ffb300;
+}
+
+.rift-enhanced-multi-kill--triple {
+    --multi-kill-color: #ff6b00;
+}
+
+.rift-enhanced-multi-kill--quad {
+    --multi-kill-color: #ff0000;
+    animation: rift-multi-kill-pulse 1s infinite;
+}
+
+.rift-enhanced-multi-kill--chain {
+    --multi-kill-color: #ff00ff;
+    animation: rift-multi-kill-pulse 0.7s infinite;
+}
+
+/* Animation for multi-kill pulse */
+@keyframes rift-multi-kill-pulse {
+    0% { border-color: var(--multi-kill-color); }
+    50% { border-color: rgba(255, 255, 255, 0.9); }
+    100% { border-color: var(--multi-kill-color); }
+}
+
+/* Animation for multi-kill appearance */
+@keyframes rift-multi-kill {
+    0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+    20% { transform: translate(-50%, 0) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
