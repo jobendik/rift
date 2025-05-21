@@ -4,7 +4,7 @@
 
 **Project Phase**: Phase 4 - Refinement (Implementation Stage)
 
-**Overall Status**: Core Architecture, HUD Components, Feedback Systems, Notification System, Menu System, Progression System, and Environmental Systems complete. Phase 4 (Refinement) has significant progress with Enhanced Combat Feedback system now fully implemented (all 4 components). Event System standardization infrastructure is complete with core updates to EventManager, comprehensive testing frameworks, and migration tools. Component updates for Event Standardization are in progress (30% complete). Next steps include completing Event System standardization implementation across components, performance optimization, and audio integration planning.
+**Overall Status**: Core Architecture, HUD Components, Feedback Systems, Notification System, Menu System, Progression System, and Environmental Systems complete. Phase 4 (Refinement) has significant progress with Enhanced Combat Feedback system now fully implemented (all 4 components). Event System standardization infrastructure is complete with core updates to EventManager, comprehensive testing frameworks, and migration tools. Component updates for Event Standardization are in progress (35% complete) with movement events now standardized between MovementSystem and FootstepIndicator. Next steps include continuing Event System standardization implementation across remaining components, performance optimization, and audio integration planning.
 
 **Last Updated**: 2025-05-21
 
@@ -186,7 +186,7 @@ Significant progress has been made on the project implementation:
         - ✅ Method name standardization (clearAllIndicators) for consistent API
         - ✅ Verified all CSS variables are properly defined
     
-    - 🔄 Event System Standardization (Infrastructure Complete, Implementation in Progress - 30%):
+    - 🔄 Event System Standardization (Infrastructure Complete, Implementation in Progress - 35%):
       - ✅ Core EventManager updated with standardization support:
         - ✅ Implemented validation for namespace:action pattern
         - ✅ Added helper methods for creating standardized payloads (createStateChangeEvent, createCombatEvent, etc.)
@@ -308,7 +308,7 @@ Significant progress has been made on the project implementation:
 | Progression System | ✅ Complete | 100% | - |
 | Environmental Systems | ✅ Complete | 100% | - |
 | Enhanced Combat Feedback | ✅ Complete | 100% | - |
-| Event Standardization | 🔄 In Progress | 30% | Update components to use standardized events |
+| Event Standardization | 🔄 In Progress | 35% | Continue updating components to use standardized events |
 | Performance Optimization | ⏳ Not Started | 0% | Profile and identify targets |
 | Audio Integration | ⏳ Not Started | 0% | Plan architecture |
 | Accessibility Features | ⏳ Not Started | 0% | Research requirements |
@@ -410,6 +410,7 @@ Based on current implementation, there are a few areas that need attention:
 | 2025-05-21 | Implemented MovementSystem component for detecting and standardizing movement events |
 | 2025-05-21 | Enhanced UIManager with improved footstep event handling and movement test methods |
 | 2025-05-21 | Created CSS structure for movement components |
+| 2025-05-21 | Standardized 'movement:footstep' events between MovementSystem and FootstepIndicator components |
 
 ## Upcoming Milestones
 
@@ -431,6 +432,7 @@ Based on current implementation, there are a few areas that need attention:
    - Providing testing infrastructure for movement-related features
    - Creating a foundation for future movement-related UI components
    - Optimizing movement detection for large numbers of entities
+   - ✅ Completed standardization of 'movement:footstep' events with source entity information, position data, and movement characteristics
 
 2. **Event System Standardization Implementation**
    - Implementing the established event naming convention based on 'namespace:action' pattern
@@ -439,6 +441,8 @@ Based on current implementation, there are a few areas that need attention:
    - Adding debugging tools for event monitoring
    - Documenting event usage in existing components
    - Using the created EventStandardizationImplementer and Event Standardization Index tools to streamline the process
+   - ✅ Migrated footstep detection from 'footstep:detected' to standardized 'movement:footstep' event
+   - ✅ Enhanced event payloads with source entity information, timestamps, and improved positional data
 
 2. **Performance Optimization Strategy**
    - Focusing on high-frequency components (hit markers, damage indicators)

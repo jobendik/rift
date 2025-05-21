@@ -3,16 +3,18 @@
  *
  * Responsible for detecting and emitting footstep events based on entity movement.
  * This component monitors player and entity movement, and emits standardized
- * 'footstep:detected' events that will be picked up by the FootstepIndicator component.
+ * 'movement:footstep' events that will be picked up by the FootstepIndicator component.
  *
- * According to Event Flow Documentation, this component is responsible for
- * emitting 'footstep:detected' events with the standardized payload structure.
+ * Following Event Standardization guidelines, this component is responsible for
+ * emitting 'movement:footstep' events with the standardized payload structure that
+ * includes source entity information, position data, and movement characteristics.
  *
  * @extends UIComponent
  */
 
 import UIComponent from '../UIComponent.js';
 import EventManager from '../../../core/EventManager.js';
+import EventStandardizationImplementer from '../../../core/EventStandardizationImplementer.js';
 
 class MovementSystem extends UIComponent {
     /**
@@ -33,6 +35,10 @@ class MovementSystem extends UIComponent {
         });
 
         this.world = world;
+        
+        // Enable event validation for standardization
+        EventManager.setValidateEventNames(true);
+        EventManager.setValidateEventPayloads(true);
         
         // Configuration options with defaults
         this.footstepThreshold = options.footstepThreshold || 0.5; // meters
@@ -453,7 +459,7 @@ class MovementSystem extends UIComponent {
     }
 
     /**
-     * Emit an entity footstep event
+     * Emit an entity footstep event using standardized event format
      * @private
      * @param {string} entityId - Entity identifier
      * @param {Object} entityData - Entity movement data
@@ -469,9 +475,23 @@ class MovementSystem extends UIComponent {
         const entity = entityData.entity;
         const entityPos = entityData.position;
         const isFriendly = entity.isFriendly === true;
+        const entityType = entity.type || 'enemy';
+        const entityName = entity.name || `${entityType}-${entityId}`;
         
-        // Create standardized footstep detected event
+        // Create standardized movement:footstep event using EventStandardizationImplementer templates
         const footstepEvent = {
+            // Source entity information
+            source: {
+                id: entityId,
+                type: entityType,
+                name: entityName,
+                position: {
+                    x: entityPos.x,
+                    y: entityPos.y,
+                    z: entityPos.z
+                }
+            },
+            // Position data
             position: {
                 x: entityPos.x,
                 y: entityPos.y,
@@ -483,15 +503,21 @@ class MovementSystem extends UIComponent {
                 z: this.playerData.position.z
             },
             playerRotation: this.playerData.rotation,
+            
+            // Additional metadata
             isFriendly: isFriendly,
             isContinuous: entity.isMoving === true,
             distance: distanceToPlayer,
-            entityId: entityId,
-            entityType: entity.type || 'enemy'
+            direction: this._calculateAngle(
+                this.playerData.position,
+                this.playerData.rotation,
+                entityPos
+            ),
+            timestamp: performance.now()
         };
         
-        // Emit the standardized footstep:detected event
-        EventManager.emit('footstep:detected', footstepEvent);
+        // Emit the standardized movement:footstep event
+        EventManager.emit('movement:footstep', footstepEvent);
         
         if (this.debugMode) {
             const entityName = entity.name || entityId;
@@ -538,7 +564,7 @@ class MovementSystem extends UIComponent {
     }
 
     /**
-     * Test method to simulate an entity footstep
+     * Test method to simulate an entity footstep using standardized event format
      * For development/debugging only
      * 
      * @param {Object} options - Test footstep options
@@ -546,6 +572,7 @@ class MovementSystem extends UIComponent {
      * @param {number} [options.distance=10] - Distance from player in meters
      * @param {boolean} [options.isFriendly=false] - Whether the footstep is from a friendly entity
      * @param {boolean} [options.isContinuous=false] - Whether this is part of a continuous series
+     * @param {string} [options.entityId] - Custom entity ID (generates one if not provided)
      */
     testFootstep(options = {}) {
         // Default player position at origin if not set
@@ -566,20 +593,35 @@ class MovementSystem extends UIComponent {
             z: playerPosition.z + Math.cos(angleRad) * distance
         };
         
-        // Create footstep event
+        // Entity information
+        const entityId = options.entityId || `test_${Date.now()}`;
+        const entityType = options.isFriendly ? 'ally' : 'enemy';
+        const entityName = `${entityType}-${entityId}`;
+        
+        // Create standardized movement:footstep event
         const footstepEvent = {
+            // Source entity information
+            source: {
+                id: entityId,
+                type: entityType,
+                name: entityName,
+                position: entityPosition
+            },
+            // Position data
             position: entityPosition,
             playerPosition: playerPosition,
             playerRotation: playerRotation,
+            
+            // Additional metadata
             isFriendly: options.isFriendly === true,
             isContinuous: options.isContinuous === true,
             distance: distance,
-            entityId: `test_${Date.now()}`,
-            entityType: options.isFriendly ? 'ally' : 'enemy'
+            direction: angle,
+            timestamp: performance.now()
         };
         
         // Emit the standardized event
-        EventManager.emit('footstep:detected', footstepEvent);
+        EventManager.emit('movement:footstep', footstepEvent);
         
         console.log(`[MovementSystem] Test footstep: ${options.isFriendly ? 'friendly' : 'enemy'} at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}°`);
         
@@ -587,7 +629,7 @@ class MovementSystem extends UIComponent {
     }
     
     /**
-     * Test method to simulate a series of footsteps from the same entity
+     * Test method to simulate a series of footsteps from the same entity using standardized event format
      * For development/debugging only
      * 
      * @param {Object} options - Test footstep options
@@ -625,7 +667,21 @@ class MovementSystem extends UIComponent {
             }, i * interval);
         }
         
-        return this;
+        // Return a method that can be used to add a new footstep to this sequence
+        return {
+            addFootstep: (options = {}) => {
+                setTimeout(() => {
+                    this.testFootstep({
+                        angle: options.angle || angle,
+                        distance: options.distance || distance,
+                        isFriendly: options.isFriendly !== undefined ? options.isFriendly : isFriendly,
+                        isContinuous: options.isContinuous !== undefined ? options.isContinuous : false,
+                        entityId: entityId
+                    });
+                }, count * interval + (options.delay || 100));
+                return this;
+            }
+        };
     }
     
     /**

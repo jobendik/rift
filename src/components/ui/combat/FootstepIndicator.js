@@ -16,6 +16,7 @@
 import EventManager from '../../../core/EventManager.js';
 import UIComponent from '../UIComponent.js';
 import DOMFactory from '../../../utils/DOMFactory.js';
+import EventStandardizationImplementer from '../../../core/EventStandardizationImplementer.js';
 
 class FootstepIndicator extends UIComponent {
     /**
@@ -38,6 +39,10 @@ class FootstepIndicator extends UIComponent {
             container: options.container || document.body,
             ...options
         });
+        
+        // Enable event validation for standardization
+        EventManager.setValidateEventNames(true);
+        EventManager.setValidateEventPayloads(true);
 
         // Configuration options with defaults
         this.maxIndicators = options.maxIndicators || 8;
@@ -426,18 +431,20 @@ class FootstepIndicator extends UIComponent {
      * @private
      */
     _registerEventListeners() {
-        // Register for footstep events
+        // Register for footstep events using standardized event names
         this.registerEvents({
-            'footstep:detected': this._onFootstepDetected.bind(this),
+            'movement:footstep': this._onFootstepDetected.bind(this),
             'game:paused': () => this.clearAllIndicators(),
             'game:resumed': () => this.clearAllIndicators()
         });
     }
 
     /**
-     * Handle footstep detection events
-     * @private
-     * @param {Object} event - Standardized footstep event data
+     * Handle movement footstep event
+     * @param {Object} event - Standardized movement event
+     * @param {Object} event.source - Source entity information
+     * @param {string} event.source.id - Entity ID generating the footstep
+     * @param {string} event.source.type - Type of entity ("player", "enemy", "npc")
      * @param {Object} event.position - Position where footstep was detected
      * @param {Object} event.playerPosition - Current player position
      * @param {number} event.playerRotation - Current player rotation in radians
@@ -445,6 +452,8 @@ class FootstepIndicator extends UIComponent {
      * @param {boolean} event.isContinuous - Whether this is part of continuous movement
      * @param {number} event.distance - Distance from player (if position not provided)
      * @param {number} event.direction - Direction angle (if position not provided)
+     * @param {number} event.timestamp - Time when the event occurred
+     * @private
      */
     _onFootstepDetected(event) {
         // Check if we have position data
@@ -534,6 +543,58 @@ class FootstepIndicator extends UIComponent {
             steps: 4,
             interval: 200
         });
+    }
+    
+    /**
+     * Emit a standardized footstep event for testing
+     * This helps verify that our standardized event system is working properly
+     * 
+     * @param {Object} options - Test options
+     * @param {string} [options.entityId='enemy-1'] - ID of the entity
+     * @param {string} [options.entityType='enemy'] - Type of entity ('player', 'enemy', 'npc')
+     * @param {boolean} [options.isFriendly=false] - Whether footstep is from a friendly entity
+     * @param {Object} [options.position] - Position of the entity, defaults to random position
+     * @param {Object} [options.playerPosition] - Position of player, defaults to origin
+     * @param {number} [options.playerRotation=0] - Player rotation in radians
+     */
+    emitStandardizedFootstepEvent(options = {}) {
+        // Default player position is origin
+        const playerPosition = options.playerPosition || { x: 0, y: 0, z: 0 };
+        
+        // Generate random position if not provided
+        const position = options.position || {
+            x: (Math.random() - 0.5) * 20,
+            y: 0,
+            z: (Math.random() - 0.5) * 20
+        };
+        
+        // Calculate distance
+        const dx = position.x - playerPosition.x;
+        const dz = position.z - playerPosition.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+        
+        // Create standardized event using EventManager helper method
+        const eventData = {
+            source: {
+                id: options.entityId || 'enemy-1',
+                type: options.entityType || 'enemy',
+                position: position
+            },
+            position: position,
+            playerPosition: playerPosition,
+            playerRotation: options.playerRotation || 0,
+            isFriendly: options.isFriendly || false,
+            isContinuous: options.isContinuous || false,
+            distance: distance,
+            direction: Math.atan2(dx, dz) * (180 / Math.PI)
+        };
+        
+        // Emit the standardized event
+        EventManager.emit('movement:footstep', eventData);
+        
+        console.log('[FootstepIndicator] Emitted standardized movement:footstep event:', eventData);
+        
+        return this;
     }
 }
 

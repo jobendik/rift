@@ -298,3 +298,6 @@ export class DOMFactory {
         };
     }
 }
+
+// Add default export while maintaining named export for backward compatibility
+export default DOMFactory;

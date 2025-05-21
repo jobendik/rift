@@ -99,6 +99,11 @@ The next steps involve:
 
 ## Recent Changes
 
+- DOMFactory Export Update:
+  - ✅ Fixed module export in DOMFactory.js by adding a default export while maintaining named export compatibility
+  - ✅ Resolved import error in components using default import style (e.g., HitIndicator and other UI components)
+  - ✅ Ensured backward compatibility for both named and default import patterns
+
 - Movement System Implementation:
   - ✅ Created new `MovementSystem` component responsible for detecting and emitting standardized footstep events
   - ✅ Implemented thorough position tracking for both player and entities
@@ -190,7 +195,8 @@ The next steps involve:
    - [✓] Added helper methods for creating standardized event payloads
    - [✓] Created testing frameworks and utilities (EventStandardizationTest.js, EventStandardizationImplementer.js)
    - [✓] Built interactive tools for analyzing and migrating components (event-standardization-index.html/.js)
-   - [ ] Update existing event emissions across components to follow naming convention
+   - [✓] Standardized 'movement:footstep' events between MovementSystem and FootstepIndicator
+   - [ ] Continue updating existing event emissions across other components to follow naming convention
    - [ ] Refactor event payload structures across components to match standardized formats
    - [ ] Add documentation to event handlers referencing standards
    - [ ] Enhance debugging tools for event monitoring
@@ -334,7 +340,8 @@ The next steps involve:
      - ✅ EnhancedHitIndicator component
      - ✅ DynamicCrosshairSystem component
      - ✅ AdvancedScreenEffects component
-   - 🔄 Event System Standardization: infrastructure complete, component updates in progress (30%)
+   - 🔄 Event System Standardization: infrastructure complete, component updates in progress (35%)
+     - ✅ MovementSystem and FootstepIndicator components updated to use standardized 'movement:footstep' events
    - ⏳ Performance optimization: planning complete, implementation pending
    - ⏳ Audio integration: planning pending
 
