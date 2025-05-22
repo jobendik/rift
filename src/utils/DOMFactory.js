@@ -27,7 +27,13 @@ export class DOMFactory {
             const classNames = Array.isArray(options.className) 
                 ? options.className 
                 : options.className.split(' ');
-            element.classList.add(...classNames);
+            
+            // Filter out empty strings to prevent "empty token" error
+            const validClassNames = classNames.filter(name => name && name.trim().length > 0);
+            
+            if (validClassNames.length > 0) {
+                element.classList.add(...validClassNames);
+            }
         }
         
         if (options.id) {

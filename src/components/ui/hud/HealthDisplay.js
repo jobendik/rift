@@ -24,6 +24,7 @@ export class HealthDisplay extends UIComponent {
             id: options.id || 'health-display',
             className: 'rift-health',
             container: options.container,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
         
@@ -60,6 +61,9 @@ export class HealthDisplay extends UIComponent {
             'player:damaged': this._onPlayerDamaged,
             'player:healed': this._onPlayerHealed
         });
+        
+        // Now initialize manually
+        this.init();
     }
     
     /**
@@ -68,9 +72,28 @@ export class HealthDisplay extends UIComponent {
     init() {
         if (this.isInitialized) return this;
         
-        // Call parent init to create root element
+        // Call parent init to create root element, but it won't auto-render
         super.init();
         
+        // Create our DOM elements after the root element exists
+        this._createElements();
+        
+        // Create screen effects if enabled
+        if (this.showEffects) {
+            this._createScreenEffects();
+        }
+        
+        // Now render with all elements in place
+        this.render();
+        
+        return this;
+    }
+    
+    /**
+     * Create all DOM elements for the health display
+     * @private
+     */
+    _createElements() {
         // Create health icon
         if (this.showIcon) {
             this.elements.icon = this.createElement('img', {
@@ -104,13 +127,6 @@ export class HealthDisplay extends UIComponent {
                 parent: this.elements.barContainer
             });
         }
-        
-        // Create screen effects if enabled
-        if (this.showEffects) {
-            this._createScreenEffects();
-        }
-        
-        return this;
     }
     
     /**
@@ -161,8 +177,8 @@ export class HealthDisplay extends UIComponent {
         this.setState({
             currentHealth: newHealth,
             isHealing: newHealth > previousHealth,
-            isLow: newHealth <= this.config.health.lowHealthThreshold * this.state.maxHealth / 100,
-            isCritical: newHealth <= this.config.health.criticalHealthThreshold * this.state.maxHealth / 100
+            isLow: newHealth <= (this.config.health?.lowHealthThreshold || 50) * this.state.maxHealth / 100,
+            isCritical: newHealth <= (this.config.health?.criticalHealthThreshold || 20) * this.state.maxHealth / 100
         });
         
         // Show visual effects if enabled and if animation is requested
@@ -190,8 +206,8 @@ export class HealthDisplay extends UIComponent {
         // Update state
         this.setState({
             maxHealth: newMaxHealth,
-            isLow: this.state.currentHealth <= this.config.health.lowHealthThreshold * newMaxHealth / 100,
-            isCritical: this.state.currentHealth <= this.config.health.criticalHealthThreshold * newMaxHealth / 100
+            isLow: this.state.currentHealth <= (this.config.health?.lowHealthThreshold || 50) * newMaxHealth / 100,
+            isCritical: this.state.currentHealth <= (this.config.health?.criticalHealthThreshold || 20) * newMaxHealth / 100
         });
         
         // Update critical overlay
@@ -241,7 +257,7 @@ export class HealthDisplay extends UIComponent {
                     this.elements.bar.classList.remove('rift-health__bar--healing');
                     this._updateHealthBarClass(); // Reapply appropriate class
                 }
-            }, this.config.health.healEffectDuration * 1000);
+            }, (this.config.health?.healEffectDuration || 2.0) * 1000);
         }
         
         // Show healing glow effect

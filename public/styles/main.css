@@ -3,15 +3,43 @@
  * Main CSS File
  * 
  * Contains base styles, resets, and global elements
+ * Updated for new UI system integration
  */
 
 /* Base styles and resets */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
 body {
   margin: 0;
-  font-family: var(--font-main), Arial, Helvetica, sans-serif;
+  padding: 0;
+  height: 100%;
+  font-family: var(--rift-font-family, var(--font-main, 'Arial, Helvetica, sans-serif'));
   background-color: var(--background-color, #222);
-  color: var(--text-color, #fff);
+  color: var(--rift-color-text-color, var(--text-color, #fff));
   overflow: hidden;
+  line-height: 1.4;
+}
+
+/* Remove default button and input styles */
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  user-select: none;
 }
 
 /* Basic utility classes */
@@ -28,7 +56,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: var(--z-index-modal, 100);
+  z-index: var(--rift-z-index-modal, var(--z-index-modal, 100));
   background-color: rgba(0, 0, 0, 0.8);
 }
 
@@ -38,7 +66,24 @@ body {
   height: 100%;
 }
 
-/* Animations */
+/* Game container for Three.js canvas */
+#game-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--rift-z-index-base, 1);
+}
+
+/* Ensure Three.js canvas fills container */
+#game-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Original animations (kept for compatibility) */
 @keyframes pulse {
   0% { transform: scale(1); box-shadow: 0 0 10px rgba(230, 57, 70, 0.7), 0 0 20px rgba(0, 0, 0, 0.5); }
   50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(230, 57, 70, 0.9), 0 0 30px rgba(230, 57, 70, 0.5); }
@@ -91,7 +136,8 @@ body {
   }
 }
 
-/* FPS Counter */
+/* FPS Counter (updated for new system) */
+.rift-fps-counter,
 #fpsCounter {
   position: fixed;
   top: 10px;
@@ -99,9 +145,226 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
   color: #00ff00;
   padding: 5px 10px;
-  border-radius: var(--border-radius, 4px);
+  border-radius: var(--rift-sizing-border-radius, var(--border-radius, 4px));
   font-family: monospace;
-  z-index: 1000;
+  font-size: 12px;
+  z-index: var(--rift-z-index-cursor, 1000);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Loading screen styles */
+#loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-cursor, 1000);
+  transition: opacity 1s ease-out;
+}
+
+#loadingScreen.fade-out {
+  opacity: 0;
+}
+
+.loading-container {
+  text-align: center;
+  color: var(--rift-color-text-color, white);
+}
+
+.logo {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: var(--rift-color-primary, #e63946);
+  font-family: var(--rift-font-display, 'Orbitron', sans-serif);
+  animation: rift-glow 2s ease-in-out infinite alternate;
+}
+
+.progress-bar {
+  width: 300px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 auto 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--rift-color-primary, #e63946);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.loading-text {
+  font-size: 1rem;
+  opacity: 0.8;
+  font-family: var(--rift-font-family);
+}
+
+/* Start screen styles */
+#startScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-overlay, 999);
+}
+
+.start-container {
+  text-align: center;
+  color: var(--rift-color-text-color, white);
+}
+
+.title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: var(--rift-color-primary, #e63946);
+  font-family: var(--rift-font-display, 'Orbitron', sans-serif);
+  animation: rift-glow 2s ease-in-out infinite alternate;
+}
+
+.start-button {
+  background: var(--rift-color-primary, #e63946);
+  color: var(--rift-color-text-color, white);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--rift-sizing-border-radius, 5px);
+  margin-bottom: 2rem;
+  transition: all var(--rift-animation-normal, 0.3s) ease;
+  font-family: var(--rift-font-family);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.start-button:hover {
+  background: var(--rift-color-primary-glow, rgba(230, 57, 70, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(230, 57, 70, 0.4);
+}
+
+.instructions {
+  font-size: 1rem;
+  opacity: 0.8;
+  line-height: 1.5;
+  font-family: var(--rift-font-family);
+}
+
+/* Pause screen styles */
+#pauseScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-overlay, 998);
+}
+
+.pause-container {
+  text-align: center;
+  color: var(--rift-color-text-color, white);
+}
+
+.resume-button {
+  background: var(--rift-color-success, #4caf50);
+  color: var(--rift-color-text-color, white);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--rift-sizing-border-radius, 5px);
+  margin-bottom: 2rem;
+  transition: all var(--rift-animation-normal, 0.3s) ease;
+  font-family: var(--rift-font-family);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.resume-button:hover {
+  background: var(--rift-color-success-glow, rgba(76, 175, 80, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Death screen styles */
+#deathScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-overlay, 997);
+}
+
+.death-container {
+  text-align: center;
+  color: var(--rift-color-text-color, white);
+}
+
+.restart-button {
+  background: var(--rift-color-danger, #f44336);
+  color: var(--rift-color-text-color, white);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--rift-sizing-border-radius, 5px);
+  margin-top: 2rem;
+  transition: all var(--rift-animation-normal, 0.3s) ease;
+  font-family: var(--rift-font-family);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.restart-button:hover {
+  background: var(--rift-color-danger-glow, rgba(244, 67, 54, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+}
+
+/* Pointer lock overlay */
+#pointerLockOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--rift-z-index-overlay, 996);
+  cursor: pointer;
+}
+
+.overlay-content {
+  text-align: center;
+  color: var(--rift-color-text-color, white);
+  font-size: 1.5rem;
+  font-family: var(--rift-font-family);
+  animation: rift-pulse 2s ease-in-out infinite;
 }
 
 /* Responsive adjustments */
@@ -120,5 +383,38 @@ body {
   
   #hudMatchTimer div, #hudScore div {
     font-size: 0.9em;
+  }
+
+  .title {
+    font-size: 3rem;
+  }
+
+  .start-button, .resume-button, .restart-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  .instructions {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .start-button, .resume-button, .restart-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+  }
+
+  .overlay-content {
+    font-size: 1.2rem;
+  }
+
+  .instructions {
+    font-size: 0.8rem;
+    padding: 0 1rem;
   }
 }

@@ -5,19 +5,19 @@
 
 import UIComponent from '../UIComponent.js';
 import EventManager from '../../../core/EventManager.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 export default class ScreenManager extends UIComponent {
     constructor(options = {}) {
         super({
             id: 'screen-manager',
             className: 'rift-screen-manager',
+            autoInit: false, // Prevent auto-initialization 
             ...options
         });
         
-        // Configuration
-        this.config = UIConfig.menus.screens;
+        // Configuration with fallbacks
+        this.config = this._getConfig();
         
         // State tracking
         this.currentScreen = null;
@@ -34,12 +34,45 @@ export default class ScreenManager extends UIComponent {
         
         // Bind methods
         this._bindMethods();
+        
+        // Initialize manually
+        this.init();
+    }
+    
+    /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        // Try to get UIConfig, but provide fallbacks if not available
+        let uiConfig = {};
+        try {
+            uiConfig = this.config?.menus?.screens || {};
+        } catch (error) {
+            console.warn('UIConfig.menus.screens not available, using default config');
+        }
+        
+        // Provide sensible defaults
+        return {
+            defaultTransition: 'fade',
+            transitionDuration: 0.3, // seconds
+            ...uiConfig
+        };
     }
     
     /**
      * Initialize the screen manager
      */
     init() {
+        if (this.isInitialized) {
+            console.warn('ScreenManager already initialized');
+            return this;
+        }
+        
+        // Initialize parent component
+        super.init();
+        
         this._createScreenManagerElements();
         this._setupEventListeners();
         
@@ -49,6 +82,7 @@ export default class ScreenManager extends UIComponent {
         }
         
         this.isInitialized = true;
+        console.log('ScreenManager initialized successfully');
         return this;
     }
     
@@ -70,9 +104,15 @@ export default class ScreenManager extends UIComponent {
             return this.screens.get(id).element;
         }
         
+        // Build class name safely
+        const classNames = ['rift-screen'];
+        if (options.className && options.className.trim()) {
+            classNames.push(options.className.trim());
+        }
+        
         const screenContainer = DOMFactory.createElement('div', {
             id: `screen-${id}`,
-            className: `rift-screen ${options.className || ''}`,
+            className: classNames.join(' '),
             parent: this.screenContainer
         });
         
@@ -170,10 +210,16 @@ export default class ScreenManager extends UIComponent {
             }
         });
         
+        // Build modal class name safely
+        const classNames = ['rift-modal'];
+        if (options.className && options.className.trim()) {
+            classNames.push(options.className.trim());
+        }
+        
         // Create modal
         const modal = DOMFactory.createElement('div', {
             id: `modal-${id}`,
-            className: `rift-modal ${options.className || ''}`,
+            className: classNames.join(' '),
             parent: document.body
         });
         
@@ -591,6 +637,11 @@ export default class ScreenManager extends UIComponent {
      * @private
      */
     _createScreenManagerElements() {
+        if (!this.element) {
+            console.error('ScreenManager: Element not created by parent UIComponent');
+            return;
+        }
+        
         // Create screen container
         this.screenContainer = DOMFactory.createElement('div', {
             className: 'rift-screen-manager__container',

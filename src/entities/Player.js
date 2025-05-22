@@ -16,6 +16,7 @@ const cross = new Vector3();
 * Class for representing the human player of the game.
 *
 * @author {@link https://github.com/Mugen87|Mugen87}
+* @author {@link https://github.com/robp94|robp94}
 */
 class Player extends MovingEntity {
 
@@ -82,11 +83,9 @@ class Player extends MovingEntity {
 		this.mixer = null;
 		this.animations = new Map();
 
-		// ui
+		// Legacy UI elements (kept for backward compatibility but no longer used)
 		this.ui = {
-
 			health: document.getElementById( 'health' ),
-
 		};
 
 		this.name = 'Player';
@@ -101,13 +100,29 @@ class Player extends MovingEntity {
 	*/
 	update( delta ) {
 
+		// Store previous position for movement detection
+		const previousPos = this.previousPosition.clone();
+
 		super.update( delta );
 
 		this.currentTime += delta;
 
-		// ensure the enemy never leaves the level
-
+		// ensure the player never leaves the level
 		this.stayInLevel();
+
+		// Check for movement and emit footstep events for UI system
+		if (this.status === STATUS_ALIVE && this.world.gameEventBridge) {
+			const movementDistance = this.position.distanceTo(previousPos);
+			
+			// If player moved significantly, emit footstep event for other entities to detect
+			if (movementDistance > 0.1) { // Adjust threshold as needed
+				this.world.gameEventBridge.onFootstepDetected(
+					this,
+					this.position,
+					this.head.rotation.y
+				);
+			}
+		}
 
 		//
 
@@ -235,9 +250,13 @@ class Player extends MovingEntity {
 
 		this.weaponSystem.shoot( targetPosition );
 
-		// update UI
+		// Notify event bridge of shot (for crosshair feedback and UI updates)
+		if (world.gameEventBridge) {
+			world.gameEventBridge.onPlayerShoot();
+		}
 
-		world.uiManager.updateAmmoStatus();
+		// Note: Ammo updates will be detected automatically by the event bridge
+		// via its update loop, so no need for direct UI calls here
 
 		return this;
 
@@ -252,6 +271,9 @@ class Player extends MovingEntity {
 
 		this.weaponSystem.reload();
 
+		// Note: Ammo updates will be detected automatically by the event bridge
+		// via its update loop, so no need for direct UI calls here
+
 		return this;
 
 	}
@@ -265,6 +287,9 @@ class Player extends MovingEntity {
 	changeWeapon( type ) {
 
 		this.weaponSystem.setNextWeapon( type );
+
+		// Note: Weapon changes will be detected automatically by the event bridge
+		// via its update loop, so no need for direct UI calls here
 
 		return this;
 
@@ -383,7 +408,8 @@ class Player extends MovingEntity {
 
 		this.health = Math.min( this.health, this.maxHealth ); // ensure that health does not exceed maxHealth
 
-		this.world.uiManager.updateHealthStatus();
+		// The event bridge will automatically detect health changes in its update loop
+		// No need for direct UI calls anymore (this.world.uiManager.updateHealthStatus())
 
 		//
 
@@ -407,9 +433,8 @@ class Player extends MovingEntity {
 
 		this.weaponSystem.addWeapon( type );
 
-		// if the entity already has the weapon, increase the ammo
-
-		this.world.uiManager.updateAmmoStatus();
+		// The event bridge will automatically detect ammo/weapon changes in its update loop
+		// No need for direct UI calls anymore (this.world.uiManager.updateAmmoStatus())
 
 		return this;
 
@@ -465,10 +490,6 @@ class Player extends MovingEntity {
 
 				this.health -= telegram.data.damage;
 
-				// update UI
-
-				this.world.uiManager.updateHealthStatus();
-
 				// logging
 
 				if ( this.world.debug ) {
@@ -495,16 +516,26 @@ class Player extends MovingEntity {
 
 					}
 
-					// update UI
-
-					this.world.uiManager.addFragMessage( telegram.sender, this );
+					// Use event bridge for UI updates instead of direct calls
+					if (this.world.gameEventBridge) {
+						this.world.gameEventBridge.onEnemyKilled(this, telegram.sender);
+					}
 
 				} else {
 
-					const angle = this.computeAngleToAttacker( telegram.data.direction );
-					this.world.uiManager.showDamageIndication( angle );
+					// Use event bridge for damage indication instead of direct UI calls
+					if (this.world.gameEventBridge) {
+						this.world.gameEventBridge.onPlayerDamaged(
+							telegram.data.damage, 
+							telegram.data.direction, 
+							telegram.sender
+						);
+					}
 
 				}
+
+				// Note: Health updates will be detected automatically by the event bridge
+				// via its update loop, so no need for direct UI calls here
 
 				break;
 

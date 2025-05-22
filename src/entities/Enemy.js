@@ -28,6 +28,7 @@ const customTarget = new Vector3();
 * Class for representing the opponent bots in this game.
 *
 * @author {@link https://github.com/Mugen87|Mugen87}
+* @author {@link https://github.com/robp94|robp94}
 */
 class Enemy extends Vehicle {
 
@@ -190,6 +191,9 @@ class Enemy extends Vehicle {
 	*/
 	update( delta ) {
 
+		// Store previous position for movement detection
+		const previousPos = this.previousPosition.clone();
+
 		super.update( delta );
 
 		this.currentTime += delta;
@@ -197,6 +201,20 @@ class Enemy extends Vehicle {
 		// ensure the enemy never leaves the level
 
 		this.stayInLevel();
+
+		// Check for movement and emit footstep events for UI system
+		if (this.status === STATUS_ALIVE && this.world.gameEventBridge && this.world.player) {
+			const movementDistance = this.position.distanceTo(previousPos);
+			
+			// If enemy moved significantly, emit footstep event
+			if (movementDistance > 0.1) { // Adjust threshold as needed
+				this.world.gameEventBridge.onFootstepDetected(
+					this,
+					this.world.player.position,
+					this.world.player.head.rotation.y
+				);
+			}
+		}
 
 		// only update the core logic of the enemy if it is alive
 
@@ -501,9 +519,8 @@ class Enemy extends Vehicle {
 
 		this.weaponSystem.addWeapon( type );
 
-		// if the entity already has the weapon, increase the ammo
-
-		this.world.uiManager.updateAmmoStatus();
+		// The event bridge will automatically detect ammo changes in enemy systems
+		// No need for direct UI calls anymore (this.world.uiManager.updateAmmoStatus())
 
 		// bots should directly switch to collected weapons if they have
 		// no current target
@@ -856,11 +873,18 @@ class Enemy extends Vehicle {
 
 				}
 
-				// if the player is the sender and if the enemy still lives, change the style of the crosshairs
-
+				// if the player is the sender and if the enemy still lives, notify event bridge
 				if ( telegram.sender.isPlayer && this.status === STATUS_ALIVE ) {
 
-					this.world.uiManager.showHitIndication();
+					// Use event bridge for hit indication instead of direct UI calls
+					if (this.world.gameEventBridge) {
+						this.world.gameEventBridge.onEnemyHit(
+							this, 
+							telegram.data.damage,
+							telegram.data.isCritical || false,
+							telegram.data.isHeadshot || false
+						);
+					}
 
 				}
 
@@ -882,9 +906,10 @@ class Enemy extends Vehicle {
 
 					}
 
-					// update UI
-
-					this.world.uiManager.addFragMessage( telegram.sender, this );
+					// Use event bridge for kill notification instead of direct UI calls
+					if (this.world.gameEventBridge) {
+						this.world.gameEventBridge.onEnemyKilled(this, telegram.sender);
+					}
 
 				} else {
 

@@ -154,13 +154,13 @@ class CombatSystem extends UIComponent {
      */
     _initComponents() {
         // Check if enhanced hit indicator is enabled in UIConfig
-        const useEnhancedHit = UIConfig.enhancedCombat && UIConfig.enhancedCombat.hitIndicator;
+        const useEnhancedHit = this.config.enhancedCombat && this.config.enhancedCombat.hitIndicator;
         
         if (useEnhancedHit) {
             // Initialize enhanced hit indicator
             this.enhancedHitIndicator = new EnhancedHitIndicator({
                 container: this.element
-                // Config is loaded from UIConfig.enhancedCombat.hitIndicator in the component itself
+                // Config is loaded from this.config.enhancedCombat.hitIndicator in the component itself
             });
             this.enhancedHitIndicator.init();
             this.addChild(this.enhancedHitIndicator);
@@ -177,13 +177,13 @@ class CombatSystem extends UIComponent {
         }
         
         // Check if enhanced combat feedback is enabled in UIConfig
-        const useEnhancedDamage = UIConfig.enhancedCombat && UIConfig.enhancedCombat.damageIndicator;
+        const useEnhancedDamage = this.config.enhancedCombat && this.config.enhancedCombat.damageIndicator;
         
         if (useEnhancedDamage) {
             // Initialize enhanced damage indicator
             this.enhancedDamageIndicator = new EnhancedDamageIndicator({
                 container: this.element
-                // Config is loaded from UIConfig.enhancedCombat.damageIndicator in the component itself
+                // Config is loaded from this.config.enhancedCombat.damageIndicator in the component itself
             });
             this.enhancedDamageIndicator.init();
             this.addChild(this.enhancedDamageIndicator);
@@ -203,13 +203,13 @@ class CombatSystem extends UIComponent {
         }
         
         // Check if enhanced crosshair system is enabled in UIConfig
-        const useEnhancedCrosshair = UIConfig.enhancedCombat && UIConfig.enhancedCombat.crosshair;
+        const useEnhancedCrosshair = this.config.enhancedCombat && this.config.enhancedCombat.crosshair;
         
         if (useEnhancedCrosshair) {
             // Initialize dynamic crosshair system
             this.dynamicCrosshair = new DynamicCrosshairSystem({
                 container: this.element
-                // Config is loaded from UIConfig.enhancedCombat.crosshair in the component itself
+                // Config is loaded from this.config.enhancedCombat.crosshair in the component itself
             });
             this.dynamicCrosshair.init();
             this.addChild(this.dynamicCrosshair);
@@ -229,13 +229,13 @@ class CombatSystem extends UIComponent {
         this.addChild(this.damageNumbers);
         
         // Check if enhanced screen effects are enabled in UIConfig
-        const useAdvancedScreenEffects = UIConfig.enhancedCombat && UIConfig.enhancedCombat.screenEffects;
+        const useAdvancedScreenEffects = this.config.enhancedCombat && this.config.enhancedCombat.screenEffects;
         
         if (useAdvancedScreenEffects) {
             // Initialize advanced screen effects
             this.advancedScreenEffects = new AdvancedScreenEffects({
                 container: this.element
-                // Config is loaded from UIConfig.enhancedCombat.screenEffects in the component itself
+                // Config is loaded from this.config.enhancedCombat.screenEffects in the component itself
             });
             this.advancedScreenEffects.init();
             this.addChild(this.advancedScreenEffects);

@@ -22,6 +22,7 @@ import { Bullet } from '../weapons/Bullet.js';
 import { PathPlanner } from '../etc/PathPlanner.js';
 import { EnhancedSky } from '../effects/EnhancedSky.js'; // Updated import
 import { CONFIG } from './Config.js';
+import { GameEventBridge } from './GameEventBridge.js'; // Add event bridge import
 
 const currentIntersectionPoint = new Vector3();
 
@@ -49,6 +50,9 @@ class World {
 		this.pathPlanner = null;
 		this.spawningManager = new SpawningManager( this );
 		this.uiManager = new UIManager( this );
+
+		// Add event bridge for UI integration
+		this.gameEventBridge = null;
 
 		//
 
@@ -1511,6 +1515,12 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 
 		this.player = player;
 
+		// Initialize the event bridge after creating the player
+		this.gameEventBridge = new GameEventBridge(this);
+		this.gameEventBridge.init(this.player);
+
+		console.log('[World] Game event bridge initialized');
+
 		return this;
 
 	}
@@ -1600,14 +1610,91 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 	_initUI() {
 		try {
 			console.info('Starting UI initialization...');
-			this.uiManager.init();
-			console.info('UI initialization complete');
+			
+			// Make sure the UI manager initializes after DOM is ready
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', () => {
+					this.uiManager.init();
+					console.info('UI initialization complete (deferred)');
+				});
+			} else {
+				this.uiManager.init();
+				console.info('UI initialization complete');
+			}
+			
 			return this;
 		} catch (error) {
 			console.error('Error in _initUI:', error);
 			// Continue without UI
 			return this;
 		}
+	}
+
+	/**
+	 * Helper method for UI system to show damage indication
+	 * (Legacy compatibility - now handled via event bridge)
+	 */
+	showDamageIndication(angle) {
+		// This method is kept for backward compatibility
+		// The event bridge will handle this via events now
+		console.log(`[World] Legacy damage indication at angle: ${angle}`);
+	}
+
+	/**
+	 * Helper method for UI system to show hit indication  
+	 * (Legacy compatibility - now handled via event bridge)
+	 */
+	showHitIndication() {
+		// This method is kept for backward compatibility
+		// The event bridge will handle this via events now
+		console.log(`[World] Legacy hit indication`);
+	}
+
+	/**
+	 * Helper method for UI system to update health status
+	 * (Legacy compatibility - now handled via event bridge)
+	 */
+	updateHealthStatus() {
+		// This method is kept for backward compatibility
+		// The event bridge will handle this via events now
+		console.log(`[World] Legacy health status update`);
+	}
+
+	/**
+	 * Helper method for UI system to update ammo status
+	 * (Legacy compatibility - now handled via event bridge)
+	 */
+	updateAmmoStatus() {
+		// This method is kept for backward compatibility
+		// The event bridge will handle this via events now  
+		console.log(`[World] Legacy ammo status update`);
+	}
+
+	/**
+	 * Helper method for UI system to add frag message
+	 * (Legacy compatibility - now handled via event bridge)
+	 */
+	addFragMessage(killer, victim) {
+		// Use the event bridge for kill notifications
+		if (this.gameEventBridge) {
+			this.gameEventBridge.onEnemyKilled(victim, killer);
+		}
+	}
+
+	/**
+	 * Helper method to open debug UI
+	 * (Stub for compatibility)
+	 */
+	openDebugUI() {
+		console.log('[World] Debug UI would open here');
+	}
+
+	/**
+	 * Helper method to close debug UI
+	 * (Stub for compatibility)
+	 */
+	closeDebugUI() {
+		console.log('[World] Debug UI would close here');
 	}
 
 }
@@ -1664,6 +1751,11 @@ function animate() {
     
     // Update environment (sky and weather)
     this.updateEnvironment(delta);
+
+	// Update the game event bridge
+	if (this.gameEventBridge) {
+		this.gameEventBridge.update();
+	}
 
 	this.renderer.clear();
 

@@ -7,22 +7,22 @@
 
 import UIComponent from '../UIComponent.js';
 import EventManager from '../../../core/EventManager.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 export default class WorldMap extends UIComponent {
     constructor(options = {}) {
         super({
             id: 'world-map',
             className: 'rift-world-map',
+            autoInit: false, // We'll handle initialization manually
             ...options
         });
         
         // World reference
         this.world = options.world;
         
-        // Configuration
-        this.config = UIConfig.worldMap || {};
+        // Configuration - provide fallback config if UIConfig is not available
+        this.config = this._getConfig();
         
         // Map state
         this.isInitialized = false;
@@ -54,9 +54,48 @@ export default class WorldMap extends UIComponent {
     }
     
     /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        // Try to get UIConfig, but provide fallbacks if not available
+        let uiConfig = {};
+        try {
+            // Dynamic import to avoid errors if UIConfig doesn't exist
+            uiConfig = this.config?.worldMap || {};
+        } catch (error) {
+            console.warn('UIConfig.worldMap not available, using default config');
+        }
+        
+        // Provide sensible defaults
+        return {
+            title: 'World Map',
+            maxZoom: 3,
+            minZoom: 0.5,
+            zoomStep: 0.25,
+            enableFogOfWar: true,
+            centerOnPlayer: false,
+            highlightCurrentArea: true,
+            worldToMapScale: 1,
+            mapOriginOffset: { x: 0, y: 0 },
+            pauseGameWhenActive: true,
+            ...uiConfig
+        };
+    }
+    
+    /**
      * Initialize the world map
      */
     init() {
+        if (this.isInitialized) {
+            console.warn('WorldMap already initialized');
+            return this;
+        }
+        
+        // Initialize parent component
+        super.init();
+        
         this._createMapElements();
         this._setupEventListeners();
         
@@ -64,6 +103,7 @@ export default class WorldMap extends UIComponent {
         this._loadWorldData();
         
         this.isInitialized = true;
+        console.log('WorldMap initialized successfully');
         return this;
     }
     
@@ -72,6 +112,11 @@ export default class WorldMap extends UIComponent {
      * @private
      */
     _createMapElements() {
+        if (!this.element) {
+            console.error('WorldMap: Element not created by parent UIComponent');
+            return;
+        }
+        
         // Create main map container
         this.mapContainer = DOMFactory.createElement('div', {
             className: 'rift-world-map__container',
@@ -277,6 +322,11 @@ export default class WorldMap extends UIComponent {
      * @private
      */
     _setupEventListeners() {
+        if (!this.mapViewport) {
+            console.warn('WorldMap: mapViewport not available for event listeners');
+            return;
+        }
+        
         // Map panning (dragging)
         this.mapViewport.addEventListener('mousedown', this._onDragStart);
         document.addEventListener('mousemove', this._onDragMove);
@@ -379,6 +429,11 @@ export default class WorldMap extends UIComponent {
      * @param {Array} areas - Area data
      */
     _loadAreas(areas) {
+        if (!this.areasContainer || !this.areaLabels) {
+            console.warn('WorldMap: Area containers not available');
+            return;
+        }
+        
         areas.forEach(area => {
             // Create area element
             const areaElement = DOMFactory.createElement('div', {
@@ -587,7 +642,7 @@ export default class WorldMap extends UIComponent {
         if (!this.fogOfWar || !this.config.enableFogOfWar) return;
         
         // Update area elements
-        const areaElements = this.areasContainer.querySelectorAll('.rift-world-map__area');
+        const areaElements = this.areasContainer?.querySelectorAll('.rift-world-map__area') || [];
         areaElements.forEach(areaElement => {
             const areaId = areaElement.getAttribute('data-area-id');
             if (this.discoveredAreas[areaId]) {
@@ -596,7 +651,7 @@ export default class WorldMap extends UIComponent {
         });
         
         // Update area labels
-        const labelElements = this.areaLabels.querySelectorAll('.rift-world-map__area-label');
+        const labelElements = this.areaLabels?.querySelectorAll('.rift-world-map__area-label') || [];
         labelElements.forEach(labelElement => {
             const areaId = labelElement.getAttribute('data-area-id');
             if (this.discoveredAreas[areaId]) {
@@ -803,6 +858,55 @@ export default class WorldMap extends UIComponent {
         
         // Call parent dispose method to handle common cleanup
         super.dispose();
+    }
+    
+    /**
+     * Public Methods
+     */
+    
+    /**
+     * Focus on a specific area
+     * @public
+     * @param {string} areaId - Area identifier
+     */
+    focusOnArea(areaId) {
+        const areaElement = this.areasContainer?.querySelector(`[data-area-id="${areaId}"]`);
+        if (areaElement) {
+            // Calculate area center
+            const bounds = areaElement.getBoundingClientRect();
+            const centerX = bounds.left + bounds.width / 2;
+            const centerY = bounds.top + bounds.height / 2;
+            
+            // Center map on area
+            if (this.mapViewport) {
+                const viewportWidth = this.mapViewport.offsetWidth;
+                const viewportHeight = this.mapViewport.offsetHeight;
+                
+                this.panOffset = {
+                    x: (viewportWidth / 2) - centerX,
+                    y: (viewportHeight / 2) - centerY
+                };
+                
+                this._updateMapTransform();
+            }
+        }
+    }
+    
+    /**
+     * Highlight an objective
+     * @public
+     * @param {string} objectiveId - Objective identifier
+     */
+    highlightObjective(objectiveId) {
+        // Remove existing highlights
+        const objectives = this.objectiveContainer?.querySelectorAll('.rift-world-map__objective') || [];
+        objectives.forEach(obj => obj.classList.remove('rift-world-map__objective--highlighted'));
+        
+        // Add highlight to target objective
+        const targetObjective = this.objectiveContainer?.querySelector(`[data-objective-id="${objectiveId}"]`);
+        if (targetObjective) {
+            targetObjective.classList.add('rift-world-map__objective--highlighted');
+        }
     }
     
     /**
@@ -1034,13 +1138,13 @@ export default class WorldMap extends UIComponent {
         // Highlight current area if we want to
         if (this.config.highlightCurrentArea) {
             // Remove highlight from all areas
-            const areaElements = this.areasContainer.querySelectorAll('.rift-world-map__area');
+            const areaElements = this.areasContainer?.querySelectorAll('.rift-world-map__area') || [];
             areaElements.forEach(area => {
                 area.classList.remove('rift-world-map__area--current');
             });
             
             // Add highlight to current area
-            const currentArea = this.areasContainer.querySelector(`[data-area-id="${data.areaId}"]`);
+            const currentArea = this.areasContainer?.querySelector(`[data-area-id="${data.areaId}"]`);
             if (currentArea) {
                 currentArea.classList.add('rift-world-map__area--current');
             }

@@ -21,20 +21,47 @@
 @import './components/movement.css';
 @import './components/environment.css';
 
-/* Global variables */
+/* RIFT UI System Variables - matches UIConfig.js */
 :root {
-  /* Color palette */
-  --primary-color: #4a7bf7;
+  /* Primary color palette (matches UIConfig) */
+  --rift-color-primary: #e63946;
+  --rift-color-primary-glow: rgba(230, 57, 70, 0.7);
+  --rift-color-secondary: #33a8ff;
+  --rift-color-secondary-glow: rgba(51, 168, 255, 0.7);
+  --rift-color-success: #4caf50;
+  --rift-color-success-glow: rgba(76, 175, 80, 0.7);
+  --rift-color-warning: #ff9800;
+  --rift-color-warning-glow: rgba(255, 152, 0, 0.7);
+  --rift-color-danger: #f44336;
+  --rift-color-danger-glow: rgba(244, 67, 54, 0.7);
+
+  /* Text colors */
+  --rift-color-text-color: #ffffff;
+  --rift-color-text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+
+  /* UI backgrounds */
+  --rift-color-ui-background: rgba(0, 0, 0, 0.6);
+  --rift-color-ui-background-light: rgba(0, 0, 0, 0.4);
+  --rift-color-ui-border: rgba(255, 255, 255, 0.2);
+
+  /* Legacy color compatibility */
+  --primary-color: var(--rift-color-secondary); /* Blue for compatibility */
   --secondary-color: #2b486b;
-  --accent-color: #f7aa4a;
+  --accent-color: var(--rift-color-warning);
   --background-color: #151b25;
-  --text-color: #e6e6e6;
-  --danger-color: #f74a4a;
-  --success-color: #4af77b;
-  --warning-color: #f7db4a;
+  --text-color: var(--rift-color-text-color);
+  --danger-color: var(--rift-color-danger);
+  --success-color: var(--rift-color-success);
+  --warning-color: var(--rift-color-warning);
   
-  /* Typography */
-  --font-main: 'Rajdhani', sans-serif;
+  /* Typography (matches UIConfig) */
+  --rift-font-family: 'Exo 2', 'Rajdhani', sans-serif;
+  --rift-font-hud: 'Rajdhani', 'Orbitron', sans-serif;
+  --rift-font-display: 'Orbitron', 'Rajdhani', sans-serif;
+  --rift-font-body: 'Exo 2', 'Rajdhani', sans-serif;
+
+  /* Legacy font compatibility */
+  --font-main: var(--rift-font-family);
   --font-secondary: 'Titillium Web', sans-serif;
   --font-size-small: 0.8rem;
   --font-size-normal: 1rem;
@@ -42,23 +69,189 @@
   --font-size-large: 1.5rem;
   --font-size-xlarge: 2rem;
   --font-size-xxlarge: 3rem;
-  
-  /* UI Elements */
-  --border-radius: 4px;
+
+  /* UI sizing (matches UIConfig) */
+  --rift-sizing-hud-padding: 12px;
+  --rift-sizing-border-radius: 5px;
+  --rift-sizing-hud-margin: 20px;
+
+  /* Legacy sizing compatibility */
+  --border-radius: var(--rift-sizing-border-radius);
+  --hud-margin: var(--rift-sizing-hud-margin);
+  --hud-padding: var(--rift-sizing-hud-padding);
   --hud-opacity: 0.85;
+
+  /* Shadows */
   --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.3);
   --shadow-dark: 0 8px 16px rgba(0, 0, 0, 0.4);
   
-  /* Animations */
-  --transition-fast: 0.15s ease-in-out;
-  --transition-medium: 0.3s ease-in-out;
-  --transition-slow: 0.5s ease-in-out;
+  /* Animation durations (matches UIConfig) */
+  --rift-animation-fast: 0.2s;
+  --rift-animation-normal: 0.3s;
+  --rift-animation-slow: 0.5s;
+  --rift-animation-very-slow: 1.0s;
+
+  /* Legacy animation compatibility */
+  --transition-fast: var(--rift-animation-fast) ease-in-out;
+  --transition-medium: var(--rift-animation-normal) ease-in-out;
+  --transition-slow: var(--rift-animation-slow) ease-in-out;
   
-  /* Layout */
-  --hud-margin: 20px;
-  --hud-padding: 15px;
-  --z-index-base: 1;
-  --z-index-hud: 10;
-  --z-index-modal: 100;
+  /* Z-Index layers (matches UIConfig) */
+  --rift-z-index-base: 100;
+  --rift-z-index-hud: 800;
+  --rift-z-index-markers: 850;
+  --rift-z-index-screens: 850;
+  --rift-z-index-notifications: 900;
+  --rift-z-index-modal: 950;
+  --rift-z-index-overlay: 980;
+  --rift-z-index-tooltip: 990;
+  --rift-z-index-cursor: 1000;
+
+  /* Legacy z-index compatibility */
+  --z-index-base: var(--rift-z-index-base);
+  --z-index-hud: var(--rift-z-index-hud);
+  --z-index-modal: var(--rift-z-index-modal);
+
+  /* Enhanced Combat Feedback Colors */
+  --rift-color-damage-bullet: rgba(255, 0, 0, 0.8);
+  --rift-color-damage-explosion: rgba(255, 140, 0, 0.8);
+  --rift-color-damage-melee: rgba(255, 255, 0, 0.8);
+  --rift-color-damage-fire: rgba(255, 80, 0, 0.8);
+  --rift-color-damage-energy: rgba(0, 200, 255, 0.8);
+
+  /* Crosshair colors */
+  --rift-crosshair-default: rgba(255, 255, 255, 0.8);
+  --rift-crosshair-enemy: rgba(255, 50, 50, 0.9);
+  --rift-crosshair-friendly: rgba(50, 255, 50, 0.9);
+  --rift-crosshair-interactive: rgba(50, 200, 255, 0.9);
+
+  /* Screen effect colors */
+  --rift-damage-flash-default: rgba(255, 0, 0, 0.3);
+  --rift-damage-flash-fire: rgba(255, 80, 0, 0.3);
+  --rift-damage-flash-explosive: rgba(255, 160, 0, 0.3);
+  --rift-damage-flash-energy: rgba(0, 150, 255, 0.3);
+
+  /* Vignette effect */
+  --rift-vignette-color: 128, 0, 0; /* RGB values for vignette */
+}
+
+/* Global component base styles */
+.rift-component {
+  font-family: var(--rift-font-family);
+  color: var(--rift-color-text-color);
+}
+
+/* BEM base classes for RIFT components */
+[class*="rift-"] {
+  box-sizing: border-box;
+}
+
+/* Utility classes for the new UI system */
+.rift-hidden {
+  display: none !important;
+}
+
+.rift-visible {
+  display: block !important;
+}
+
+.rift-fade-in {
+  animation: rift-fade-in var(--rift-animation-normal) ease-out;
+}
+
+.rift-fade-out {
+  animation: rift-fade-out var(--rift-animation-normal) ease-out;
+}
+
+.rift-pulse {
+  animation: rift-pulse 1s ease-in-out infinite;
+}
+
+/* RIFT-specific animations */
+@keyframes rift-fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes rift-fade-out {
+  from { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  to { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+}
+
+@keyframes rift-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 0.8; 
+  }
+}
+
+@keyframes rift-glow {
+  from {
+    box-shadow: 0 0 5px var(--rift-color-primary-glow);
+  }
+  to {
+    box-shadow: 0 0 20px var(--rift-color-primary-glow), 0 0 30px var(--rift-color-primary-glow);
+  }
+}
+
+@keyframes rift-hit-marker {
+  0% { 
+    transform: scale(0.8); 
+    opacity: 0; 
+  }
+  20% { 
+    transform: scale(1.2); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 0; 
+  }
+}
+
+@keyframes rift-damage-pulse {
+  0%, 100% { 
+    opacity: var(--pulse-opacity, 0.6); 
+  }
+  50% { 
+    opacity: calc(var(--pulse-opacity, 0.6) + 0.2); 
+  }
+}
+
+/* Hardware acceleration for better performance */
+.rift-hardware-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Screen size responsive helpers */
+@media (max-width: 768px) {
+  :root {
+    --rift-sizing-hud-margin: 10px;
+    --rift-sizing-hud-padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --rift-sizing-hud-margin: 8px;
+    --rift-sizing-hud-padding: 6px;
+  }
 }

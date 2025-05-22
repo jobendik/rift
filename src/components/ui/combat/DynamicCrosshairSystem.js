@@ -19,7 +19,6 @@
 import UIComponent from '../UIComponent.js';
 import EventManager from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import UIConfig from '../../../core/UIConfig.js';
 
 export class DynamicCrosshairSystem extends UIComponent {
     /**
@@ -31,11 +30,12 @@ export class DynamicCrosshairSystem extends UIComponent {
             id: options.id || 'dynamic-crosshair-system',
             className: 'rift-dynamic-crosshair',
             container: options.container,
+            autoInit: false, // Prevent auto-initialization
             ...options
         });
         
         // Configuration
-        this.config = UIConfig.enhancedCombat?.crosshair || {};
+        this.config = this.config.enhancedCombat?.crosshair || {};
         
         // State tracking
         this.spreadFactor = 1.0;
@@ -68,6 +68,9 @@ export class DynamicCrosshairSystem extends UIComponent {
             'player:stance': this._onPlayerStance,
             'input:mousemove': this._onMouseMove
         });
+        
+        // Initialize manually after all properties are set
+        this.init();
     }
     
     /**

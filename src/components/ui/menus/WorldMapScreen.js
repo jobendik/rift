@@ -8,7 +8,6 @@
 
 import WorldMap from './WorldMap.js';
 import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
 
 export default class WorldMapScreen {
     /**
@@ -23,12 +22,16 @@ export default class WorldMapScreen {
         this.worldMap = null;
         this.isInitialized = false;
         
-        // Configuration
-        this.config = UIConfig.worldMap;
+        // Configuration - using a simple fallback config since UIConfig might not be available
+        this.config = {
+            title: 'World Map',
+            pauseGameWhenActive: true
+        };
         
         // Bind methods
         this._onShowWorldMap = this._onShowWorldMap.bind(this);
         this._onHideWorldMap = this._onHideWorldMap.bind(this);
+        this._onToggleWorldMap = this._onToggleWorldMap.bind(this);
     }
     
     /**
@@ -49,7 +52,7 @@ export default class WorldMapScreen {
         }
         
         // Register event listeners
-        EventManager.on('ui:toggleWorldMap', this._onToggleWorldMap.bind(this));
+        EventManager.on('ui:toggleWorldMap', this._onToggleWorldMap);
         EventManager.on('ui:showWorldMap', this._onShowWorldMap);
         EventManager.on('ui:hideWorldMap', this._onHideWorldMap);
         
@@ -75,16 +78,43 @@ export default class WorldMapScreen {
         const screenContent = screenElement.querySelector('.rift-screen__body');
         
         if (screenContent) {
-            // Create the world map instance
-            this.worldMap = new WorldMap({
-                world: this.world
-            });
-            
-            // Append it to the screen content
-            screenContent.appendChild(this.worldMap.element);
-            
-            // Initialize the world map
-            this.worldMap.init();
+            try {
+                // Create the world map instance with proper options
+                this.worldMap = new WorldMap({
+                    world: this.world,
+                    container: screenContent,
+                    autoInit: false  // Prevent auto-initialization to control the process
+                });
+                
+                // Initialize the world map to create the element
+                this.worldMap.init();
+                
+                // The WorldMap extends UIComponent which should create this.worldMap.element
+                // But let's check if it was created properly
+                if (this.worldMap.element && this.worldMap.element.nodeType === Node.ELEMENT_NODE) {
+                    // Element exists and is a proper DOM node
+                    screenContent.appendChild(this.worldMap.element);
+                    console.log('WorldMap successfully added to screen content');
+                } else {
+                    console.error('WorldMap element not created properly:', this.worldMap.element);
+                    
+                    // Fallback: create a simple placeholder
+                    const fallbackElement = document.createElement('div');
+                    fallbackElement.className = 'rift-world-map-fallback';
+                    fallbackElement.innerHTML = '<p>World Map temporarily unavailable</p>';
+                    screenContent.appendChild(fallbackElement);
+                }
+            } catch (error) {
+                console.error('Error creating WorldMap:', error);
+                
+                // Create a fallback element
+                const errorElement = document.createElement('div');
+                errorElement.className = 'rift-world-map-error';
+                errorElement.innerHTML = `<p>Error loading World Map: ${error.message}</p>`;
+                screenContent.appendChild(errorElement);
+            }
+        } else {
+            console.error('Could not find screen content area for world map');
         }
     }
     
@@ -99,7 +129,7 @@ export default class WorldMapScreen {
             this._wasPaused = this.world.isPaused;
             
             // Pause the game if it's not already paused
-            if (!this._wasPaused) {
+            if (!this._wasPaused && typeof this.world.pause === 'function') {
                 this.world.pause();
             }
         }
@@ -107,12 +137,12 @@ export default class WorldMapScreen {
         // If the map needs additional data when shown
         if (this.worldMap) {
             // If we were given a specific area to focus on
-            if (data.focusAreaId) {
+            if (data.focusAreaId && typeof this.worldMap.focusOnArea === 'function') {
                 this.worldMap.focusOnArea(data.focusAreaId);
             }
             
             // If we were given a waypoint to set/highlight
-            if (data.waypoint) {
+            if (data.waypoint && typeof this.worldMap._onWaypointAdded === 'function') {
                 this.worldMap._onWaypointAdded({
                     position: data.waypoint.position,
                     id: data.waypoint.id || `waypoint-${Date.now()}`,
@@ -122,7 +152,7 @@ export default class WorldMapScreen {
             }
             
             // If we need to highlight an objective
-            if (data.objectiveId) {
+            if (data.objectiveId && typeof this.worldMap.highlightObjective === 'function') {
                 this.worldMap.highlightObjective(data.objectiveId);
             }
         }
@@ -138,7 +168,9 @@ export default class WorldMapScreen {
     _onHideWorldMap() {
         // If we paused the game when opening, resume it now
         if (this.config.pauseGameWhenActive && this.world && !this._wasPaused) {
-            this.world.resume();
+            if (typeof this.world.resume === 'function') {
+                this.world.resume();
+            }
         }
         
         // Emit event that world map is closed
@@ -191,7 +223,7 @@ export default class WorldMapScreen {
      * @param {string} areaId - Area identifier
      */
     focusOnArea(areaId) {
-        if (this.worldMap) {
+        if (this.worldMap && typeof this.worldMap.focusOnArea === 'function') {
             this.worldMap.focusOnArea(areaId);
         }
     }
@@ -201,7 +233,7 @@ export default class WorldMapScreen {
      * @param {Object} waypoint - Waypoint data
      */
     setWaypoint(waypoint) {
-        if (this.worldMap) {
+        if (this.worldMap && typeof this.worldMap._onWaypointAdded === 'function') {
             this.worldMap._onWaypointAdded(waypoint);
         }
     }
@@ -211,7 +243,7 @@ export default class WorldMapScreen {
      * @param {string} objectiveId - Objective identifier
      */
     highlightObjective(objectiveId) {
-        if (this.worldMap) {
+        if (this.worldMap && typeof this.worldMap.highlightObjective === 'function') {
             this.worldMap.highlightObjective(objectiveId);
         }
     }
@@ -223,7 +255,9 @@ export default class WorldMapScreen {
     update(delta) {
         // Only update if visible
         if (this.worldMap && this.screenManager?.currentScreen === 'world-map') {
-            this.worldMap.update(delta);
+            if (typeof this.worldMap.update === 'function') {
+                this.worldMap.update(delta);
+            }
         }
     }
     
@@ -238,7 +272,9 @@ export default class WorldMapScreen {
         
         // Dispose of the world map component
         if (this.worldMap) {
-            this.worldMap.dispose();
+            if (typeof this.worldMap.dispose === 'function') {
+                this.worldMap.dispose();
+            }
             this.worldMap = null;
         }
         

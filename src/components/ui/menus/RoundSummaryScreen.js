@@ -8,7 +8,6 @@
 import UIComponent from '../UIComponent.js';
 import DOMFactory from '../../../utils/DOMFactory.js';
 import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
 import RoundSummary from './RoundSummary.js';
 
 export default class RoundSummaryScreen extends UIComponent {
@@ -21,12 +20,13 @@ export default class RoundSummaryScreen extends UIComponent {
     constructor(options = {}) {
         super({
             id: 'round-summary-screen',
-            className: 'rift-screen'
+            className: 'rift-screen',
+            autoInit: false  // Prevent auto-initialization
         });
         
         this.world = options.world || null;
         this.screenManager = options.screenManager || null;
-        this.config = UIConfig.menus.roundSummary;
+        this.config = this._getConfig();
         
         // State
         this.isInitialized = false;
@@ -38,6 +38,33 @@ export default class RoundSummaryScreen extends UIComponent {
         
         // Bind methods
         this._handleKeyDown = this._handleKeyDown.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
+    }
+    
+    /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        let uiConfig = {};
+        try {
+            // Try to access UIConfig if available
+            if (typeof UIConfig !== 'undefined' && UIConfig?.menus?.roundSummary) {
+                uiConfig = UIConfig.menus.roundSummary;
+            }
+        } catch (error) {
+            console.warn('UIConfig not available, using round summary screen defaults');
+        }
+        
+        // Return defaults merged with any available config
+        return {
+            title: 'Round Summary',
+            pauseGameWhenActive: false,
+            ...uiConfig
+        };
     }
     
     /**
@@ -63,8 +90,10 @@ export default class RoundSummaryScreen extends UIComponent {
         // Add to screen
         this.element.appendChild(this.roundSummary.element);
         
-        // Initialize component
-        this.roundSummary.init();
+        // Initialize component (it auto-initializes, but this ensures it's ready)
+        if (!this.roundSummary.isInitialized) {
+            this.roundSummary.init();
+        }
         
         // Set up event listeners
         this._setupEventListeners();

@@ -7,7 +7,7 @@
 
 import UIComponent from '../UIComponent.js';
 import EventManager from '../../../core/EventManager.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 import UIConfig from '../../../core/UIConfig.js';
 
 export default class MissionBriefing extends UIComponent {
@@ -20,6 +20,7 @@ export default class MissionBriefing extends UIComponent {
         super({
             id: 'mission-briefing',
             className: 'rift-mission-briefing',
+            autoInit: false, // Prevent auto-initialization to control the order
             ...options
         });
         
@@ -32,7 +33,7 @@ export default class MissionBriefing extends UIComponent {
         this.objectives = new Map();
         this.rewards = new Map();
         
-        // DOM Element references
+        // DOM Element references - Initialize BEFORE calling init()
         this.elements = {
             header: null,
             title: null,
@@ -57,6 +58,9 @@ export default class MissionBriefing extends UIComponent {
         this._onObjectiveClick = this._onObjectiveClick.bind(this);
         this._onStartMissionClick = this._onStartMissionClick.bind(this);
         this._onCancelMissionClick = this._onCancelMissionClick.bind(this);
+        
+        // Now safe to initialize
+        this.init();
     }
     
     /**
@@ -64,6 +68,9 @@ export default class MissionBriefing extends UIComponent {
      * @returns {MissionBriefing} This instance for chaining
      */
     init() {
+        // Call parent init first
+        super.init();
+        
         // Create DOM structure
         this._createElements();
         

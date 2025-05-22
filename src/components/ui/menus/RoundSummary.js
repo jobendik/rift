@@ -8,7 +8,6 @@
 import UIComponent from '../UIComponent.js';
 import DOMFactory from '../../../utils/DOMFactory.js';
 import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
 import WorldMap from './WorldMap.js';
 
 export default class RoundSummary extends UIComponent {
@@ -20,16 +19,17 @@ export default class RoundSummary extends UIComponent {
     constructor(options = {}) {
         super({
             id: 'round-summary',
-            className: 'rift-round-summary'
+            className: 'rift-round-summary',
+            autoInit: false  // Prevent auto-initialization
         });
         
         this.world = options.world || null;
-        this.config = UIConfig.menus.roundSummary;
+        this.config = this._getConfig();
         
         // State
         this.roundData = null;
         this.isInitialized = false;
-        this.activeTab = this.config.defaultTab;
+        this.activeTab = this.config.defaultTab || 'performance';
         
         // Components
         this.map = null;
@@ -46,7 +46,7 @@ export default class RoundSummary extends UIComponent {
         this.actionsElement = null;
         this.mapContainer = null;
         
-        // Tab panels
+        // Tab panels - initialize as empty object
         this.panels = {
             performance: null,
             leaderboard: null,
@@ -57,6 +57,46 @@ export default class RoundSummary extends UIComponent {
         this._onTabClick = this._onTabClick.bind(this);
         this._onButtonAction = this._onButtonAction.bind(this);
         this._buildMapSection = this._buildMapSection.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
+    }
+    
+    /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        let uiConfig = {};
+        try {
+            // Try to access UIConfig if available
+            if (typeof UIConfig !== 'undefined' && UIConfig?.menus?.roundSummary) {
+                uiConfig = UIConfig.menus.roundSummary;
+            }
+        } catch (error) {
+            console.warn('UIConfig not available, using round summary defaults');
+        }
+        
+        // Return defaults merged with any available config
+        return {
+            title: 'Round Summary',
+            defaultTab: 'performance',
+            showMap: true,
+            enableHeatmap: true,
+            mapDefaultZoom: 0.75,
+            sections: {
+                achievements: true,
+                progression: true
+            },
+            continuationOptions: {
+                nextRound: true,
+                mainMenu: true,
+                customize: true
+            },
+            pauseGameWhenActive: false,
+            ...uiConfig
+        };
     }
     
     /**
@@ -118,7 +158,7 @@ export default class RoundSummary extends UIComponent {
         this._createTab('leaderboard', 'Leaderboard');
         this._createTab('rewards', 'Rewards');
         
-        // Create tab panels
+        // Create tab panels (now that this.panels is properly initialized)
         this.panels.performance = this._createPanel('performance');
         this.panels.leaderboard = this._createPanel('leaderboard');
         this.panels.rewards = this._createPanel('rewards');
@@ -176,7 +216,7 @@ export default class RoundSummary extends UIComponent {
      */
     _createTab(id, label) {
         const tabElement = DOMFactory.createElement('div', {
-            className: `rift-round-summary__tab ${id === this.activeTab ? 'rift-round-summary__tab--active' : ''}`,
+            className: `rift-round-summary__tab ${id === this.activeTab ? 'rift-round-summary__tab--active' : ''}`.trim(),
             dataset: { tab: id },
             textContent: label,
             parent: this.tabsElement
@@ -194,7 +234,7 @@ export default class RoundSummary extends UIComponent {
      */
     _createPanel(id) {
         return DOMFactory.createElement('div', {
-            className: `rift-round-summary__panel ${id === this.activeTab ? 'rift-round-summary__panel--active' : ''}`,
+            className: `rift-round-summary__panel ${id === this.activeTab ? 'rift-round-summary__panel--active' : ''}`.trim(),
             dataset: { panel: id },
             parent: this.mainElement
         });
