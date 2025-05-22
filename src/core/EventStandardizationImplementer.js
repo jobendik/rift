@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EventStandardizationImplementer
  * 
  * A utility class to help implement the Event Standardization guidelines across the codebase.
@@ -10,7 +10,7 @@
 
 import { EventManager } from './EventManager.js';
 
-export class EventStandardizationImplementer {
+class EventStandardizationImplementer {
     constructor() {
         // Known old event names mapped to standardized event names
         this.eventNameMap = {
@@ -335,7 +335,7 @@ export class EventStandardizationImplementer {
         let hasChanges = false;
         
         // Add imports
-        code += `import EventManager from '../../core/EventManager.js';\n\n`;
+        code += `import { EventManager } from '../../core/EventManager.js';\n\n`;
         
         code += `// Update your registerEvents call to use standardized event names:\n`;
         code += `this.registerEvents({\n`;
@@ -529,3 +529,7 @@ export class EventStandardizationImplementer {
 }
 
 export default new EventStandardizationImplementer();
+
+
+
+export { EventStandardizationImplementer };

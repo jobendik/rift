@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Weapon Wheel Component
  * A radial menu that allows players to quickly select weapons
  * 
@@ -7,10 +7,10 @@
 
 import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
-export class WeaponWheel extends UIComponent {
+class WeaponWheel extends UIComponent {
     /**
      * Creates a new weapon wheel component
      * @param {Object} world - Reference to the game world
@@ -391,7 +391,7 @@ export class WeaponWheel extends UIComponent {
         // Calculate angle (in radians, 0 = right, going counter-clockwise)
         let angle = Math.atan2(deltaY, deltaX);
         
-        // Convert to 0-2π range (atan2 returns -π to π)
+        // Convert to 0-2Ï€ range (atan2 returns -Ï€ to Ï€)
         if (angle < 0) {
             angle += 2 * Math.PI;
         }
@@ -674,4 +674,4 @@ export class WeaponWheel extends UIComponent {
     }
 }
 
-export default WeaponWheel;
+export { WeaponWheel };

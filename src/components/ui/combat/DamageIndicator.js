@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DamageIndicator Component
  *
  * Displays visual feedback when the player takes damage, showing the direction
@@ -13,9 +13,9 @@
  * @extends UIComponent
  */
 
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 class DamageIndicator extends UIComponent {
     /**
@@ -34,6 +34,7 @@ class DamageIndicator extends UIComponent {
             id: options.id || 'damage-indicator',
             className: 'rift-damage-indicator',
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
 
@@ -49,16 +50,26 @@ class DamageIndicator extends UIComponent {
         this.indicatorPool = [];
         this.indicatorContainer = null;
         this.isActive = false;
+        
+        // Now initialize manually after all properties are set
+        this.init();
     }
 
     /**
      * Initialize the damage indicator component
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first to create root element
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         this._createElements();
         this._initIndicatorPool();
         this._registerEventListeners();
-        this.isInitialized = true;
         this.isActive = true;
         return this;
     }
@@ -268,11 +279,6 @@ class DamageIndicator extends UIComponent {
      * @private
      */
     _createElements() {
-        // Create the root element if it doesn't exist
-        if (!this.element) {
-            this._createRootElement();
-        }
-
         // Create the indicator container
         this.indicatorContainer = DOMFactory.createElement('div', {
             className: 'rift-damage-indicator__container',
@@ -402,4 +408,6 @@ class DamageIndicator extends UIComponent {
     }
 }
 
-export default DamageIndicator;
+
+
+export { DamageIndicator };

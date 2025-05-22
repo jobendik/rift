@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EnvironmentSystem.js
  * 
  * Manages all environmental UI effects such as weather, objective markers,
@@ -10,10 +10,10 @@
 
 import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
-import WeatherSystem from './WeatherSystem.js';
-import ObjectiveMarkerSystem from './ObjectiveMarkerSystem.js';
-import DangerZone from './DangerZone.js';
-import PowerupDisplay from './PowerupDisplay.js';
+import { WeatherSystem } from './WeatherSystem.js';
+import { ObjectiveMarkerSystem } from './ObjectiveMarkerSystem.js';
+import { DangerZone } from './DangerZone.js';
+import { PowerupDisplay } from './PowerupDisplay.js';
 
 class EnvironmentSystem extends UIComponent {
     /**
@@ -27,15 +27,52 @@ class EnvironmentSystem extends UIComponent {
             className: 'rift-environment',
             template: '<div class="rift-environment__content"></div>',
             container: options.container || document.body,
+            autoInit: false, // Prevent automatic initialization
             ...options
         });
 
         this.world = options.world;
         this.activeWeather = null;
-        this.isInitialized = false;
+        
+        // Get config with fallbacks
+        this.config = this._getConfig();
 
         // Bind methods
         this._onGamePauseChange = this._onGamePauseChange.bind(this);
+        
+        // Initialize manually after properties are set
+        this.init();
+    }
+    
+    /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        let config = {};
+        try {
+            // Try to access UIConfig if available
+            if (typeof UIConfig !== 'undefined') {
+                config = UIConfig || {};
+            }
+        } catch (error) {
+            console.warn('UIConfig not available, using environment system defaults');
+        }
+
+        // Create default environment config if not available
+        if (!config.environment) {
+            config.environment = {};
+        }
+        
+        // Create default weather config if not available
+        if (!config.weather) {
+            config.weather = {
+                pauseWhenGamePaused: true
+            };
+        }
+        
+        return config;
     }
 
     /**
@@ -46,6 +83,9 @@ class EnvironmentSystem extends UIComponent {
 
         // Create main element
         super.init();
+        
+        // Set initialized flag early to prevent initialization loops
+        this.isInitialized = true;
 
         // Get content container
         this.content = this.element.querySelector('.rift-environment__content');
@@ -284,13 +324,20 @@ class EnvironmentSystem extends UIComponent {
      * @private
      */
     _initWeatherSystem() {
-        this.weatherSystem = new WeatherSystem({
-            container: this.content,
-            world: this.world
-        });
-        
-        this.weatherSystem.init();
-        this.addChild(this.weatherSystem);
+        try {
+            this.weatherSystem = new WeatherSystem({
+                container: this.content,
+                world: this.world
+            });
+            
+            if (!this.weatherSystem.isInitialized) {
+                this.weatherSystem.init();
+            }
+            
+            this.addChild(this.weatherSystem);
+        } catch (error) {
+            console.error('Failed to initialize weather system:', error);
+        }
     }
     
     /**
@@ -529,4 +576,8 @@ class EnvironmentSystem extends UIComponent {
     }
 }
 
-export default EnvironmentSystem;
+
+
+
+
+export { EnvironmentSystem };

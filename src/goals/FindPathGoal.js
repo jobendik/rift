@@ -1,4 +1,4 @@
-import { Goal } from 'yuka';
+﻿import { Goal } from 'yuka';
 
 /**
 * Sub-goal for finding the next random location
@@ -57,3 +57,4 @@ function onPathFound( owner, path ) {
 }
 
 export { FindPathGoal };
+

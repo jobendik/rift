@@ -1,4 +1,4 @@
-import { Ray } from 'yuka';
+﻿import { Ray } from 'yuka';
 import { CONFIG } from '../core/Config.js';
 import { Projectile } from './Projectile.js';
 
@@ -37,3 +37,4 @@ class Bullet extends Projectile {
 }
 
 export { Bullet };
+

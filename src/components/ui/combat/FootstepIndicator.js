@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FootstepIndicator Component
  *
  * Displays visual feedback for nearby movement, showing the direction
@@ -13,10 +13,10 @@
  * @extends UIComponent
  */
 
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import EventStandardizationImplementer from '../../../core/EventStandardizationImplementer.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventStandardizationImplementer } from '../../../core/EventStandardizationImplementer.js';
 
 class FootstepIndicator extends UIComponent {
     /**
@@ -34,6 +34,7 @@ class FootstepIndicator extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'footstep-indicator',
             className: 'rift-footstep-indicator',
             container: options.container || document.body,

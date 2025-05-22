@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Asset Helpers Module
  * 
  * This module exports utilities for asset management, including
@@ -9,4 +9,5 @@
 export * from './path-helper.js';
 
 // Export model loading utilities
-export { ModelLoader } from './ModelLoader.js';
+export default ModelLoader; from './ModelLoader.js';
+

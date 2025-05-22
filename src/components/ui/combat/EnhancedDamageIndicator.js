@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Enhanced Damage Indicator Component
  * 
  * Provides directional damage indication with enhanced features:
@@ -12,12 +12,12 @@
  * @extends UIComponent
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 import { UIConfig } from '../../../core/UIConfig.js';
 import { EventManager } from '../../../core/EventManager.js';
 
-export class EnhancedDamageIndicator extends UIComponent {
+class EnhancedDamageIndicator extends UIComponent {
     constructor(options = {}) {
         super(options);
         
@@ -351,3 +351,7 @@ export class EnhancedDamageIndicator extends UIComponent {
         super.dispose();
     }
 }
+
+
+
+export { EnhancedDamageIndicator };

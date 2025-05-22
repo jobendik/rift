@@ -1,22 +1,25 @@
-/**
+﻿/**
  * Player rank component for RIFT UI
  * Displays the player's current rank, including rank icon and tier indicators
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
-export default class PlayerRank extends UIComponent {
+class PlayerRank extends UIComponent {
     /**
      * Create a new PlayerRank component
      * @param {Object} world - Reference to the game world
      * @param {Object} options - Component options
      */
     constructor(world, options = {}) {
-        super(world, options);
+        // Prevent auto-initialization in parent class
+        super({ autoInit: false, ...options });
         
+        this.world = world;
+        this.options = options || {};
         this.config = UIConfig.xp;
         this.level = this.options.level || 1;
         this.rank = this._getRankForLevel(this.level);
@@ -24,12 +27,23 @@ export default class PlayerRank extends UIComponent {
         
         // Bind methods
         this._handleLevelUp = this._handleLevelUp.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
     }
     
     /**
      * Initialize the rank display
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         this._createElements();
         this._setupEventListeners();
         this.updateRank(this.level);
@@ -97,7 +111,7 @@ export default class PlayerRank extends UIComponent {
         for (let i = 0; i < tier; i++) {
             DOMFactory.createElement('div', {
                 className: 'rift-rank__tier-indicator',
-                html: '★',
+                html: 'â˜…',
                 parent: this.tierContainer
             });
         }
@@ -274,3 +288,7 @@ export default class PlayerRank extends UIComponent {
         }
     }
 }
+
+
+
+export { PlayerRank };

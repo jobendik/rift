@@ -1,22 +1,25 @@
-/**
+﻿/**
  * Skill points display component for RIFT UI
  * Shows available skill points and provides access to skill tree
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
-export default class SkillPointsDisplay extends UIComponent {
+class SkillPointsDisplay extends UIComponent {
     /**
      * Create a new SkillPointsDisplay component
      * @param {Object} world - Reference to the game world
      * @param {Object} options - Component options
      */
     constructor(world, options = {}) {
-        super(world, options);
+        // Prevent auto-initialization in parent class
+        super({ autoInit: false, ...options });
         
+        this.world = world;
+        this.options = options || {};
         this.config = UIConfig.xp;
         this.skillPoints = this.options.skillPoints || 0;
         this.isVisible = this.options.visible !== false;
@@ -26,12 +29,23 @@ export default class SkillPointsDisplay extends UIComponent {
         this._handleLevelUp = this._handleLevelUp.bind(this);
         this._handleSkillPointsChanged = this._handleSkillPointsChanged.bind(this);
         this._handleSpendBtnClick = this._handleSpendBtnClick.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
     }
     
     /**
      * Initialize the skill points display
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         this._createElements();
         this._setupEventListeners();
         this.updateDisplay(this.skillPoints);
@@ -54,7 +68,7 @@ export default class SkillPointsDisplay extends UIComponent {
         // Skill points icon
         this.icon = DOMFactory.createElement('div', {
             className: 'rift-skill-points__icon',
-            html: '✦', // Special skill point character
+            html: 'âœ¦', // Special skill point character
             parent: this.container
         });
         
@@ -386,3 +400,7 @@ export default class SkillPointsDisplay extends UIComponent {
         }
     }
 }
+
+
+
+export { SkillPointsDisplay };

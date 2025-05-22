@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MinimapIntegration:
  * Handles the integration between the AdvancedMinimap component
  * and the game world, including visibility control, item and enemy
@@ -593,3 +593,4 @@ class MinimapIntegration {
 }
 
 export { MinimapIntegration };
+

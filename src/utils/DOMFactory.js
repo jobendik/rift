@@ -5,7 +5,7 @@
  * 
  * @author Cline
  */
-export class DOMFactory {
+class DOMFactory {
     /**
      * Create a DOM element with the specified options
      * @param {String} type - The type of DOM element to create
@@ -306,4 +306,5 @@ export class DOMFactory {
 }
 
 // Add default export while maintaining named export for backward compatibility
-export default DOMFactory;
+
+export { DOMFactory };

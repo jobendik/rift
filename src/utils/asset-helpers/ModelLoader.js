@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Model Loader Utility
  * 
  * Provides robust utilities for safely loading 3D models,
@@ -154,3 +154,4 @@ class ModelLoader {
 }
 
 export { ModelLoader };
+

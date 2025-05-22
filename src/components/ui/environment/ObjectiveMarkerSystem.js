@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ObjectiveMarkerSystem.js
  * 
  * Manages objective markers in the game world, including waypoints, mission objectives,
@@ -9,7 +9,7 @@ import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-class ObjectiveMarkerSystem extends UIComponent {
+export class ObjectiveMarkerSystem extends UIComponent {
     /**
      * Creates a new ObjectiveMarkerSystem instance.
      * @param {Object} options - Configuration options
@@ -21,6 +21,7 @@ class ObjectiveMarkerSystem extends UIComponent {
             className: 'rift-objective-markers',
             template: '<div class="rift-objective-markers__container"></div>',
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-initialization
             ...options
         });
 
@@ -42,6 +43,9 @@ class ObjectiveMarkerSystem extends UIComponent {
         this._onObjectiveRemoved = this._onObjectiveRemoved.bind(this);
         this._onWaypointSet = this._onWaypointSet.bind(this);
         this._onWaypointRemoved = this._onWaypointRemoved.bind(this);
+        
+        // Initialize manually after all properties are set
+        this.init();
     }
 
     /**
@@ -52,6 +56,9 @@ class ObjectiveMarkerSystem extends UIComponent {
 
         // Create main element
         super.init();
+        
+        // Set initialized flag early to prevent recursion
+        this.isInitialized = true;
 
         // Get container reference
         this.markerContainer = this.element.querySelector('.rift-objective-markers__container');
@@ -445,14 +452,14 @@ class ObjectiveMarkerSystem extends UIComponent {
         const playerAngle = playerRotation.y;
         let relativeAngle = angleToMarker - playerAngle;
         
-        // Normalize angle to [0, 2π]
+        // Normalize angle to [0, 2Ï€]
         while (relativeAngle < 0) relativeAngle += Math.PI * 2;
         while (relativeAngle >= Math.PI * 2) relativeAngle -= Math.PI * 2;
         
         // Store angle
         marker.angle = relativeAngle;
         
-        // Convert angle to screen position (angle 0 is right, π/2 is down, etc.)
+        // Convert angle to screen position (angle 0 is right, Ï€/2 is down, etc.)
         const screenRadius = Math.min(this.screenBounds.width, this.screenBounds.height) * 0.4;
         
         // Calculate ideal screen position (center of screen + offset based on angle)
@@ -627,4 +634,3 @@ class ObjectiveMarkerSystem extends UIComponent {
     }
 }
 
-export default ObjectiveMarkerSystem;

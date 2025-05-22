@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MovementSystem Component
  *
  * Responsible for detecting and emitting footstep events based on entity movement.
@@ -13,7 +13,7 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import EventStandardizationImplementer from '../../../core/EventStandardizationImplementer.js';
 
 class MovementSystem extends UIComponent {
@@ -29,6 +29,7 @@ class MovementSystem extends UIComponent {
      */
     constructor(world, options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'movement-system',
             className: 'rift-movement-system',
             ...options
@@ -66,6 +67,9 @@ class MovementSystem extends UIComponent {
      * Initialize the movement system
      */
     init() {
+        // Call parent init first
+        super.init();
+
         if (this.isInitialized) return this;
         
         // Register event handlers
@@ -623,7 +627,7 @@ class MovementSystem extends UIComponent {
         // Emit the standardized event
         EventManager.emit('movement:footstep', footstepEvent);
         
-        console.log(`[MovementSystem] Test footstep: ${options.isFriendly ? 'friendly' : 'enemy'} at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}°`);
+        console.log(`[MovementSystem] Test footstep: ${options.isFriendly ? 'friendly' : 'enemy'} at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}Â°`);
         
         return this;
     }
@@ -649,7 +653,7 @@ class MovementSystem extends UIComponent {
         // Generate a unique entity ID for this sequence
         const entityId = `test_seq_${Date.now()}`;
         
-        console.log(`[MovementSystem] Starting test footstep sequence: ${count} ${isFriendly ? 'friendly' : 'enemy'} footsteps at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}°`);
+        console.log(`[MovementSystem] Starting test footstep sequence: ${count} ${isFriendly ? 'friendly' : 'enemy'} footsteps at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}Â°`);
         
         // Create a sequence of footsteps with the same entityId
         for (let i = 0; i < count; i++) {
@@ -695,4 +699,5 @@ class MovementSystem extends UIComponent {
     }
 }
 
-export default MovementSystem;
+export { MovementSystem };
+

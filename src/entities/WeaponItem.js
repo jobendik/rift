@@ -1,4 +1,4 @@
-import { Item } from './Item.js';
+﻿import { Item } from './Item.js';
 
 /**
 * A game entity which represents a collectable weapon item.
@@ -43,3 +43,4 @@ class WeaponItem extends Item {
 }
 
 export { WeaponItem };
+

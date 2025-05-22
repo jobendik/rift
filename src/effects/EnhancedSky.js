@@ -1,4 +1,4 @@
-import { ShaderMaterial, UniformsUtils, BackSide, Mesh, SphereGeometry, Vector3, Color } from 'three';
+﻿import { ShaderMaterial, UniformsUtils, BackSide, Mesh, SphereGeometry, Vector3, Color } from 'three';
 
 /**
 * Enhanced Sky shader with more dramatic visuals and better controls

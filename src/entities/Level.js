@@ -1,4 +1,4 @@
-import { GameEntity, BVH } from 'yuka';
+﻿import { GameEntity, BVH } from 'yuka';
 
 /**
 * Class for representing the level of this game.
@@ -66,3 +66,4 @@ class Level extends GameEntity {
 }
 
 export { Level };
+

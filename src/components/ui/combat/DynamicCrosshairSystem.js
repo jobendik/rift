@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dynamic Crosshair System Component for the RIFT FPS UI.
  * 
  * Enhanced crosshair system with:
@@ -17,7 +17,7 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 export class DynamicCrosshairSystem extends UIComponent {
@@ -764,4 +764,3 @@ export class DynamicCrosshairSystem extends UIComponent {
     }
 }
 
-export default DynamicCrosshairSystem;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MissionBriefing.js
  * Component for displaying mission details, objectives, and rewards
  * 
@@ -6,11 +6,11 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
-export default class MissionBriefing extends UIComponent {
+export class MissionBriefing extends UIComponent {
     /**
      * Create a new mission briefing component
      * @param {Object} options - Configuration options
@@ -375,7 +375,7 @@ export default class MissionBriefing extends UIComponent {
             // Center on objective button
             const centerButton = DOMFactory.createElement('button', {
                 className: 'rift-mission-briefing__map-button',
-                textContent: '⊙',
+                textContent: 'âŠ™',
                 parent: mapControls,
                 attributes: {
                     'aria-label': 'Center on objective',
@@ -424,7 +424,7 @@ export default class MissionBriefing extends UIComponent {
         
         DOMFactory.createElement('span', {
             className: 'rift-mission-briefing__time-icon',
-            textContent: '⏱️',
+            textContent: 'â±ï¸',
             parent: timeContainer
         });
         
@@ -561,7 +561,7 @@ export default class MissionBriefing extends UIComponent {
             
             DOMFactory.createElement('span', {
                 className: 'rift-mission-briefing__objective-location-icon',
-                textContent: '📍',
+                textContent: 'ðŸ“',
                 parent: locationButton
             });
             

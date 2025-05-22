@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CombatSystem Component
  *
  * Coordinates all combat feedback-related UI components:
@@ -15,14 +15,14 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import HitIndicator from './HitIndicator.js';
-import DamageIndicator from './DamageIndicator.js';
+import { HitIndicator } from './HitIndicator.js';
+import { DamageIndicator } from './DamageIndicator.js';
 import { EnhancedDamageIndicator } from './EnhancedDamageIndicator.js';
 import { EnhancedHitIndicator } from './EnhancedHitIndicator.js';
 import { DynamicCrosshairSystem } from './DynamicCrosshairSystem.js';
-import DamageNumbers from './DamageNumbers.js';
-import ScreenEffects from './ScreenEffects.js';
-import AdvancedScreenEffects from './AdvancedScreenEffects.js';
+import { DamageNumbers } from './DamageNumbers.js';
+import { ScreenEffects } from './ScreenEffects.js';
+import { AdvancedScreenEffects } from './AdvancedScreenEffects.js';
 import FootstepIndicator from './FootstepIndicator.js';
 
 class CombatSystem extends UIComponent {
@@ -37,6 +37,7 @@ class CombatSystem extends UIComponent {
             id: options.id || 'combat-system',
             className: 'rift-combat-system',
             container: options.container || document.body,
+            autoInit: false,
             ...options
         });
 
@@ -63,10 +64,12 @@ class CombatSystem extends UIComponent {
      * Initialize the combat system component and all subcomponents
      */
     init() {
-        // Create main container if it doesn't exist
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init first to properly set up the component
+        super.init();
+        
+        this.isInitialized = true;
         
         // Initialize components
         this._initComponents();
@@ -77,7 +80,6 @@ class CombatSystem extends UIComponent {
             'game:resumed': () => this._onGameResumed()
         });
         
-        this.isInitialized = true;
         return this;
     }
 
@@ -469,7 +471,7 @@ class CombatSystem extends UIComponent {
             // Trigger the player damage event
             this.enhancedDamageIndicator._onPlayerDamaged(damageEvent);
             
-            console.log(`Enhanced damage indicator test: ${damageAmount} ${damageType} damage from ${damageAngle}°`);
+            console.log(`Enhanced damage indicator test: ${damageAmount} ${damageType} damage from ${damageAngle}Â°`);
         } else if (this.damageIndicator) {
             // Use legacy damage indicator
             
@@ -501,7 +503,7 @@ class CombatSystem extends UIComponent {
                 damage: damageAmount
             });
             
-            console.log(`Damage indicator test: ${damageAmount} damage from ${damageAngle}°`);
+            console.log(`Damage indicator test: ${damageAmount} damage from ${damageAngle}Â°`);
         }
     }
     
@@ -678,15 +680,19 @@ class CombatSystem extends UIComponent {
         const footstepData = {
             angle: footstepAngle,
             distance: distance,
-            isEnemy: isEnemy,
+            isFriendly: !isEnemy,
             count: count
         };
         
         // Show the footstep indicator
-        this.footstepIndicator.showFootstepFrom(footstepData);
+        this.footstepIndicator.showFootstepsFrom(footstepData);
         
-        console.log(`Footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}° at distance ${distance}, count: ${count}`);
+        console.log(`Footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}Â° at distance ${distance}, count: ${count}`);
     }
 }
 
-export default CombatSystem;
+
+
+
+
+export { CombatSystem };

@@ -244,4 +244,4 @@ export class EventStandardizationTest {
 }
 
 // Create test instance when included
-export default EventStandardizationTest;
+

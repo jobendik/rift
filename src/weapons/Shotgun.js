@@ -1,4 +1,4 @@
-import { Ray, Vector3 } from 'yuka';
+﻿import { Ray, Vector3 } from 'yuka';
 import { AnimationMixer, LoopOnce } from 'three';
 import { Weapon } from './Weapon.js';
 import { CONFIG } from '../core/Config.js';
@@ -297,3 +297,4 @@ class Shotgun extends Weapon {
 }
 
 export { Shotgun };
+

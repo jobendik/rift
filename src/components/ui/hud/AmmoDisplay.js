@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Ammunition display component for the RIFT UI HUD.
  * Displays current weapon ammunition with visual feedback for low ammo and reloading.
  * 
@@ -6,10 +6,10 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export class AmmoDisplay extends UIComponent {
+class AmmoDisplay extends UIComponent {
     /**
      * Create a new ammo display component
      * @param {Object} options - Component options
@@ -23,6 +23,7 @@ export class AmmoDisplay extends UIComponent {
             id: options.id || 'ammo-display',
             className: 'rift-ammo',
             container: options.container,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
         
@@ -59,6 +60,9 @@ export class AmmoDisplay extends UIComponent {
             'weapon:reloaded': this._onReloadComplete, // Standardized from weapon:reload:complete
             'weapon:switched': this._onWeaponSwitched
         });
+        
+        // Now initialize manually after all properties are set
+        this.init();
     }
     
     /**
@@ -67,7 +71,7 @@ export class AmmoDisplay extends UIComponent {
     init() {
         if (this.isInitialized) return this;
         
-        // Call parent init to create root element
+        // Call parent init first to properly set up the component
         super.init();
         
         // Create ammo icon
@@ -483,4 +487,4 @@ export class AmmoDisplay extends UIComponent {
     }
 }
 
-export default AmmoDisplay;
+export { AmmoDisplay };

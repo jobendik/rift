@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NotificationSystem Component
  *
  * Coordinates all notification-related UI components:
@@ -14,12 +14,12 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import NotificationManager from './NotificationManager.js';
-import KillFeed from './KillFeed.js';
-import EventBanner from './EventBanner.js';
-import AchievementDisplay from './AchievementDisplay.js';
+import { NotificationManager } from './NotificationManager.js';
+import { KillFeed } from './KillFeed.js';
+import { EventBanner } from './EventBanner.js';
+import { AchievementDisplay } from './AchievementDisplay.js';
 
-export class NotificationSystem extends UIComponent {
+class NotificationSystem extends UIComponent {
     /**
      * Create a new NotificationSystem component
      * 
@@ -31,6 +31,7 @@ export class NotificationSystem extends UIComponent {
             id: options.id || 'notification-system',
             className: 'rift-notification-system',
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
 
@@ -48,10 +49,13 @@ export class NotificationSystem extends UIComponent {
      * Initialize the notification system component and all subcomponents
      */
     init() {
-        // Create main container if it doesn't exist
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
         
         // Initialize components
         this._initComponents();
@@ -61,8 +65,6 @@ export class NotificationSystem extends UIComponent {
             'game:paused': () => this._onGamePaused(),
             'game:resumed': () => this._onGameResumed()
         });
-        
-        this.isInitialized = true;
         return this;
     }
 
@@ -357,4 +359,6 @@ export class NotificationSystem extends UIComponent {
     }
 }
 
-export default NotificationSystem;
+
+
+export { NotificationSystem };

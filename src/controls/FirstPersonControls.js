@@ -1,4 +1,4 @@
-import { EventDispatcher, Vector3, Logger } from 'yuka';
+﻿import { EventDispatcher, Vector3, Logger } from 'yuka';
 import { WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN, WEAPON_TYPES_ASSAULT_RIFLE } from '../core/Constants.js';
 import { CONFIG } from '../core/Config.js';
 
@@ -48,7 +48,7 @@ class FirstPersonControls extends EventDispatcher {
 			backward: false,
 			right: false,
 			left: false,
-			run: false, // Nytt: løpe med shift
+			run: false, // Nytt: lÃ¸pe med shift
 			mouseDown: false
 		};
 
@@ -244,7 +244,7 @@ class FirstPersonControls extends EventDispatcher {
 			return this;
 		}
 
-		 // Hvis vi løper, ikke vugg hodet ekstra
+		 // Hvis vi lÃ¸per, ikke vugg hodet ekstra
 		let motion = 0;
 		if (!this.input.run) {
 			motion = Math.sin( elapsed * this.headMovement );
@@ -582,3 +582,4 @@ function onKeyUp( event ) {
 }
 
 export { FirstPersonControls };
+

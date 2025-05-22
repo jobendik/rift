@@ -1,4 +1,4 @@
-import { MovingEntity, Ray, Vector3 } from 'yuka';
+﻿import { MovingEntity, Ray, Vector3 } from 'yuka';
 import { MESSAGE_HIT } from '../core/Constants.js';
 
 const intersectionPoint = new Vector3();
@@ -102,3 +102,4 @@ class Projectile extends MovingEntity {
 }
 
 export { Projectile };
+

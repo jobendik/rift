@@ -1,4 +1,4 @@
-import { CONFIG } from './Config.js';
+﻿import { CONFIG } from './Config.js';
 import { WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN, WEAPON_TYPES_ASSAULT_RIFLE } from './Constants.js';
 import { MathUtils } from 'yuka';
 
@@ -93,3 +93,4 @@ class Feature {
 }
 
 export { Feature };
+

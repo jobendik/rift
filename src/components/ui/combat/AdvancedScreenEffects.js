@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AdvancedScreenEffects Component
  *
  * An enhanced version of the standard ScreenEffects component that provides:
@@ -12,9 +12,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
 export class AdvancedScreenEffects extends UIComponent {
     /**
@@ -25,6 +25,7 @@ export class AdvancedScreenEffects extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'advanced-screen-effects',
             className: 'rift-advanced-screen-effects',
             container: options.container || document.body,
@@ -1055,4 +1056,3 @@ export class AdvancedScreenEffects extends UIComponent {
     }
 }
 
-export default AdvancedScreenEffects;

@@ -1,4 +1,4 @@
-const visibleRecords = new Array();
+﻿const visibleRecords = new Array();
 const invisibleRecords = new Array();
 
 /**
@@ -183,3 +183,4 @@ class TargetSystem {
 }
 
 export { TargetSystem };
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HUD system for managing all HUD components in the RIFT UI.
  * Acts as a container and coordinator for all heads-up display elements.
  * 
@@ -6,17 +6,17 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import HealthDisplay from './HealthDisplay.js';
-import AmmoDisplay from './AmmoDisplay.js';
-import CrosshairSystem from './CrosshairSystem.js';
-import MinimapSystem from './MinimapSystem.js';
-import StaminaSystem from './StaminaSystem.js';
-import CompassDisplay from './CompassDisplay.js';
-import WeaponWheel from './WeaponWheel.js';
+import { HealthDisplay } from './HealthDisplay.js';
+import { AmmoDisplay } from './AmmoDisplay.js';
+import { CrosshairSystem } from './CrosshairSystem.js';
+import { MinimapSystem } from './MinimapSystem.js';
+import { StaminaSystem } from './StaminaSystem.js';
+import { CompassDisplay } from './CompassDisplay.js';
+import { WeaponWheel } from './WeaponWheel.js';
 
-export class HUDSystem extends UIComponent {
+class HUDSystem extends UIComponent {
     /**
      * Create a new HUD system
      * @param {Object} world - Reference to the game world
@@ -348,4 +348,7 @@ export class HUDSystem extends UIComponent {
     }
 }
 
-export default HUDSystem;
+
+
+
+export { HUDSystem };

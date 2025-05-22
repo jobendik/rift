@@ -1,4 +1,4 @@
-import { TaskQueue } from 'yuka';
+﻿import { TaskQueue } from 'yuka';
 import { PathPlannerTask } from './PathPlannerTask.js';
 
 /**
@@ -49,3 +49,4 @@ class PathPlanner {
 }
 
 export { PathPlanner };
+

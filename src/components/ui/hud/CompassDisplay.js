@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CompassDisplay component for the RIFT HUD.
  * Displays player orientation with cardinal directions and degree markers.
  * 
@@ -6,16 +6,17 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export class CompassDisplay extends UIComponent {
+class CompassDisplay extends UIComponent {
     /**
      * Create a new compass display
      * @param {Object} options - Component options
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'rift-compass',
             className: 'rift-compass',
             container: options.container || document.body,
@@ -130,7 +131,7 @@ export class CompassDisplay extends UIComponent {
             this.elements.degrees = this.createElement('div', {
                 className: 'rift-compass__degrees',
                 parent: this.element,
-                text: '000°'
+                text: '000Â°'
             });
         }
         
@@ -401,7 +402,7 @@ export class CompassDisplay extends UIComponent {
         if (this.showDegrees && this.elements.degrees) {
             // Format with leading zeros
             const formattedDegrees = this.state.playerRotation.toFixed(0).padStart(3, '0');
-            this.elements.degrees.innerText = `${formattedDegrees}°`;
+            this.elements.degrees.innerText = `${formattedDegrees}Â°`;
         }
         
         // Update cardinal markers
@@ -491,4 +492,4 @@ export class CompassDisplay extends UIComponent {
     }
 }
 
-export default CompassDisplay;
+export { CompassDisplay };

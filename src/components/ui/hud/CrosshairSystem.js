@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Crosshair system component for the RIFT UI HUD.
  * Displays dynamic crosshair with spread, hit markers, and contextual states.
  * 
@@ -6,10 +6,10 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export class CrosshairSystem extends UIComponent {
+class CrosshairSystem extends UIComponent {
     /**
      * Create a new crosshair system component
      * @param {Object} options - Component options
@@ -21,6 +21,7 @@ export class CrosshairSystem extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'crosshair-system',
             className: `rift-crosshair ${options.dynamic !== false ? 'rift-crosshair--dynamic' : ''}`,
             container: options.container,
@@ -407,4 +408,4 @@ export class CrosshairSystem extends UIComponent {
     }
 }
 
-export default CrosshairSystem;
+export { CrosshairSystem };

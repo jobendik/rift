@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PowerupDisplay.js
  * 
  * Displays active buffs and status effects in the UI.
@@ -8,7 +8,7 @@
 import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
 
-class PowerupDisplay extends UIComponent {
+export class PowerupDisplay extends UIComponent {
     /**
      * Creates a new PowerupDisplay instance.
      * @param {Object} options - Configuration options
@@ -16,6 +16,7 @@ class PowerupDisplay extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: 'powerup-display',
             className: 'rift-powerups',
             template: '<div class="rift-powerups__container"></div>',
@@ -434,12 +435,12 @@ class PowerupDisplay extends UIComponent {
      */
     _getIconForType(type) {
         const icons = this.config.icons || {
-            damage: '⚔️',
-            speed: '🏃',
-            armor: '🛡️',
-            health: '❤️',
-            ammo: '🔹',
-            invisible: '👻'
+            damage: 'âš”ï¸',
+            speed: 'ðŸƒ',
+            armor: 'ðŸ›¡ï¸',
+            health: 'â¤ï¸',
+            ammo: 'ðŸ”¹',
+            invisible: 'ðŸ‘»'
         };
         
         return icons[type] || icons.damage;
@@ -546,4 +547,5 @@ class PowerupDisplay extends UIComponent {
     }
 }
 
-export default PowerupDisplay;
+
+

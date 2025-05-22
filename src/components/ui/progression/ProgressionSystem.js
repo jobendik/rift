@@ -1,44 +1,60 @@
-/**
+﻿/**
  * Progression system for RIFT
  * Coordinates XP, levels, ranks and skill points
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
 // Import progression components
-import ExperienceBar from './ExperienceBar.js';
-import PlayerRank from './PlayerRank.js';
-import SkillPointsDisplay from './SkillPointsDisplay.js';
+import { ExperienceBar } from './ExperienceBar.js';
+import { PlayerRank } from './PlayerRank.js';
+import { SkillPointsDisplay } from './SkillPointsDisplay.js';
 
-export default class ProgressionSystem extends UIComponent {
+class ProgressionSystem extends UIComponent {
     /**
      * Create a new progression system
      * @param {Object} world - Reference to the game world
      * @param {Object} options - Component options
      */
     constructor(world, options = {}) {
-        super(world, options);
+        // Prevent auto-initialization in parent class
+        super({ autoInit: false, ...options });
         
+        this.world = world;
+        this.options = options || {};
         this.config = UIConfig.xp;
         this.level = this.options.level || 1;
         this.currentXP = this.options.currentXP || 0;
         this.skillPoints = this.options.skillPoints || 0;
         this.isVisible = this.options.visible !== false;
-        this.containers = {};
+        this.containers = {
+            main: null
+        };
         this.components = {};
         
         // Bind methods
         this._handleSkillTreeOpen = this._handleSkillTreeOpen.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
     }
     
     /**
      * Initialize the progression system
      */
     init() {
+        if (this.isInitialized) return this;
+        
         console.log('Initializing RIFT Progression System...');
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
         
         this._createContainers();
         this._createComponents();
@@ -60,7 +76,7 @@ export default class ProgressionSystem extends UIComponent {
         this.containers.main = DOMFactory.createElement('div', {
             className: `rift-progression rift-progression--${this.config.hudLayout || 'horizontal'}`,
             id: 'rift-progression',
-            appendToBody: true
+            parent: document.body
         });
         
         // Set position based on config
@@ -355,3 +371,7 @@ export default class ProgressionSystem extends UIComponent {
         this.containers = {};
     }
 }
+
+
+
+export { ProgressionSystem };

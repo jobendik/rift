@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WeatherSystem.js
  * 
  * Manages weather effects in the game, including rain, snow, fog, and lightning.
@@ -27,11 +27,15 @@ class WeatherSystem extends UIComponent {
                 <div class="rift-weather__overlay"></div>
             `,
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-initialization
             ...options
         });
 
         this.world = options.world;
-        this.weatherConfig = this.config.weather;
+        
+        // Get config with fallbacks to prevent undefined errors
+        this.config = this._getConfig();
+        this.weatherConfig = this.config.weather || {};
         this.currentType = 'clear';
         this.currentIntensity = 'none';
         this.isInitialized = false;
@@ -68,11 +72,76 @@ class WeatherSystem extends UIComponent {
     /**
      * Initialize the weather system
      */
+    /**
+     * Get configuration with fallbacks
+     * @private
+     * @returns {Object} Configuration object
+     */
+    _getConfig() {
+        let config = {};
+        try {
+            // Try to access UIConfig if available
+            if (typeof UIConfig !== 'undefined') {
+                config = UIConfig || {};
+            }
+        } catch (error) {
+            console.warn('UIConfig not available, using weather system defaults');
+        }
+
+        // Create default weather config if not available
+        if (!config.weather) {
+            config.weather = {
+                transitionDuration: 2,
+                audio: { enabled: false },
+                rain: {
+                    dropCount: { light: 100, moderate: 200, heavy: 300, storm: 400 },
+                    dropHeight: { min: 10, max: 20 },
+                    dropAngle: { min: 70, max: 85 },
+                    dropDrift: { min: 5, max: 20 },
+                    duration: { min: 0.5, max: 1.5 },
+                    opacity: { min: 0.5, max: 0.8 },
+                    appliesScreenOverlay: true
+                },
+                snow: {
+                    flakeCount: { light: 50, moderate: 100, heavy: 200, storm: 300 },
+                    flakeSize: { min: 2, max: 5 },
+                    horizontalDrift: { min: 10, max: 30 },
+                    duration: { min: 3, max: 8 },
+                    wobbleAmount: { min: 5, max: 15 },
+                    opacity: { min: 0.4, max: 0.9 },
+                    appliesScreenOverlay: true
+                },
+                fog: {
+                    layerCount: 3,
+                    layerOpacity: { min: 0.2, max: 0.6 },
+                    driftSpeed: { min: 5, max: 15 },
+                    density: { light: 0.3, moderate: 0.5, heavy: 0.7, storm: 0.9 },
+                    appliesScreenOverlay: true
+                },
+                lightning: {
+                    enabled: true,
+                    interval: { min: 3, max: 15 },
+                    flashCount: { min: 1, max: 3 },
+                    flashDuration: { min: 0.1, max: 0.3 },
+                    flashIntensity: { min: 0.3, max: 0.8 },
+                    thunderDelay: { min: 0.2, max: 2 },
+                    screenShakeEnabled: true,
+                    screenShakeIntensity: 0.3
+                }
+            };
+        }
+        
+        return config;
+    }
+
     init() {
         if (this.isInitialized) return this;
 
-        // Create main element
+        // Call parent init first
         super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
 
         // Get element references
         this.elements.rain = this.element.querySelector('.rift-weather__rain');
@@ -676,4 +745,8 @@ class WeatherSystem extends UIComponent {
     }
 }
 
-export default WeatherSystem;
+
+
+
+
+export { WeatherSystem };

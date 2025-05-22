@@ -1,4 +1,4 @@
-import { Ray, Vector3 } from 'yuka';
+﻿import { Ray, Vector3 } from 'yuka';
 import { AnimationMixer, LoopOnce } from 'three';
 import { Weapon } from './Weapon.js';
 import { WEAPON_STATUS_READY, WEAPON_STATUS_SHOT, WEAPON_STATUS_RELOAD, WEAPON_STATUS_EMPTY, WEAPON_STATUS_OUT_OF_AMMO, WEAPON_TYPES_BLASTER } from '../core/Constants.js';
@@ -274,3 +274,4 @@ class Blaster extends Weapon {
 }
 
 export { Blaster };
+

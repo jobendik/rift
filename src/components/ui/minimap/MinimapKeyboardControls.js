@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MinimapKeyboardControls:
  * Provides toggling of minimap rotation through keyboard controls.
  * Listens for the 'M' key to toggle between fixed and rotation modes.
@@ -69,3 +69,4 @@ class MinimapKeyboardControls {
 }
 
 export { MinimapKeyboardControls };
+

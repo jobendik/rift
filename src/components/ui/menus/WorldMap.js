@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WorldMap.js
  * World map for overview navigation and objective tracking
  * 
@@ -6,7 +6,7 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 export default class WorldMap extends UIComponent {
@@ -289,7 +289,7 @@ export default class WorldMap extends UIComponent {
         // Instructions
         DOMFactory.createElement('div', {
             className: 'rift-world-map__instructions',
-            textContent: 'Drag to pan • Mouse wheel to zoom • Click to set waypoint',
+            textContent: 'Drag to pan â€¢ Mouse wheel to zoom â€¢ Click to set waypoint',
             parent: footer
         });
         

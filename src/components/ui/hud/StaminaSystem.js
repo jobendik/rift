@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Stamina system component for the RIFT UI HUD.
  * Displays player stamina with visual feedback for sprinting, regeneration, and depletion states.
  * 
@@ -6,10 +6,10 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export class StaminaSystem extends UIComponent {
+class StaminaSystem extends UIComponent {
     /**
      * Create a new stamina system component
      * @param {Object} options - Component options
@@ -22,6 +22,7 @@ export class StaminaSystem extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'stamina-system',
             className: 'rift-stamina',
             container: options.container,
@@ -501,4 +502,4 @@ export class StaminaSystem extends UIComponent {
     }
 }
 
-export default StaminaSystem;
+export { StaminaSystem };

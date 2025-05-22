@@ -1,4 +1,4 @@
-import { GameEntity } from 'yuka';
+﻿import { GameEntity } from 'yuka';
 
 /**
 * A game entity which represents a collectable item.
@@ -82,3 +82,4 @@ class Item extends GameEntity {
 }
 
 export { Item };
+

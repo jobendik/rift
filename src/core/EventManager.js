@@ -406,7 +406,6 @@ class EventManager {
 const eventManagerInstance = new EventManager();
 
 // Export as a module and also attach to window for global access
-export default eventManagerInstance;
 export { eventManagerInstance as EventManager };
 
 // Make available globally (only in browser environments)

@@ -1,13 +1,13 @@
-/**
+﻿/**
  * ScreenManager.js
  * Handles screen transitions, modal overlays, and focus management
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export default class ScreenManager extends UIComponent {
+export class ScreenManager extends UIComponent {
     constructor(options = {}) {
         super({
             id: 'screen-manager',
@@ -235,7 +235,7 @@ export default class ScreenManager extends UIComponent {
         // Add close button
         const closeButton = DOMFactory.createElement('button', {
             className: 'rift-modal__close',
-            textContent: '×',
+            textContent: 'Ã—',
             parent: modal,
             attributes: {
                 'aria-label': 'Close modal',

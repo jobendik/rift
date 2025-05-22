@@ -1,22 +1,25 @@
-/**
+﻿/**
  * Experience bar component for RIFT UI
  * Displays player level, experience progress, and level up animations
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
-export default class ExperienceBar extends UIComponent {
+class ExperienceBar extends UIComponent {
     /**
      * Create a new ExperienceBar component
      * @param {Object} world - Reference to the game world
      * @param {Object} options - Component options
      */
     constructor(world, options = {}) {
-        super(world, options);
+        // Prevent auto-initialization in parent class
+        super({ autoInit: false, ...options });
         
+        this.world = world;
+        this.options = options || {};
         this.level = this.options.level || 1;
         this.currentXP = this.options.currentXP || 0;
         this.targetXP = this._calculateXPForLevel(this.level);
@@ -26,12 +29,23 @@ export default class ExperienceBar extends UIComponent {
         // Bind methods
         this._handleLevelUp = this._handleLevelUp.bind(this);
         this._handleXPGain = this._handleXPGain.bind(this);
+        
+        // Manual initialization after all properties are set
+        this.init();
     }
     
     /**
      * Initialize the experience bar
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         this._createElements();
         this._setupEventListeners();
         this.updateXP(this.currentXP);
@@ -352,3 +366,7 @@ export default class ExperienceBar extends UIComponent {
         }
     }
 }
+
+
+
+export { ExperienceBar };

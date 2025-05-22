@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DangerZone.js
  * 
  * Visualizes and manages hazardous areas in the game world that can damage the player.
@@ -9,7 +9,7 @@
 import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
 
-class DangerZone extends UIComponent {
+export class DangerZone extends UIComponent {
     /**
      * Creates a new DangerZone instance.
      * @param {Object} options - Configuration options
@@ -17,6 +17,7 @@ class DangerZone extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: 'danger-zone',
             className: 'rift-danger-zones',
             template: '<div class="rift-danger-zones__container"></div>',
@@ -775,4 +776,3 @@ class DangerZone extends UIComponent {
     }
 }
 
-export default DangerZone;

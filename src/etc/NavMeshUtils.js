@@ -1,4 +1,4 @@
-import { LineSegments, Line, Mesh, Group } from 'three';
+﻿import { LineSegments, Line, Mesh, Group } from 'three';
 import { MeshBasicMaterial, LineBasicMaterial } from 'three';
 import { BufferGeometry, Float32BufferAttribute, IcosahedronGeometry } from 'three';
 import { Color } from 'three';
@@ -229,3 +229,4 @@ class NavMeshUtils {
 
 
 export { NavMeshUtils };
+

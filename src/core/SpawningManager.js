@@ -1,4 +1,4 @@
-import { SphericalTriggerRegion, Vector3 } from 'yuka';
+﻿import { SphericalTriggerRegion, Vector3 } from 'yuka';
 import { HealthPack } from '../entities/HealthPack.js';
 import { ItemGiver } from '../triggers/ItemGiver.js';
 import { SceneUtils } from '../etc/SceneUtils.js';
@@ -476,3 +476,4 @@ function sync( entity, renderComponent ) {
 	renderComponent.matrix.copy( entity.worldMatrix );
 
 }
+

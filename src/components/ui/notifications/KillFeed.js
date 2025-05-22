@@ -1,4 +1,4 @@
-/**
+﻿/**
  * KillFeed Component
  * 
  * Manages and displays kill events in the game:
@@ -13,9 +13,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-class KillFeed extends UIComponent {
+export class KillFeed extends UIComponent {
     /**
      * Create a new KillFeed
      * 
@@ -27,6 +27,7 @@ class KillFeed extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'kill-feed',
             className: 'rift-kill-feed',
             container: options.container || document.body,
@@ -519,4 +520,5 @@ class KillFeed extends UIComponent {
     }
 }
 
-export default KillFeed;
+
+

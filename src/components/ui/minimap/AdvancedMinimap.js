@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AdvancedMinimap Component
  * 
  * A robust, feature-rich minimap implementation for the RIFT game engine.
@@ -234,7 +234,7 @@ class AdvancedMinimap {
     
     // Toggle rotation button
     this.rotateToggleButton = document.createElement('button');
-    this.rotateToggleButton.textContent = '↻';
+    this.rotateToggleButton.textContent = 'â†»';
     this.rotateToggleButton.className = 'minimap-control-button';
     Object.assign(this.rotateToggleButton.style, {
       width: '24px',
@@ -666,3 +666,4 @@ class AdvancedMinimap {
 }
 
 export { AdvancedMinimap };
+

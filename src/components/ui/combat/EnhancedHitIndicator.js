@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Enhanced Hit Indicator Component
  * 
  * Provides improved hit marker feedback with:
@@ -11,7 +11,7 @@
  * @extends UIComponent
  */
 
-import { UIComponent } from '../UIComponent.js';
+import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 import { UIConfig } from '../../../core/UIConfig.js';
 import { EventManager } from '../../../core/EventManager.js';
@@ -408,4 +408,3 @@ export class EnhancedHitIndicator extends UIComponent {
     }
 }
 
-export default EnhancedHitIndicator;

@@ -1,4 +1,4 @@
-import { GameEntity, MovingEntity, Vector3, AABB, MathUtils } from 'yuka';
+﻿import { GameEntity, MovingEntity, Vector3, AABB, MathUtils } from 'yuka';
 import { LoopOnce } from 'three';
 import { WeaponSystem } from '../core/WeaponSystem.js';
 import { CONFIG } from '../core/Config.js';
@@ -547,7 +547,7 @@ class Player extends MovingEntity {
 
 	/**
 	* Computes the angle between the current look direction and the attack direction in
-	* the range of [-π, π].
+	* the range of [-Ï€, Ï€].
 	*
 	* @param {Vector3} projectileDirection - The direction of the projectile.
 	* @return {Number} The angle in radians.
@@ -568,7 +568,7 @@ class Player extends MovingEntity {
 		// det = n * (a x b)
 		// angle = atan2(det, dot)
 		//
-		// Note: We can't use Vector3.angleTo() since the result is always in the range [0,π]
+		// Note: We can't use Vector3.angleTo() since the result is always in the range [0,Ï€]
 
 		const dot = attackDirection.dot( lookDirection );
 		const det = this.up.dot( cross.crossVectors( attackDirection, lookDirection ) ); // triple product

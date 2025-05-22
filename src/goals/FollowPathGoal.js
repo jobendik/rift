@@ -1,4 +1,4 @@
-import { Goal } from 'yuka';
+﻿import { Goal } from 'yuka';
 import { BufferGeometry } from 'three';
 
 /**
@@ -99,3 +99,4 @@ class FollowPathGoal extends Goal {
 }
 
 export { FollowPathGoal };
+

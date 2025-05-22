@@ -1,4 +1,4 @@
-import { Task } from 'yuka';
+﻿import { Task } from 'yuka';
 
 /**
 * Class for representing a single path planning task.
@@ -42,3 +42,4 @@ class PathPlannerTask extends Task {
 }
 
 export { PathPlannerTask };
+

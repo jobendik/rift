@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RoundSummary.js
  * Component for displaying end-of-round statistics and summary
  * 
@@ -6,11 +6,11 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
 import WorldMap from './WorldMap.js';
 
-export default class RoundSummary extends UIComponent {
+export class RoundSummary extends UIComponent {
     /**
      * Create a new round summary component
      * @param {Object} options - Configuration options
@@ -106,10 +106,15 @@ export default class RoundSummary extends UIComponent {
     init() {
         if (this.isInitialized) return this;
         
+        // Call parent init first to create the element
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         this._buildLayout();
         this._setupEventListeners();
         
-        this.isInitialized = true;
         return this;
     }
     
@@ -982,3 +987,4 @@ export default class RoundSummary extends UIComponent {
         super.dispose();
     }
 }
+

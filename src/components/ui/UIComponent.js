@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Base UI component class that all UI components should extend.
  * Provides standard lifecycle methods, event handling, DOM manipulation,
  * and state management for UI components.
@@ -6,11 +6,11 @@
  * @author Cline
  */
 
-import EventManager from '../../core/EventManager.js';
+import { EventManager } from '../../core/EventManager.js';
 import { DOMFactory } from '../../utils/DOMFactory.js';
-import UIConfig from '../../core/UIConfig.js';
+import { UIConfig } from '../../core/UIConfig.js';
 
-export class UIComponent {
+export default class UIComponent {
     /**
      * Create a new UI component
      * @param {Object} options - Component options
@@ -65,6 +65,9 @@ export class UIComponent {
     init() {
         if (this.isInitialized) return this;
         
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         // Create root element if not provided
         if (!this.element) {
             this.element = this._createRootElement();
@@ -75,14 +78,13 @@ export class UIComponent {
             this.container.appendChild(this.element);
         }
         
-        // Set initial visibility
+        // Set initial visibility without triggering init recursion
         if (!this.isVisible) {
-            this.hide();
+            this._setVisibility(false);
         } else {
-            this.show();
+            this._setVisibility(true);
         }
         
-        this.isInitialized = true;
         this.render();
         
         // Initialize children
@@ -148,6 +150,12 @@ export class UIComponent {
      * @return {UIComponent} This component instance
      */
     show() {
+        // Initialize if needed
+        if (!this.isInitialized) {
+            this.init();
+            return this;
+        }
+        
         if (!this.element) return this;
         
         this.isVisible = true;
@@ -174,6 +182,12 @@ export class UIComponent {
      * @return {UIComponent} This component instance
      */
     hide() {
+        // Initialize if needed
+        if (!this.isInitialized) {
+            this.init();
+            return this;
+        }
+        
         if (!this.element) return this;
         
         this.isVisible = false;
@@ -538,6 +552,21 @@ export class UIComponent {
     }
     
     /**
+     * Set visibility without triggering show/hide methods
+     * @param {Boolean} visible - Whether component should be visible
+     * @return {UIComponent} This component instance
+     * @private
+     */
+    _setVisibility(visible) {
+        this.isVisible = visible;
+        if (this.element) {
+            this.element.style.display = visible ? '' : 'none';
+        }
+        this.isActive = visible;
+        return this;
+    }
+    
+    /**
      * Apply easing function to a progress value
      * @param {Number} t - Progress value [0-1]
      * @param {String} easingName - Name of easing function
@@ -579,4 +608,3 @@ export class UIComponent {
     }
 }
 
-export default UIComponent;

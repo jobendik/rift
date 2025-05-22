@@ -15,9 +15,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-class NotificationManager extends UIComponent {
+export class NotificationManager extends UIComponent {
     /**
      * Create a new NotificationManager
      * 
@@ -31,6 +31,7 @@ class NotificationManager extends UIComponent {
             id: options.id || 'notification-manager',
             className: 'rift-notifications',
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
         
@@ -48,17 +49,23 @@ class NotificationManager extends UIComponent {
         this.isPaused = false;
         this.pauseStartTime = 0;
         this.queue = [];
+        
+        // Now initialize manually after all properties are set
+        this.init();
     }
     
     /**
      * Initialize the notification manager
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
         
+        // Call parent init first to create root element
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
         this.isInitialized = true;
+        
         return this;
     }
     
@@ -402,4 +409,4 @@ class NotificationManager extends UIComponent {
     }
 }
 
-export default NotificationManager;
+

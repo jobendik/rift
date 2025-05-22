@@ -1,4 +1,4 @@
-
+﻿
 import { CompositeGoal, Vector3, Goal, Regulator } from 'yuka';
 import { FindPathGoal } from './FindPathGoal.js';
 import { FollowPathGoal } from './FollowPathGoal.js';
@@ -116,3 +116,4 @@ class GetItemGoal extends CompositeGoal {
 }
 
 export { GetItemGoal };
+

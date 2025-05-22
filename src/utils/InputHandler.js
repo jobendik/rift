@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Centralized input handling system for UI interactions.
  * Processes mouse, keyboard, and touch events, normalizing them across devices.
  * Implements event delegation for performance and allows binding specific UI components to input events.
@@ -6,9 +6,9 @@
  * @author Cline
  */
 
-import EventManager from '../core/EventManager.js';
+import { EventManager } from '../core/EventManager.js';
 
-export class InputHandler {
+class InputHandler {
     /**
      * Initialize the input handler
      * @param {UIManager} uiManager - Reference to the UI manager
@@ -511,4 +511,8 @@ export class InputHandler {
     }
 }
 
-export default InputHandler;
+
+
+
+
+export { InputHandler };

@@ -5,7 +5,7 @@
  * @author Cline
  */
 
-export const UIConfig = {
+const UIConfig = {
     // CSS Variables (should match :root in CSS)
     colors: {
         primary: '#e63946',
@@ -832,5 +832,4 @@ export const UIConfig = {
     }
 };
 
-// Export default
-export default UIConfig;
+export { UIConfig };

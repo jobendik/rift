@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/Config.js';
+﻿import { CONFIG } from '../core/Config.js';
 import { Item } from './Item.js';
 import { HEALTH_PACK } from '../core/Constants.js';
 
@@ -41,3 +41,4 @@ class HealthPack extends Item {
 }
 
 export { HealthPack };
+

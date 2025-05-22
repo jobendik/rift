@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AchievementDisplay Component
  * 
  * Manages and displays achievement notifications:
@@ -14,9 +14,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-class AchievementDisplay extends UIComponent {
+export class AchievementDisplay extends UIComponent {
     /**
      * Create a new AchievementDisplay
      * 
@@ -26,6 +26,7 @@ class AchievementDisplay extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'achievement-display',
             className: 'rift-achievement-container',
             container: options.container || document.body,
@@ -465,4 +466,5 @@ class AchievementDisplay extends UIComponent {
     }
 }
 
-export default AchievementDisplay;
+
+

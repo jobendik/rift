@@ -1,4 +1,4 @@
-import { GoalEvaluator } from 'yuka';
+﻿import { GoalEvaluator } from 'yuka';
 import { AttackGoal } from '../goals/AttackGoal.js';
 import { Feature } from '../core/Feature.js';
 
@@ -66,3 +66,4 @@ class AttackEvaluator extends GoalEvaluator {
 }
 
 export { AttackEvaluator };
+

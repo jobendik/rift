@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WorldMapScreen.js
  * Integration file for the WorldMap component - initializes and registers
  * the world map with the ScreenManager system.
@@ -7,7 +7,7 @@
  */
 
 import WorldMap from './WorldMap.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 export default class WorldMapScreen {
     /**
@@ -39,6 +39,9 @@ export default class WorldMapScreen {
      * @returns {WorldMapScreen} This instance for chaining
      */
     init() {
+        // Call parent init first
+        super.init();
+
         if (this.isInitialized) {
             console.warn('WorldMapScreen already initialized');
             return this;

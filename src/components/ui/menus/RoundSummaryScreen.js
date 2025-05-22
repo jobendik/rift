@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RoundSummaryScreen.js
  * A screen wrapper around the RoundSummary component for use with the ScreenManager
  * 
@@ -6,9 +6,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
-import EventManager from '../../../core/EventManager.js';
-import RoundSummary from './RoundSummary.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { RoundSummary } from './RoundSummary.js';
 
 export default class RoundSummaryScreen extends UIComponent {
     /**
@@ -76,6 +76,9 @@ export default class RoundSummaryScreen extends UIComponent {
             return this;
         }
         
+        // Call parent init first
+        super.init();
+        
         // Register the screen with the screen manager
         this.screenElement = this.screenManager.registerScreen('round-summary', {
             title: this.config.title || 'Round Summary',
@@ -87,8 +90,10 @@ export default class RoundSummaryScreen extends UIComponent {
             world: this.world
         });
         
-        // Add to screen
-        this.element.appendChild(this.roundSummary.element);
+        // Add to screen only after super.init() has created the element
+        if (this.element && this.roundSummary.element) {
+            this.element.appendChild(this.roundSummary.element);
+        }
         
         // Initialize component (it auto-initializes, but this ensures it's ready)
         if (!this.roundSummary.isInitialized) {

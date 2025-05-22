@@ -1,20 +1,20 @@
-/**
+﻿/**
  * MenuSystem.js
  * Manages all menu-related UI components and screens
  * 
  * @author Cline
  */
 
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 import UIComponent from '../UIComponent.js';
-import ScreenManager from './ScreenManager.js';
+import { ScreenManager } from './ScreenManager.js';
 import WorldMapScreen from './WorldMapScreen.js';
 import MissionBriefingScreen from './MissionBriefingScreen.js';
 import RoundSummaryScreen from './RoundSummaryScreen.js';
-import WeaponWheel from '../hud/WeaponWheel.js';
+import { WeaponWheel } from '../hud/WeaponWheel.js';
 
-export default class MenuSystem extends UIComponent {
+export class MenuSystem extends UIComponent {
     /**
      * Create a new menu system
      * @param {World} world - The game world instance
@@ -22,7 +22,8 @@ export default class MenuSystem extends UIComponent {
     constructor(world) {
         super({
             id: 'menu-system',
-            className: 'rift-menu-system'
+            className: 'rift-menu-system',
+            autoInit: false // Prevent auto-initialization
         });
         
         this.world = world;
@@ -53,6 +54,12 @@ export default class MenuSystem extends UIComponent {
             console.warn('MenuSystem already initialized');
             return this;
         }
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
         
         console.log('Initializing Menu System...');
         
@@ -485,3 +492,4 @@ export default class MenuSystem extends UIComponent {
         this.isInitialized = false;
     }
 }
+

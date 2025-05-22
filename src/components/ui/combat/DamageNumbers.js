@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DamageNumbers Component
  *
  * Displays floating damage numbers when the player hits enemies.
@@ -11,9 +11,9 @@
  * @extends UIComponent
  */
 
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 class DamageNumbers extends UIComponent {
     /**
@@ -32,6 +32,7 @@ class DamageNumbers extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'damage-numbers',
             className: 'rift-damage-numbers',
             container: options.container || document.body,
@@ -63,13 +64,20 @@ class DamageNumbers extends UIComponent {
      * Initialize the damage numbers component
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
+        
         // Create number pool for reuse
         this._initNumberPool();
         
         // Register event listeners
         this._registerEventListeners();
         
-        this.isInitialized = true;
         this.isActive = true;
         return this;
     }
@@ -199,13 +207,13 @@ class DamageNumbers extends UIComponent {
         
         if (isKill && this.showKills) {
             damageClass = 'rift-damage-number--kill';
-            damageText = '☠️ ' + damageText;
+            damageText = 'â˜ ï¸ ' + damageText;
         } else if (isHeadshot && this.showHeadshots) {
             damageClass = 'rift-damage-number--headshot';
-            damageText = '🎯 ' + damageText;
+            damageText = 'ðŸŽ¯ ' + damageText;
         } else if (isCritical && this.showCriticals) {
             damageClass = 'rift-damage-number--critical';
-            damageText = '✧ ' + damageText;
+            damageText = 'âœ§ ' + damageText;
         }
         
         // Add large class for high damage
@@ -713,4 +721,4 @@ class DamageNumbers extends UIComponent {
     }
 }
 
-export default DamageNumbers;
+export { DamageNumbers };

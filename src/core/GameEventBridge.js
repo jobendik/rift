@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Bridge between the game engine events and the UI system events.
  * Converts game-specific method calls to standardized UI events.
  * 
  * @author Integration Helper
  */
 
-import EventManager from '../core/EventManager.js';
+import { EventManager } from '../core/EventManager.js';
 
-export class GameEventBridge {
+class GameEventBridge {
     constructor(world) {
         this.world = world;
         this.player = null;
@@ -299,3 +299,6 @@ export class GameEventBridge {
         });
     }
 }
+
+
+export { GameEventBridge };

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Event Standardization Index
  * 
  * This script powers the Event Standardization Index page,
@@ -96,7 +96,7 @@ const EventStandardizationImplementer = {
         let hasChanges = false;
         
         // Add imports
-        code += `import EventManager from '../../core/EventManager.js';\n\n`;
+        code += `import { EventManager } from '../../core/EventManager.js';\n\n`;
         
         code += `// Update your registerEvents call to use standardized event names:\n`;
         code += `this.registerEvents({\n`;
@@ -135,11 +135,11 @@ class EventStandardizationTest {
             testResults.className = 'test-results';
             testResults.innerHTML = `
                 <h3>Event Standardization Tests</h3>
-                <div class="test-passed">✅ Correctly validates standard event names</div>
-                <div class="test-passed">✅ Detects non-standard event names</div>
-                <div class="test-passed">✅ Validates event payloads according to schema</div>
-                <div class="test-warning">⚠️ Some components missing standard payloads</div>
-                <div class="test-info">ℹ️ 84% overall compliance with standardization</div>
+                <div class="test-passed">âœ… Correctly validates standard event names</div>
+                <div class="test-passed">âœ… Detects non-standard event names</div>
+                <div class="test-passed">âœ… Validates event payloads according to schema</div>
+                <div class="test-warning">âš ï¸ Some components missing standard payloads</div>
+                <div class="test-info">â„¹ï¸ 84% overall compliance with standardization</div>
             `;
             document.querySelector('.test-container').appendChild(testResults);
         }, 1000);
@@ -398,7 +398,7 @@ class EventStandardizationIndex {
                                 ${component.migrationSuggestions.map(suggestion => `
                                     <li>
                                         <div class="suggestion">
-                                            <code class="old">${suggestion.from}</code> →
+                                            <code class="old">${suggestion.from}</code> â†’
                                             <code class="new">${suggestion.to}</code>
                                         </div>
                                     </li>
@@ -519,7 +519,7 @@ class EventStandardizationIndex {
         const resultsElement = document.getElementById('validator-results');
         resultsElement.innerHTML = `
             <div class="validator-error">
-                <div class="error-icon">⚠️</div>
+                <div class="error-icon">âš ï¸</div>
                 <div class="error-message">${message}</div>
             </div>
         `;
@@ -603,7 +603,7 @@ class EventStandardizationIndex {
         const resultsElement = document.getElementById('code-generator-results');
         resultsElement.innerHTML = `
             <div class="generator-error">
-                <div class="error-icon">⚠️</div>
+                <div class="error-icon">âš ï¸</div>
                 <div class="error-message">${message}</div>
             </div>
         `;
@@ -684,3 +684,4 @@ class EventStandardizationIndex {
 document.addEventListener('DOMContentLoaded', () => {
     new EventStandardizationIndex();
 });
+

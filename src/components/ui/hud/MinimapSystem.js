@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Minimap system component for the RIFT UI HUD.
  * Integrates the existing advanced minimap functionality with the new component-based architecture.
  * 
@@ -6,11 +6,11 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 import { MinimapIntegration } from '../minimap/MinimapIntegration.js';
 
-export class MinimapSystem extends UIComponent {
+class MinimapSystem extends UIComponent {
     /**
      * Create a new minimap system component
      * @param {Object} world - Reference to the game world
@@ -22,6 +22,7 @@ export class MinimapSystem extends UIComponent {
      */
     constructor(world, options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'minimap-system',
             className: `rift-minimap ${options.interactive !== false ? 'rift-minimap--interactive' : ''}`,
             container: options.container,
@@ -205,7 +206,7 @@ export class MinimapSystem extends UIComponent {
         // Rotate toggle button
         const rotateBtn = this.createElement('button', {
             className: 'rift-minimap__control-button rift-minimap__control-button--rotate',
-            text: '↻',
+            text: 'â†»',
             parent: controls
         });
         
@@ -217,7 +218,7 @@ export class MinimapSystem extends UIComponent {
         // Expand button
         const expandBtn = this.createElement('button', {
             className: 'rift-minimap__control-button rift-minimap__control-button--expand',
-            text: '⛶',
+            text: 'â›¶',
             parent: controls
         });
         
@@ -237,7 +238,7 @@ export class MinimapSystem extends UIComponent {
         // Create close button (hidden by default)
         const closeBtn = this.createElement('button', {
             className: 'rift-minimap__close',
-            text: '×'
+            text: 'Ã—'
         });
         
         closeBtn.addEventListener('click', (e) => {
@@ -410,4 +411,4 @@ export class MinimapSystem extends UIComponent {
     }
 }
 
-export default MinimapSystem;
+export { MinimapSystem };

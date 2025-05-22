@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Main UI manager class that coordinates all UI components and subsystems.
  * This class serves as the central point for controlling the game UI, handling
  * initialization, updates, and communication between components.
@@ -6,20 +6,20 @@
  * @author Cline
  */
 
-import EventManager from './EventManager.js';
-import UIConfig from './UIConfig.js';
+import { EventManager } from './EventManager.js';
+import { UIConfig } from './UIConfig.js';
 import { DOMFactory } from '../utils/DOMFactory.js';
 
 // Import UI component systems
 // These will be uncommented and used as we implement each system
-import HUDSystem from '../components/ui/hud/HUDSystem.js';
-import CombatSystem from '../components/ui/combat/CombatSystem.js';
-import NotificationSystem from '../components/ui/notifications/NotificationSystem.js';
-import MenuSystem from '../components/ui/menus/MenuSystem.js';
+import { HUDSystem } from '../components/ui/hud/HUDSystem.js';
+import { CombatSystem } from '../components/ui/combat/CombatSystem.js';
+import { NotificationSystem } from '../components/ui/notifications/NotificationSystem.js';
+import { MenuSystem } from '../components/ui/menus/MenuSystem.js';
 // import { MarkerSystem } from '../components/ui/markers/MarkerSystem.js';
-import ProgressionSystem from '../components/ui/progression/ProgressionSystem.js';
-import EnvironmentSystem from '../components/ui/environment/EnvironmentSystem.js';
-import MovementSystem from '../components/ui/movement/MovementSystem.js';
+import { ProgressionSystem } from '../components/ui/progression/ProgressionSystem.js';
+import { EnvironmentSystem } from '../components/ui/environment/EnvironmentSystem.js';
+import { MovementSystem } from '../components/ui/movement/MovementSystem.js';
 // import { DamageEffects } from '../components/ui/effects/DamageEffects.js';
 // import { ScreenShakeSystem } from '../components/ui/effects/ScreenShakeSystem.js';
 // import { DebugUI } from '../components/ui/debug/DebugUI.js';
@@ -766,7 +766,7 @@ export class UIManager {
                 footstepData.count
             );
             
-            console.log(`Test footstep: ${footstepData.isEnemy ? 'Enemy' : 'Friendly'} at ${footstepData.angle}° (${footstepData.distance} units away)`);
+            console.log(`Test footstep: ${footstepData.isEnemy ? 'Enemy' : 'Friendly'} at ${footstepData.angle}Â° (${footstepData.distance} units away)`);
         }
         
         return this;
@@ -861,4 +861,5 @@ export class UIManager {
     }
 }
 
-export default UIManager;
+
+

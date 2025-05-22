@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Health display component for the RIFT UI HUD.
  * Displays player health with visual feedback for damage, healing, and critical states.
  * 
@@ -6,10 +6,10 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-export class HealthDisplay extends UIComponent {
+class HealthDisplay extends UIComponent {
     /**
      * Create a new health display component
      * @param {Object} options - Component options
@@ -72,7 +72,7 @@ export class HealthDisplay extends UIComponent {
     init() {
         if (this.isInitialized) return this;
         
-        // Call parent init to create root element, but it won't auto-render
+        // Call parent init first to properly set up the component
         super.init();
         
         // Create our DOM elements after the root element exists
@@ -447,4 +447,4 @@ export class HealthDisplay extends UIComponent {
     }
 }
 
-export default HealthDisplay;
+export { HealthDisplay };

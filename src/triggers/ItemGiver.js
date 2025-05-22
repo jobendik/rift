@@ -1,4 +1,4 @@
-import { Trigger } from 'yuka';
+﻿import { Trigger } from 'yuka';
 
 /**
 * Gives an entity an item if it touches the trigger region.
@@ -53,3 +53,4 @@ class ItemGiver extends Trigger {
 
 }
 export { ItemGiver };
+

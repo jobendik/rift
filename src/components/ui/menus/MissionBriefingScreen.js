@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MissionBriefingScreen.js
  * Integration file for the MissionBriefing component - initializes and registers
  * the mission briefing with the ScreenManager system.
@@ -6,9 +6,9 @@
  * @author Cline
  */
 
-import MissionBriefing from './MissionBriefing.js';
-import EventManager from '../../../core/EventManager.js';
-import UIConfig from '../../../core/UIConfig.js';
+import { MissionBriefing } from './MissionBriefing.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
 export default class MissionBriefingScreen {
     /**

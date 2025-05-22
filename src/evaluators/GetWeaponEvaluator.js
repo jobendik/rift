@@ -1,4 +1,4 @@
-import { GoalEvaluator, MathUtils } from 'yuka';
+﻿import { GoalEvaluator, MathUtils } from 'yuka';
 import { Feature } from '../core/Feature.js';
 import { GetItemGoal } from '../goals/GetItemGoal.js';
 
@@ -75,3 +75,4 @@ class GetWeaponEvaluator extends GoalEvaluator {
 }
 
 export { GetWeaponEvaluator };
+

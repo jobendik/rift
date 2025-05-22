@@ -1,4 +1,4 @@
-import { LoadingManager, AnimationLoader, AudioLoader, TextureLoader, Mesh } from 'three';
+﻿import { LoadingManager, AnimationLoader, AudioLoader, TextureLoader, Mesh } from 'three';
 import { Sprite, SpriteMaterial, DoubleSide, AudioListener, PositionalAudio, SRGBColorSpace } from 'three';
 import { LineSegments, LineBasicMaterial, MeshBasicMaterial, BufferGeometry, Vector3, PlaneGeometry } from 'three';
 import { LinearFilter } from 'three'; // Added LinearFilter import
@@ -644,3 +644,4 @@ class AssetManager {
 }
 
 export { AssetManager };
+

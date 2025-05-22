@@ -1,4 +1,4 @@
-import { AABB, Vector3, Ray } from 'yuka';
+﻿import { AABB, Vector3, Ray } from 'yuka';
 import { Matrix4 } from 'three';
 
 const rayBindSpace = new Ray();

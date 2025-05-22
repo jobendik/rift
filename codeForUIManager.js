@@ -1,4 +1,4 @@
-import { OrthographicCamera, Scene, Sprite, SpriteMaterial, TextureLoader, Group, Color, Vector2, Vector3, Raycaster, MathUtils } from 'three';
+﻿import { OrthographicCamera, Scene, Sprite, SpriteMaterial, TextureLoader, Group, Color, Vector2, Vector3, Raycaster, MathUtils } from 'three';
 import { CONFIG } from '../core/Config.js';
 import * as DAT from 'dat.gui';
 import { MinimapIntegration } from '../ui/hud/minimapIntegration.js';
@@ -497,7 +497,6 @@ class UIManager {
         return container;
     }
 
-
     /**
     * Creates the achievement popup
     * @private
@@ -509,7 +508,7 @@ class UIManager {
 
         const icon = document.createElement('div');
         icon.className = 'achievement-icon';
-        icon.textContent = '🏆';
+        icon.textContent = 'ðŸ†';
 
         const details = document.createElement('div');
         details.className = 'achievement-details';
@@ -944,7 +943,6 @@ class UIManager {
         }
     }
 
-
     /**
      * Toggle world map visibility
      */
@@ -1149,7 +1147,6 @@ class UIManager {
         return this;
     }
 
-
     /**
      * Create sample minimap objectives to demonstrate functionality
      * @private
@@ -1164,7 +1161,6 @@ class UIManager {
         ];
         objectives.forEach(obj => this.minimapIntegration.addObjective(obj.id, obj.position, obj.type, obj.label));
     }
-
 
     /**
      * Show achievement popup
@@ -1312,7 +1308,6 @@ class UIManager {
         requestAnimationFrame(() => this._animateRaindrops());
     }
 
-
     /**
      * Stop all weather effects
      */
@@ -1365,7 +1360,6 @@ class UIManager {
              // Potentially update parts of the briefing screen if it's animated, but generally it's static.
             return this;
         }
-
 
         const timestamp = performance.now();
         this.currentTime += delta;
@@ -2137,7 +2131,6 @@ class UIManager {
         setTimeout(()=>{el.classList.add('fade-out'); setTimeout(()=>{if(el.parentNode)el.remove(); if(this.html.notificationArea.children.length===0){/*this.html.notificationArea.classList.add('hidden');*/}},fadeDur);},dispDur);
     }
 
-
     /**
      * Add XP to player and update progression UI
      * @param {Number} amount - Amount of XP to add
@@ -2207,7 +2200,7 @@ class UIManager {
      * @private
      */
     _getPowerupIcon(type) {
-        const icons=CONFIG.UI.POWERUP_ICONS||{damage:'⚔️',speed:'🏃',armor:'🛡️'}; return icons[type]||'⭐';
+        const icons=CONFIG.UI.POWERUP_ICONS||{damage:'âš”ï¸',speed:'ðŸƒ',armor:'ðŸ›¡ï¸'}; return icons[type]||'â­';
     }
 
     /**
@@ -2416,4 +2409,4 @@ class UIManager {
     }
 }
 
-export { UIManager };
+export default UIManager;

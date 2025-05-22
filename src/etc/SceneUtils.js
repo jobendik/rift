@@ -1,4 +1,4 @@
-import { LineSegments, Sprite, SpriteMaterial, LineBasicMaterial, CanvasTexture, BufferGeometry, Float32BufferAttribute } from 'three';
+﻿import { LineSegments, Sprite, SpriteMaterial, LineBasicMaterial, CanvasTexture, BufferGeometry, Float32BufferAttribute } from 'three';
 import { Mesh, Group, MeshBasicMaterial, CylinderGeometry, SphereGeometry } from 'three';
 
 /**
@@ -193,3 +193,4 @@ function parallelTraverse( a, b, callback ) {
 }
 
 export { SceneUtils };
+

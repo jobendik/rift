@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HitIndicator Component
  *
  * Displays visual feedback when the player hits an enemy.
@@ -12,9 +12,9 @@
  * @extends UIComponent
  */
 
-import EventManager from '../../../core/EventManager.js';
+import { EventManager } from '../../../core/EventManager.js';
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 class HitIndicator extends UIComponent {
     /**
@@ -31,6 +31,7 @@ class HitIndicator extends UIComponent {
             id: options.id || 'hit-indicator',
             className: 'rift-hit-indicator',
             container: options.container || document.body,
+            autoInit: false, // Prevent auto-init to control initialization order
             ...options
         });
 
@@ -56,15 +57,25 @@ class HitIndicator extends UIComponent {
             bottom: null,
             left: null
         };
+        
+        // Now initialize manually after all properties are set
+        this.init();
     }
 
     /**
      * Initialize the hit indicator component
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first to properly set up the component
+        super.init();
+        
+        this.isInitialized = true;
+        
         this._createHitElements();
         this._registerEventListeners();
-        this.isInitialized = true;
+        
         return this;
     }
 
@@ -257,11 +268,6 @@ class HitIndicator extends UIComponent {
      * @private
      */
     _createHitElements() {
-        // Create the main container if it doesn't exist
-        if (!this.element) {
-            this._createRootElement();
-        }
-
         // Create hit markers
         this.hitMarker = DOMFactory.createElement('div', {
             className: 'rift-hit-indicator__marker rift-hit-indicator__marker--hit',
@@ -359,4 +365,4 @@ class HitIndicator extends UIComponent {
     }
 }
 
-export default HitIndicator;
+export { HitIndicator };

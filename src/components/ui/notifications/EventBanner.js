@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EventBanner Component
  * 
  * Manages and displays important game events:
@@ -14,9 +14,9 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
-class EventBanner extends UIComponent {
+export class EventBanner extends UIComponent {
     /**
      * Create a new EventBanner
      * 
@@ -26,6 +26,7 @@ class EventBanner extends UIComponent {
      */
     constructor(options = {}) {
         super({
+            autoInit: false,
             id: options.id || 'event-banner',
             className: 'rift-event-banner',
             container: options.container || document.body,
@@ -492,4 +493,5 @@ class EventBanner extends UIComponent {
     }
 }
 
-export default EventBanner;
+
+

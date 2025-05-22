@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ScreenEffects Component
  *
  * Provides full-screen visual effects for player feedback including:
@@ -11,8 +11,8 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import EventManager from '../../../core/EventManager.js';
-import DOMFactory from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
+import { DOMFactory } from '../../../utils/DOMFactory.js';
 
 class ScreenEffects extends UIComponent {
     /**
@@ -30,6 +30,7 @@ class ScreenEffects extends UIComponent {
             id: options.id || 'screen-effects',
             className: 'rift-screen-effects',
             container: options.container || document.body,
+            autoInit: false,
             ...options
         });
 
@@ -96,9 +97,13 @@ class ScreenEffects extends UIComponent {
      * Initialize the screen effects component
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init first
+        super.init();
+        
+        // Set initialized flag early to prevent infinite recursion
+        this.isInitialized = true;
         
         // Create overlay container
         this.overlayContainer = DOMFactory.createElement('div', {
@@ -112,7 +117,6 @@ class ScreenEffects extends UIComponent {
         // Register event listeners
         this._registerEventListeners();
         
-        this.isInitialized = true;
         this.isActive = true;
         return this;
     }
@@ -592,4 +596,8 @@ class ScreenEffects extends UIComponent {
     }
 }
 
-export default ScreenEffects;
+
+
+
+
+export { ScreenEffects };

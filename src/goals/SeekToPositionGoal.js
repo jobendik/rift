@@ -1,4 +1,4 @@
-import { Goal, Vector3 } from 'yuka';
+﻿import { Goal, Vector3 } from 'yuka';
 
 /**
 * Sub-goal for seeking a target position.
@@ -45,3 +45,4 @@ class SeekToPositionGoal extends Goal {
 }
 
 export { SeekToPositionGoal };
+
