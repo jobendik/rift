@@ -1,7 +1,9 @@
 /**
  * Centralized event management system for the RIFT UI.
  * Provides a pub/sub pattern for components to communicate without tight coupling.
- * Events have namespaced types (e.g., 'health:changed') and standardized data structures.
+ * Events have namespaced types using two formats:
+ * - Standard events: 'namespace:action' (e.g., 'health:changed')
+ * - Component-specific events: 'namespace:id:action' (e.g., 'ui:health-display:visible')
  * Implements Event Standardization guidelines with validation and helper methods.
  * 
  * @author Cline
@@ -33,7 +35,7 @@ class EventManager {
     subscribe(eventType, handler) {
         // Validate event name format if enabled
         if (this._validateEventNames && !this._isValidEventName(eventType)) {
-            console.warn(`[EventManager] Event name '${eventType}' does not follow the namespace:action pattern`);
+            console.warn(`[EventManager] Event name '${eventType}' does not follow either the namespace:action or namespace:id:action pattern`);
         }
         const id = this._subscriptionId++;
         
@@ -87,7 +89,7 @@ class EventManager {
     emit(eventType, data = {}) {
         // Validate event name format if enabled
         if (this._validateEventNames && !this._isValidEventName(eventType)) {
-            console.warn(`[EventManager] Event name '${eventType}' does not follow the namespace:action pattern`);
+            console.warn(`[EventManager] Event name '${eventType}' does not follow either the namespace:action or namespace:id:action pattern`);
         }
         
         // Validate event payload if enabled
@@ -304,20 +306,32 @@ class EventManager {
     }
     
     /**
-     * Validate if an event name follows the namespace:action pattern
+     * Validate if an event name follows either the namespace:action pattern
+     * or the namespace:id:action pattern (for component-specific events)
      * @param {String} eventName - Event name to validate
      * @return {Boolean} Whether the event name is valid
      * @private
      */
     _isValidEventName(eventName) {
-        // Check for namespace:action pattern
+        // Check for namespace:action or namespace:id:action pattern
         const parts = eventName.split(':');
-        if (parts.length !== 2) return false;
         
-        const [namespace, action] = parts;
+        // Accept both 2-part and 3-part event names
+        if (parts.length < 2 || parts.length > 3) return false;
         
-        // Check if namespace is one of the standard ones
-        return namespace.length > 0 && action.length > 0;
+        // For 2-part events: namespace:action
+        if (parts.length === 2) {
+            const [namespace, action] = parts;
+            return namespace.length > 0 && action.length > 0;
+        }
+        
+        // For 3-part events (component-specific): namespace:id:action
+        if (parts.length === 3) {
+            const [namespace, id, action] = parts;
+            return namespace.length > 0 && id.length > 0 && action.length > 0;
+        }
+        
+        return false;
     }
     
     /**
@@ -328,16 +342,27 @@ class EventManager {
      */
     _validatePayload(eventType, data) {
         const parts = eventType.split(':');
-        if (parts.length !== 2) return;
         
-        const [namespace, action] = parts;
+        // Skip validation if the event name doesn't match expected patterns
+        if (parts.length < 2 || parts.length > 3) return;
+        
+        // Extract namespace and action
+        let namespace, action;
+        
+        if (parts.length === 2) {
+            // Two-part event: namespace:action
+            [namespace, action] = parts;
+        } else {
+            // Three-part event: namespace:id:action
+            [namespace, , action] = parts;
+        }
         
         // Validate state change events
-        if (action === 'changed') {
-            if (data.value === undefined) {
+        if (action === 'changed' || action === 'visible' || action === 'hidden') {
+            if (data.value === undefined && action === 'changed') {
                 console.warn(`[EventManager] State change event '${eventType}' missing 'value' property`);
             }
-            if (data.previous === undefined) {
+            if (data.previous === undefined && action === 'changed') {
                 console.warn(`[EventManager] State change event '${eventType}' missing 'previous' property`);
             }
         }

@@ -188,8 +188,9 @@ Significant progress has been made on the project implementation:
     
     - 🔄 Event System Standardization (Infrastructure Complete, Implementation in Progress - 35%):
       - ✅ Core EventManager updated with standardization support:
-        - ✅ Implemented validation for namespace:action pattern
-        - ✅ Added helper methods for creating standardized payloads (createStateChangeEvent, createCombatEvent, etc.)
+     - ✅ Implemented validation for both namespace:action and namespace:id:action patterns
+     - ✅ Added support for component-specific three-part event names (ui:component-id:action)
+     - ✅ Added helper methods for creating standardized payloads (createStateChangeEvent, createCombatEvent, etc.)
         - ✅ Implemented payload validation system
         - ✅ Added detailed debug logging for event tracing
       - ✅ Created comprehensive EventStandardizationImplementer utility:
@@ -411,6 +412,8 @@ Based on current implementation, there are a few areas that need attention:
 | 2025-05-21 | Enhanced UIManager with improved footstep event handling and movement test methods |
 | 2025-05-21 | Created CSS structure for movement components |
 | 2025-05-21 | Standardized 'movement:footstep' events between MovementSystem and FootstepIndicator components |
+| 2025-05-22 | Enhanced EventManager and EventStandardizationImplementer to support component-specific three-part event names (ui:component-id:action) |
+| 2025-05-22 | Updated EventStandardization documentation to include the component-specific naming pattern |
 
 ## Upcoming Milestones
 

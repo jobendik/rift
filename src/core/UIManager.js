@@ -334,13 +334,16 @@ export class UIManager {
         for (const key in this.systems) {
             const system = this.systems[key];
             
-            if (typeof system.setSize === 'function') {
+            // Check if system exists and has setSize method
+            if (system && typeof system.setSize === 'function') {
                 system.setSize(width, height);
-            } else if (typeof system === 'object') {
+            } else if (system && typeof system === 'object') {
                 // It's a group of systems
                 for (const subKey in system) {
-                    if (typeof system[subKey].setSize === 'function') {
-                        system[subKey].setSize(width, height);
+                    const subSystem = system[subKey];
+                    // Check if subsystem exists and has setSize method
+                    if (subSystem && typeof subSystem.setSize === 'function') {
+                        subSystem.setSize(width, height);
                     }
                 }
             }

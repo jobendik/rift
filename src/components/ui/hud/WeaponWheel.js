@@ -9,6 +9,7 @@ import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 import { EventManager } from '../../../core/EventManager.js';
 import { UIConfig } from '../../../core/UIConfig.js';
+import { WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN, WEAPON_TYPES_ASSAULT_RIFLE } from '../../../core/Constants.js';
 
 class WeaponWheel extends UIComponent {
     /**
@@ -30,8 +31,8 @@ class WeaponWheel extends UIComponent {
         this.segmentCount = 8; // Default to 8 segments
         this.segmentAngle = (2 * Math.PI) / this.segmentCount;
         
-        // Reference to the current WeaponSystem
-        this.weaponSystem = world.weaponSystem;
+        // Reference to the player's weapon system (will be set when player is available)
+        this.weaponSystem = null;
         
         // Bind methods for event handlers
         this._handleKeyDown = this._handleKeyDown.bind(this);
@@ -60,10 +61,25 @@ class WeaponWheel extends UIComponent {
         // Register event handlers
         this._registerEvents();
         
-        // Load initial weapons
-        this._loadWeapons();
+        // Wait for player to be available
+        this._waitForPlayer();
         
         console.log('WeaponWheel initialized');
+    }
+    
+    /**
+     * Wait for player to be available and get weapon system
+     * @private
+     */
+    _waitForPlayer() {
+        // Check if player exists
+        if (this.world.player && this.world.player.weaponSystem) {
+            this.weaponSystem = this.world.player.weaponSystem;
+            this._loadWeapons();
+        } else {
+            // Try again in a moment
+            setTimeout(() => this._waitForPlayer(), 100);
+        }
     }
     
     /**
@@ -191,7 +207,7 @@ class WeaponWheel extends UIComponent {
             EventManager.on('weapon:changed', this._handleWeaponChange);
             EventManager.on('weapon:pickup', this._handleWeaponPickup);
             EventManager.on('weapon:drop', this._handleWeaponDrop);
-            EventManager.on('ui:pause:changed', (data) => {
+            EventManager.on('pause:changed', (data) => {
                 // Auto-hide weapon wheel when game is paused
                 if (data.paused && this.isVisible) {
                     this.hide();
@@ -208,15 +224,49 @@ class WeaponWheel extends UIComponent {
         // Clear any existing segments
         this.segmentsContainer.innerHTML = '';
         
-        // Only proceed if we have a weapon system
         if (!this.weaponSystem) {
-            console.warn('WeaponWheel: No weapon system available');
+            console.log('WeaponWheel: Weapon system not yet available');
             return;
         }
         
-        // Get weapons from the weapon system
-        this.weapons = this.weaponSystem?.getAvailableWeapons() || [];
-        this.currentWeaponIndex = this.weaponSystem?.getCurrentWeaponIndex() || 0;
+        // Build weapon data from the weapon system
+        this.weapons = [];
+        
+        // Helper to get weapon info
+        const getWeaponInfo = (type, name, damage, range, fireRate) => {
+            const weapon = this.weaponSystem.getWeapon(type);
+            if (weapon) {
+                return {
+                    type: type,
+                    name: name,
+                    isAvailable: true,
+                    damage: damage,
+                    range: range,
+                    fireRate: fireRate,
+                    currentAmmo: weapon.roundsLeft,
+                    maxAmmo: weapon.maxRounds,
+                    totalRounds: weapon.getRemainingRounds()
+                };
+            }
+            return null;
+        };
+        
+        // Check each weapon type
+        const blasterInfo = getWeaponInfo(WEAPON_TYPES_BLASTER, 'Blaster', 20, 50, 10);
+        if (blasterInfo) this.weapons.push(blasterInfo);
+        
+        const shotgunInfo = getWeaponInfo(WEAPON_TYPES_SHOTGUN, 'Shotgun', 60, 15, 2);
+        if (shotgunInfo) this.weapons.push(shotgunInfo);
+        
+        const assaultRifleInfo = getWeaponInfo(WEAPON_TYPES_ASSAULT_RIFLE, 'Assault Rifle', 25, 75, 15);
+        if (assaultRifleInfo) this.weapons.push(assaultRifleInfo);
+        
+        // Determine current weapon index
+        if (this.weaponSystem.currentWeapon) {
+            const currentType = this.weaponSystem.currentWeapon.type;
+            this.currentWeaponIndex = this.weapons.findIndex(w => w.type === currentType);
+            if (this.currentWeaponIndex === -1) this.currentWeaponIndex = 0;
+        }
         
         // Calculate segment angle based on number of weapons (min 2, max 8)
         const numWeapons = Math.max(2, Math.min(8, this.weapons.length));
@@ -346,8 +396,8 @@ class WeaponWheel extends UIComponent {
         // Update ammo display if it exists
         if (this.ammoElement) {
             const currentAmmo = weapon.currentAmmo !== undefined ? weapon.currentAmmo : '-';
-            const maxAmmo = weapon.maxAmmo !== undefined ? weapon.maxAmmo : '-';
-            this.ammoElement.textContent = `${currentAmmo} / ${maxAmmo}`;
+            const totalRounds = weapon.totalRounds !== undefined ? weapon.totalRounds : '-';
+            this.ammoElement.textContent = `${currentAmmo} / ${totalRounds}`;
             
             // Update low ammo state (using the threshold from UIConfig)
             const ammoThreshold = UIConfig?.ammo?.lowAmmoThresholdPercent || 0.2;
@@ -391,7 +441,7 @@ class WeaponWheel extends UIComponent {
         // Calculate angle (in radians, 0 = right, going counter-clockwise)
         let angle = Math.atan2(deltaY, deltaX);
         
-        // Convert to 0-2Ï€ range (atan2 returns -Ï€ to Ï€)
+        // Convert to 0-2π range (atan2 returns -π to π)
         if (angle < 0) {
             angle += 2 * Math.PI;
         }
@@ -501,21 +551,8 @@ class WeaponWheel extends UIComponent {
      * @param {Object} data - Event data
      */
     _handleWeaponChange(data) {
-        // Update current weapon index
-        if (data.index !== undefined) {
-            this.currentWeaponIndex = data.index;
-            
-            // Update selection if wheel is visible
-            if (this.isVisible) {
-                this._updateSegmentSelection(this.currentWeaponIndex);
-                this._updateInfoDisplay(this.currentWeaponIndex);
-            }
-        }
-        
-        // Refresh weapons if needed
-        if (data.refresh) {
-            this._loadWeapons();
-        }
+        // Reload weapons to get updated state
+        this._loadWeapons();
     }
     
     /**
@@ -550,22 +587,26 @@ class WeaponWheel extends UIComponent {
             return;
         }
         
+        // Get the weapon type
+        const weaponType = this.weapons[index].type;
+        
         // Update current weapon index
         this.currentWeaponIndex = index;
         
         // Update selection
         this._updateSegmentSelection(index);
         
-        // Notify weapon system
-        if (this.weaponSystem?.selectWeapon) {
-            this.weaponSystem.selectWeapon(index);
+        // Change weapon through the weapon system
+        if (this.weaponSystem) {
+            this.weaponSystem.changeWeapon(weaponType);
         }
         
         // Emit event
         if (EventManager) {
             EventManager.emit('weapon:selected', { 
                 index: index,
-                weapon: this.weapons[index]
+                weapon: this.weapons[index],
+                type: weaponType
             });
         }
     }
@@ -575,6 +616,9 @@ class WeaponWheel extends UIComponent {
      */
     show() {
         if (this.isVisible) return;
+        
+        // Refresh weapons when showing
+        this._loadWeapons();
         
         // Update visibility state
         this.isVisible = true;
@@ -587,7 +631,7 @@ class WeaponWheel extends UIComponent {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('weapon:wheel:shown', {});
+            EventManager.emit('weapon:wheelshown', {});
         }
         
         // Request a pause from the game if configured to do so
@@ -613,7 +657,7 @@ class WeaponWheel extends UIComponent {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('weapon:wheel:hidden', {});
+            EventManager.emit('weapon:wheelhidden', {});
         }
         
         // Request to unpause the game
@@ -671,6 +715,22 @@ class WeaponWheel extends UIComponent {
         }
         
         console.log('WeaponWheel disposed');
+    }
+    
+    /**
+     * Get available weapons for external access
+     * @returns {Array} Array of available weapons
+     */
+    getAvailableWeapons() {
+        return this.weapons.filter(w => w.isAvailable);
+    }
+    
+    /**
+     * Get current weapon index
+     * @returns {number} Current weapon index
+     */
+    getCurrentWeaponIndex() {
+        return this.currentWeaponIndex;
     }
 }
 

@@ -163,18 +163,33 @@ class EventStandardizationImplementer {
             return this.eventNameMap[eventName];
         }
         
-        // Check if the event follows namespace:action pattern
+        // Check if the event follows namespace:action pattern or namespace:id:action pattern
         const parts = eventName.split(':');
-        if (parts.length !== 2) {
-            console.warn(`Event name '${eventName}' does not follow the namespace:action pattern`);
+        
+        // Accept both 2-part and 3-part event names
+        if (parts.length < 2 || parts.length > 3) {
+            console.warn(`Event name '${eventName}' does not follow the namespace:action or namespace:id:action pattern`);
             return eventName;
         }
         
-        const [namespace, action] = parts;
+        // For 2-part events: namespace:action
+        if (parts.length === 2) {
+            const [namespace, action] = parts;
+            
+            // Check if namespace is one of the standard ones
+            if (!this.standardNamespaces.includes(namespace)) {
+                console.warn(`Event namespace '${namespace}' is not in the standard namespaces list`);
+            }
+        }
         
-        // Check if namespace is one of the standard ones
-        if (!this.standardNamespaces.includes(namespace)) {
-            console.warn(`Event namespace '${namespace}' is not in the standard namespaces list`);
+        // For 3-part events (component-specific): namespace:id:action
+        if (parts.length === 3) {
+            const [namespace, id, action] = parts;
+            
+            // Check if namespace is one of the standard ones
+            if (!this.standardNamespaces.includes(namespace)) {
+                console.warn(`Event namespace '${namespace}' is not in the standard namespaces list`);
+            }
         }
         
         // Return the original name if it already follows the pattern
@@ -189,15 +204,27 @@ class EventStandardizationImplementer {
      */
     getEventPayloadTemplate(eventType) {
         const parts = eventType.split(':');
-        if (parts.length !== 2) return {};
         
-        const [namespace, action] = parts;
+        // Extract namespace and action based on whether it's a 2-part or 3-part event name
+        let namespace, action;
+        
+        if (parts.length === 2) {
+            // Two-part event: namespace:action
+            [namespace, action] = parts;
+        } else if (parts.length === 3) {
+            // Three-part event: namespace:id:action
+            [namespace, , action] = parts;
+        } else {
+            // Invalid event name format
+            return {};
+        }
         
         // Determine payload type based on event pattern
         let templateType = null;
         
         // State change events
-        if (action === 'changed' || action.endsWith('-changed')) {
+        if (action === 'changed' || action.endsWith('-changed') || 
+            action === 'visible' || action === 'hidden') {
             templateType = 'changed';
         }
         // Combat events
@@ -276,17 +303,39 @@ class EventStandardizationImplementer {
         
         // Check event name
         const parts = eventName.split(':');
-        if (parts.length !== 2) {
-            results.nameIssues.push(`Event name does not follow namespace:action pattern`);
+        
+        // Accept both 2-part and 3-part event names
+        if (parts.length < 2 || parts.length > 3) {
+            results.nameIssues.push(`Event name does not follow namespace:action or namespace:id:action pattern`);
         } else {
-            const [namespace, action] = parts;
-            
-            if (!this.standardNamespaces.includes(namespace)) {
-                results.nameIssues.push(`Namespace '${namespace}' is not in the standard namespaces list`);
+            // For 2-part events: namespace:action
+            if (parts.length === 2) {
+                const [namespace, action] = parts;
+                
+                if (!this.standardNamespaces.includes(namespace)) {
+                    results.nameIssues.push(`Namespace '${namespace}' is not in the standard namespaces list`);
+                }
+                
+                if (action.length === 0) {
+                    results.nameIssues.push(`Action part is empty`);
+                }
             }
             
-            if (action.length === 0) {
-                results.nameIssues.push(`Action part is empty`);
+            // For 3-part events (component-specific): namespace:id:action
+            if (parts.length === 3) {
+                const [namespace, id, action] = parts;
+                
+                if (!this.standardNamespaces.includes(namespace)) {
+                    results.nameIssues.push(`Namespace '${namespace}' is not in the standard namespaces list`);
+                }
+                
+                if (id.length === 0) {
+                    results.nameIssues.push(`ID part is empty`);
+                }
+                
+                if (action.length === 0) {
+                    results.nameIssues.push(`Action part is empty`);
+                }
             }
         }
         
@@ -508,20 +557,34 @@ class EventStandardizationImplementer {
      */
     _getEventCategory(eventName) {
         const parts = eventName.split(':');
-        if (parts.length !== 2) return 'event';
         
-        const [namespace, action] = parts;
+        // Extract namespace and action based on whether it's a 2-part or 3-part event name
+        let namespace, action;
+        
+        if (parts.length === 2) {
+            // Two-part event: namespace:action
+            [namespace, action] = parts;
+        } else if (parts.length === 3) {
+            // Three-part event: namespace:id:action
+            [namespace, , action] = parts;
+        } else {
+            // Invalid event name format
+            return 'event';
+        }
         
         // Determine category based on event pattern
-        if (action === 'changed' || action.endsWith('-changed')) {
+        if (action === 'changed' || action.endsWith('-changed') || 
+            action === 'visible' || action === 'hidden') {
             return 'state change';
-        } else if (['damaged', 'killed', 'registered'].includes(action) || 
+        } else if (['damaged', 'killed', 'registered', 'hit'].includes(action) || 
                    ['hit', 'combat'].includes(namespace)) {
             return 'combat';
         } else if (namespace === 'notification') {
             return 'notification';
-        } else if (namespace === 'xp' || action === 'progress') {
+        } else if (namespace === 'xp' || action === 'progress' || action === 'gained') {
             return 'progress';
+        } else if (action === 'initialized' || action === 'disposed') {
+            return 'lifecycle';
         }
         
         return 'event';

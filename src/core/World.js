@@ -1715,17 +1715,20 @@ function syncCamera( entity, camera ) {
 
 // used when the browser window is resized
 
+// Updated onWindowResize function for World.js
 function onWindowResize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-	const width = window.innerWidth;
-	const height = window.innerHeight;
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
 
-	this.camera.aspect = width / height;
-	this.camera.updateProjectionMatrix();
-
-	this.renderer.setSize( width, height );
-	this.uiManager.setSize( width, height );
-
+    this.renderer.setSize(width, height);
+    
+    // Only update UIManager if it's initialized
+    if (this.uiManager && this.uiManager.isInitialized) {
+        this.uiManager.setSize(width, height);
+    }
 }
 
 // game loop

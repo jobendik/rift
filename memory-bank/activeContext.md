@@ -229,13 +229,14 @@ The next steps involve:
 
 2. **Event System Standardization Implementation Progress**:
    - The core EventManager has been updated with standardization support:
-     - Implemented validation for the namespace:action pattern
+     - Implemented validation for both namespace:action and namespace:id:action patterns
+     - Added support for component-specific three-part event names (ui:component-id:action)
      - Added helper methods for creating standardized payloads (createStateChangeEvent, createCombatEvent, etc.)
      - Created a comprehensive testing framework with event-test.html and EventStandardizationTest.js
      - Added validation capabilities for both event names and payloads
      - Implemented detailed debug logging for event tracing
    - A complete standardization infrastructure has been implemented:
-     - EventStandardizationImplementer utility for migration assistance
+     - EventStandardizationImplementer utility for migration assistance with support for component-specific events
      - Event Standardization Index tool for component analysis
      - Standard payload templates for different event types
      - JSDoc generation for standardized event handlers

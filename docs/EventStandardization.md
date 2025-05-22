@@ -6,21 +6,34 @@ This document establishes standardized event naming conventions and payload stru
 
 ## Event Naming Convention
 
-All events should follow the `namespace:action` pattern:
+All events should follow one of these patterns:
 
+1. Standard events: `namespace:action`
 ```
 [system]:[action]
 ```
 
+2. Component-specific events: `namespace:id:action`
+```
+[system]:[component-id]:[action]
+```
+
 Where:
-- `system` identifies the source/domain (e.g., player, weapon, health)
+- `namespace` identifies the source/domain (e.g., player, weapon, health)
+- `id` (optional) identifies a specific component instance (e.g., health-display, rift-hud-system)
 - `action` describes what happened (e.g., damaged, killed, updated)
 
-### Examples
+### Examples of Standard Events
 - `health:changed` - Player health value changed
 - `weapon:fired` - Weapon was fired
 - `enemy:killed` - Enemy was eliminated
 - `objective:completed` - Mission objective was completed
+
+### Examples of Component-Specific Events
+- `ui:health-display:visible` - The health display component is now visible
+- `ui:rift-hud-system:visible` - The HUD system is now visible
+- `ui:movement-system:initialized` - The movement system has been initialized
+- `ui:pause:changed` - The pause state has changed
 
 ## System Namespaces
 

@@ -25,8 +25,38 @@ export class DangerZone extends UIComponent {
             ...options
         });
 
+        // Default configuration
+        const defaultConfig = {
+            maxDisplayDistance: 100,
+            fadeDistance: 20,
+            proximityThreshold: 10,
+            criticalThreshold: 4,
+            defaultSize: 20,
+            showIcon: true,
+            showLabel: true,
+            types: {
+                radiation: { damageRate: 10 },
+                fire: { damageRate: 15 },
+                electrical: { damageRate: 20 },
+                poison: { damageRate: 8 },
+                explosive: { damageRate: 25 },
+                generic: { damageRate: 5 }
+            }
+        };
+
         this.world = options.world;
-        this.config = this.world?.config?.ui?.dangerZone || this.config.dangerZone;
+        
+        // Use world config if available, otherwise use default
+        let worldConfig = {};
+        try {
+            worldConfig = this.world?.config?.ui?.dangerZone || {};
+        } catch (e) {
+            console.warn('Could not access world danger zone config, using defaults');
+        }
+        
+        // Merge configs with default as fallback
+        this.config = { ...defaultConfig, ...worldConfig };
+        
         this.zones = new Map(); // Store all active danger zones
         this.container = null;
         this.proximityOverlay = null;

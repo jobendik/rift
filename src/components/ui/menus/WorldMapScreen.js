@@ -39,9 +39,6 @@ export default class WorldMapScreen {
      * @returns {WorldMapScreen} This instance for chaining
      */
     init() {
-        // Call parent init first
-        super.init();
-
         if (this.isInitialized) {
             console.warn('WorldMapScreen already initialized');
             return this;
