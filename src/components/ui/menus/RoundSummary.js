@@ -292,10 +292,10 @@ export class RoundSummary extends UIComponent {
      * @private
      */
     _setupEventListeners() {
-        // Register events with EventManager
+        // Register events with EventManager using standardized event names
         this.registerEvents({
-            'round:completed': (data) => this.show(data),
-            'round:stats:update': (data) => this.updateStats(data)
+            'round:completed': this._onRoundCompleted.bind(this),
+            'round:stats-updated': this._onStatsUpdated.bind(this)  // Standardized from round:stats:update
         });
     }
     
@@ -345,17 +345,17 @@ export class RoundSummary extends UIComponent {
         
         switch (action) {
             case 'next-round':
-                EventManager.trigger('game:round:next');
+                EventManager.trigger('game:round-next');
                 this.hide();
                 break;
                 
             case 'main-menu':
-                EventManager.trigger('ui:showScreen', { screen: 'main-menu' });
+                EventManager.trigger('ui:screen-shown', { screen: 'main-menu' });
                 this.hide();
                 break;
                 
             case 'customize':
-                EventManager.trigger('ui:showScreen', { screen: 'customization' });
+                EventManager.trigger('ui:screen-shown', { screen: 'customization' });
                 this.hide();
                 break;
         }
@@ -825,6 +825,28 @@ export class RoundSummary extends UIComponent {
      * Show the round summary
      * @param {Object} data - Round data
      */
+    /**
+     * Handle round completed event
+     * @param {Object} event - Round completed event data
+     * @private
+     */
+    _onRoundCompleted(event) {
+        this.show(event);
+    }
+    
+    /**
+     * Handle stats updated event
+     * @param {Object} event - Stats updated event data
+     * @private
+     */
+    _onStatsUpdated(event) {
+        this.updateStats(event);
+    }
+    
+    /**
+     * Show the round summary
+     * @param {Object} data - Round data
+     */
     show(data) {
         if (!this.isInitialized) this.init();
         
@@ -987,4 +1009,3 @@ export class RoundSummary extends UIComponent {
         super.dispose();
     }
 }
-

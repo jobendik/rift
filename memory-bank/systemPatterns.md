@@ -807,70 +807,169 @@ class EnhancedDamageIndicator extends UIComponent {
 
 ## Event Standardization Implementation
 
-### Component Analysis and Migration
+### Complete Standardization Implementation
 
-The event standardization implementation follows these patterns:
+The completed event standardization implementation follows a multi-faceted approach:
 
-1. **Component Analysis**
-   - Scan components for event subscriptions
-   - Identify non-standard event names
-   - Generate compliance reports
+1. **Core EventManager Enhancements**
+   - Added validation systems for event names and payloads:
+     ```javascript
+     // Event validation
+     if (this._validateEventNames && !this._isValidEventName(eventType)) {
+       console.warn(`[EventManager] Event name '${eventType}' does not follow pattern`);
+     }
+     
+     if (this._validateEventPayloads) {
+       this._validatePayload(eventType, data);
+     }
+     ```
+   - Support for both two-part (namespace:action) and three-part (namespace:id:action) event names:
+     ```javascript
+     _isValidEventName(eventName) {
+       const parts = eventName.split(':');
+       
+       // Accept both 2-part and 3-part event names
+       if (parts.length < 2 || parts.length > 3) return false;
+       
+       // For 2-part events: namespace:action
+       if (parts.length === 2) {
+         const [namespace, action] = parts;
+         return namespace.length > 0 && action.length > 0;
+       }
+       
+       // For 3-part events (component-specific): namespace:id:action
+       if (parts.length === 3) {
+         const [namespace, id, action] = parts;
+         return namespace.length > 0 && id.length > 0 && action.length > 0;
+       }
+     }
+     ```
+   - Standardized payload creation and validation methods:
+     ```javascript
+     createStateChangeEvent(namespace, newValue, previousValue, delta, max, source) {
+       return {
+         value: newValue,
+         previous: previousValue,
+         ...(delta !== undefined && { delta }),
+         ...(max !== undefined && { max }),
+         ...(source !== undefined && { source })
+       };
+     }
+     
+     createCombatEvent(source, target, weapon, damage, isCritical, isHeadshot, direction) {
+       return {
+         source,
+         target,
+         ...(weapon !== undefined && { weapon }),
+         ...(damage !== undefined && { damage }),
+         ...(isCritical !== undefined && { isCritical }),
+         ...(isHeadshot !== undefined && { isHeadshot }),
+         ...(direction !== undefined && { direction })
+       };
+     }
+     ```
 
-2. **Migration Code Generation**
-   - Map legacy event names to standardized ones
-   - Generate migration code suggestions
-   - Create JSDoc comments for standardized handlers
+2. **EventStandardizationImplementer Tool**
+   - Centralized tools for analyzing and migrating components
+   - Handles tracking of progress and compliance across the codebase
+   - Provides a flexible migration path from legacy to standardized events
 
-3. **EventStandardizationImplementer Tool**
-   - Centralizes standardization logic
-   - Provides utilities for component migration
-   - Handles event name and payload standardization
+3. **Interactive Testing & Implementation Tools**
+   - Test frameworks for validating compliance:
+     ```javascript
+     // Event standardization test example
+     class EventStandardizationTest {
+       testStateChangeEvent() {
+         const event = {
+           type: 'health:changed',
+           timestamp: performance.now(),
+           value: 80,
+           previous: 100,
+           delta: -20,
+           max: 100
+         };
+         
+         return this._validateStateChangeEvent(event);
+       }
+       
+       _validateStateChangeEvent(event) {
+         return (
+           event.type && 
+           event.timestamp && 
+           event.value !== undefined && 
+           event.previous !== undefined
+         );
+       }
+     }
+     ```
+   - Visual dashboards for standardization progress monitoring
+   - Documentation generation for event handlers
 
-4. **Interactive Migration Tool**
-   - Visual dashboard for standardization progress
-   - Component-by-component analysis
-   - Migration code generation and validation
+4. **Component Analysis and Compliance**
+   - Analysis of event usage patterns across components
+   - Identification of non-standard event naming
+   - Validation of payload structures based on event types
+   - JSDoc comment generation for enhanced code documentation
 
-### Pattern for Updating Components
+### Pattern for Updated Components
+
+Components using standardized events now follow this pattern:
 
 ```javascript
-// Before standardization
-class ExampleComponent extends UIComponent {
+class ModernComponent extends UIComponent {
   _setupEventListeners() {
     this.eventSubscriptions.push(
-      EventManager.subscribe('health:max', this._onMaxHealthChanged.bind(this)),
-      EventManager.subscribe('enemy:kill', this._onEnemyKill.bind(this))
-    );
-  }
-  
-  _onMaxHealthChanged(event) {
-    // Handler implementation
-  }
-  
-  _onEnemyKill(event) {
-    // Handler implementation
-  }
-}
-
-// After standardization
-class ExampleComponent extends UIComponent {
-  _setupEventListeners() {
-    this.eventSubscriptions.push(
-      EventManager.subscribe('health:max-changed', this._onMaxHealthChanged.bind(this)),
+      // Standard two-part event format
+      EventManager.subscribe('health:changed', this._onHealthChanged.bind(this)),
+      
+      // Component-specific three-part event format
+      EventManager.subscribe('ui:health-display:visibility-changed', 
+        this._onHealthDisplayVisibilityChanged.bind(this)),
+      
+      // Standard combat event
       EventManager.subscribe('enemy:killed', this._onEnemyKilled.bind(this))
     );
   }
   
   /**
-   * Handle health:max-changed event
+   * Handle health:changed event
    * @param {Object} event - Standardized state change event
-   * @param {number} event.value - Current maximum health value
-   * @param {number} event.previous - Previous maximum health value
+   * @param {number} event.value - Current health value
+   * @param {number} event.previous - Previous health value
    * @param {number} event.delta - Change amount
+   * @param {number} event.max - Maximum possible health
+   * @param {string} event.source - What caused the health change
+   * @param {number} event.timestamp - When the event occurred
    * @private
    */
-  _onMaxHealthChanged(event) {
-    // Handler implementation using standardized payload
+  _onHealthChanged(event) {
+    // Implementation using standardized payload structure
+    const percentHealth = (event.value / event.max) * 100;
+    this._updateHealthBar(percentHealth);
+    
+    // Access additional standardized fields
+    if (event.delta < 0) {
+      this._showDamageEffect(Math.abs(event.delta), event.source);
+    } else if (event.delta > 0) {
+      this._showHealEffect(event.delta, event.source);
+    }
+  }
+  
+  /**
+   * Handle ui:health-display:visibility-changed event
+   * @param {Object} event - Component-specific event
+   * @param {boolean} event.visible - Whether the component is visible
+   * @param {string} event.reason - Reason for visibility change
+   * @param {number} event.timestamp - When the event occurred
+   * @private
+   */
+  _onHealthDisplayVisibilityChanged(event) {
+    // Implementation using standardized component-specific event
+    if (event.visible) {
+      this._show(event.reason);
+    } else {
+      this._hide(event.reason);
+    }
   }
   
   /**
@@ -879,12 +978,71 @@ class ExampleComponent extends UIComponent {
    * @param {Object} event.source - Source entity information
    * @param {Object} event.target - Target entity information
    * @param {Object} event.weapon - Weapon information
+   * @param {boolean} event.isHeadshot - Whether kill was headshot
+   * @param {boolean} event.isCritical - Whether kill was critical hit
+   * @param {number} event.timestamp - When the event occurred
    * @private
    */
   _onEnemyKilled(event) {
-    // Handler implementation using standardized payload
-    // Note renamed method to match event name
+    // Implementation using standardized combat event payload
+    const killMessage = this._buildKillMessage(
+      event.source.name,
+      event.target.name,
+      event.weapon.name,
+      event.isHeadshot
+    );
+    
+    this._displayKillNotification(killMessage, {
+      isHeadshot: event.isHeadshot,
+      isCritical: event.isCritical,
+      timestamp: event.timestamp
+    });
   }
+}
+```
+
+### MovementSystem Event Integration
+
+The MovementSystem component demonstrates the standardized event pattern when emitting events:
+
+```javascript
+_emitEntityFootstep(entityId, entityData, distanceToPlayer) {
+  // Get entity data
+  const entity = entityData.entity;
+  const entityPos = entityData.position;
+  
+  // Create standardized movement:footstep event
+  const footstepEvent = {
+    // Source entity information (standard format)
+    source: {
+      id: entityId,
+      type: entity.type || 'enemy',
+      name: entity.name || `${entity.type}-${entityId}`,
+      position: { x: entityPos.x, y: entityPos.y, z: entityPos.z }
+    },
+    // Position data
+    position: { x: entityPos.x, y: entityPos.y, z: entityPos.z },
+    playerPosition: {
+      x: this.playerData.position.x,
+      y: this.playerData.position.y,
+      z: this.playerData.position.z
+    },
+    playerRotation: this.playerData.rotation,
+    
+    // Additional metadata
+    isFriendly: entity.isFriendly === true,
+    isContinuous: entity.isMoving === true,
+    distance: distanceToPlayer,
+    direction: this._calculateAngle(
+      this.playerData.position,
+      this.playerData.rotation,
+      entityPos
+    ),
+    timestamp: performance.now()
+  };
+  
+  // Emit the standardized event
+  EventManager.emit('movement:footstep', footstepEvent);
 }
 ```
 

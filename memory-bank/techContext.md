@@ -54,7 +54,9 @@ The project uses a centralized event system for communication between components
    - Enhanced to support standardized events
 
 2. **Event Standardization Implementation**
-   - Standardized naming convention (`namespace:action` pattern)
+   - Standardized naming convention:
+     - Two-part pattern: `namespace:action` (e.g., 'health:changed')
+     - Three-part pattern for component-specific events: `namespace:id:action` (e.g., 'ui:health-display:visible')
    - Predefined payload structures for different event types
    - Helper methods for creating standardized payloads
    - Validation capabilities for event names and payloads
@@ -65,6 +67,7 @@ The project uses a centralized event system for communication between components
    - Combat Events: For combat interactions (hits, damage, kills)
    - Notification Events: For user notifications
    - Progress Events: For progression updates (XP, levels, achievements)
+   - Movement Events: For entity movement (footsteps, position changes)
 
 4. **Standard Event Structure**
    - Common metadata (type, timestamp)
@@ -256,6 +259,36 @@ Provides contextual information about the game world.
    - Off-screen indicator system
    - Particle effects for weather
 
+### Movement System
+
+Detects and visualizes entity movement for enhanced spatial awareness.
+
+1. **Components**
+   - MovementSystem: Tracks entity positions and detects movement
+   - FootstepIndicator: Visualizes detected footsteps with directional awareness
+
+2. **Core Functionality**
+   - Position tracking for both player and entities
+   - Distance-based footstep detection with configurable thresholds
+   - Standardized event emission with rich payload data
+   - Direction calculation for spatial awareness
+   - Distinguished friend/foe detection with different thresholds
+   - Detection of continuous vs. single movement patterns
+   - Testing tools for simulating movement without actual entity position changes
+
+3. **Integration Points**
+   - Entity position updates from game world
+   - Player position and rotation
+   - Combat system for threat awareness
+   - Sprint state for movement pattern detection
+
+4. **Technologies Used**
+   - Position tracking with distance calculation
+   - Angle calculation for directional awareness
+   - Event standardization for consistent event payloads
+   - Configurable thresholds for different entity types
+   - Performance considerations for handling large entity counts
+
 ## Development Approach
 
 ### Development Process
@@ -269,7 +302,7 @@ Provides contextual information about the game world.
    - Menu System
    - Progression System
    - Environmental Systems
-   - Refinement (Enhanced Combat Feedback, Event System Standardization, etc.)
+   - Refinement (Enhanced Combat Feedback, Event System Standardization, Movement System, etc.)
    - Performance Optimization
    - Audio Integration
 
@@ -311,6 +344,7 @@ Provides contextual information about the game world.
    │   │   │   ├── environment/
    │   │   │   ├── hud/
    │   │   │   ├── menus/
+   │   │   │   ├── movement/
    │   │   │   ├── notifications/
    │   │   │   └── progression/
    │   │   ├── core/
@@ -325,6 +359,7 @@ Provides contextual information about the game world.
    │   │       ├── environment/
    │   │       ├── hud/
    │   │       ├── menus/
+   │   │       ├── movement/
    │   │       ├── notifications/
    │   │       └── progression/
    │   ├── controls/
@@ -358,7 +393,9 @@ Provides contextual information about the game world.
 The Event System has been enhanced with comprehensive standardization support:
 
 1. **Core EventManager Updates**
-   - Added validation for namespace:action pattern
+   - Added validation for both two-part and three-part event name patterns:
+     - Two-part: `namespace:action` (e.g., 'health:changed')
+     - Three-part: `namespace:id:action` (e.g., 'ui:health-display:visible')
    - Implemented helper methods for creating standardized payloads:
      - `createStateChangeEvent()` for health, ammo, etc.
      - `createCombatEvent()` for hit registration, damage, etc.
@@ -366,6 +403,7 @@ The Event System has been enhanced with comprehensive standardization support:
      - `createProgressEvent()` for XP, achievements, etc.
    - Added payload validation based on event type
    - Enhanced debug logging for event tracing
+   - Added configurable validation (on/off) for production vs development
 
 2. **EventStandardizationImplementer Utility**
    - Created mapping from legacy event names to standardized names
@@ -374,11 +412,13 @@ The Event System has been enhanced with comprehensive standardization support:
    - Created component analysis functionality
    - Added migration code generation
    - Implemented JSDoc comment generation for standardized events
+   - Support for component-specific events
 
 3. **Testing Framework**
    - Developed EventStandardizationTest with test cases
    - Created interactive event-test.html for visual testing
    - Added validation test cases for enforcing standards
+   - Implemented benchmarking tools for performance testing
 
 4. **Interactive Tools**
    - Built Event Standardization Index tool with:
@@ -421,6 +461,63 @@ The Combat Feedback system has been enhanced with advanced visual effects:
    - Added special effects for critical states and powerups
    - Implemented environmental effect visualizations
    - Added accessibility considerations including reduced motion support
+
+### Movement System Implementation
+
+The Movement System provides spatial awareness of entity movement with standardized events:
+
+1. **Core Architecture**
+   - Modular MovementSystem component extending UIComponent
+   - Player and entity position tracking with delta calculation
+   - Distance-based footstep detection with configurable thresholds
+   - Standardized event emission with rich positional data
+   - Direction calculation for spatial awareness
+   - Entity type differentiation (friend vs. foe)
+   - Continuous vs. single movement pattern detection
+   - Performance optimizations for tracking large numbers of entities
+
+2. **Position Tracking**
+   - Maintains cache of entity positions and state
+   - Calculates distance traveled between position updates
+   - Configurable thresholds for generating footstep events
+   - Adjustable detection radius with type-specific multipliers
+   - Sprint state integration with adjusted footstep frequency
+
+3. **Event Standardization**
+   - Emits standardized 'movement:footstep' events
+   - Rich payload with source entity information, positions, and metadata:
+     ```javascript
+     // Example standardized movement:footstep event
+     {
+       // Source entity information
+       source: {
+         id: entityId,
+         type: 'enemy',
+         name: 'Grunt-123',
+         position: {x: 10, y: 0, z: 5}
+       },
+       // Position data
+       position: {x: 10, y: 0, z: 5},
+       playerPosition: {x: 0, y: 0, z: 0},
+       playerRotation: 1.57,
+       
+       // Additional metadata
+       isFriendly: false,
+       isContinuous: true,
+       distance: 10.5,
+       direction: 45,
+       timestamp: 12345678
+     }
+     ```
+
+4. **Testing Utilities**
+   - Comprehensive test methods for development and debugging
+   - `testFootstep()` for simulating individual footsteps with configurable parameters
+   - `testFootstepSequence()` for creating a series of footsteps from the same entity
+   - Built-in debug mode with detailed console logging
+   - Extensible configuration options for testing different scenarios
+   - Methods for simulating both friendly and enemy footsteps
+   - Support for chaining footsteps to create movement paths
 
 ## Performance Considerations
 

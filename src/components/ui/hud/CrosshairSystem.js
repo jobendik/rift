@@ -54,14 +54,14 @@ class CrosshairSystem extends UIComponent {
             hitMarker: null
         };
         
-        // Event subscriptions
+        // Event subscriptions using standardized event names
         this.registerEvents({
-            'weapon:spread': this._onWeaponSpread,
-            'weapon:fire': this._onWeaponFire,
-            'weapon:change': this._onWeaponChange,
+            'weapon:spread-changed': this._onWeaponSpreadChanged,
+            'weapon:fired': this._onWeaponFired,
+            'weapon:changed': this._onWeaponChanged,
             'enemy:targeted': this._onEnemyTargeted,
-            'enemy:critical': this._onCriticalTargeted,
-            'hit:confirmed': this._onHitConfirmed
+            'enemy:critical-targeted': this._onCriticalTargeted,
+            'hit:registered': this._onHitRegistered
         });
     }
     
@@ -327,22 +327,28 @@ class CrosshairSystem extends UIComponent {
     }
     
     /**
-     * Handle weapon spread event
-     * @param {Object} event - Event data
+     * Handle weapon spread changed event
+     * @param {Object} event - Standardized state change event
+     * @param {Number} event.value - Current spread value
+     * @param {Number} event.previous - Previous spread value
+     * @param {Number} [event.delta] - Amount changed
      * @private
      */
-    _onWeaponSpread(event) {
+    _onWeaponSpreadChanged(event) {
         if (typeof event.value === 'number') {
             this.updateSpread(event.value);
         }
     }
     
     /**
-     * Handle weapon fire event
-     * @param {Object} event - Event data
+     * Handle weapon fired event
+     * @param {Object} event - Standardized weapon event
+     * @param {String} [event.weaponType] - Type of weapon fired
+     * @param {Number} [event.accuracy] - Current weapon accuracy
+     * @param {Boolean} [event.isAiming] - Whether player was aiming when firing
      * @private
      */
-    _onWeaponFire(event) {
+    _onWeaponFired(event) {
         // Temporarily increase spread
         const currentSpread = this.state.spread;
         const increasedSpread = Math.min(100, currentSpread + 30);
@@ -357,11 +363,14 @@ class CrosshairSystem extends UIComponent {
     }
     
     /**
-     * Handle weapon change event
-     * @param {Object} event - Event data
+     * Handle weapon changed event
+     * @param {Object} event - Standardized weapon event
+     * @param {String} event.weaponType - Type of weapon changed to
+     * @param {Number} [event.accuracy] - Base accuracy of new weapon
+     * @param {Number} [event.spread] - Base spread of new weapon
      * @private
      */
-    _onWeaponChange(event) {
+    _onWeaponChanged(event) {
         if (event.weaponType) {
             this.updateWeaponType(event.weaponType);
         }
@@ -369,7 +378,10 @@ class CrosshairSystem extends UIComponent {
     
     /**
      * Handle enemy targeted event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized targeting event
+     * @param {Boolean} event.isTargeted - Whether enemy is targeted
+     * @param {Object} [event.target] - Target entity information
+     * @param {String} [event.targetType] - Type of targeted entity
      * @private
      */
     _onEnemyTargeted(event) {
@@ -383,7 +395,10 @@ class CrosshairSystem extends UIComponent {
     
     /**
      * Handle critical spot targeted event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized targeting event
+     * @param {Boolean} event.isCritical - Whether critical spot is targeted
+     * @param {String} [event.criticalType] - Type of critical spot (headshot, weakpoint)
+     * @param {Object} [event.target] - Target entity information
      * @private
      */
     _onCriticalTargeted(event) {
@@ -396,11 +411,17 @@ class CrosshairSystem extends UIComponent {
     }
     
     /**
-     * Handle hit confirmed event
-     * @param {Object} event - Event data
+     * Handle hit registered event
+     * @param {Object} event - Standardized combat event
+     * @param {Object} event.source - Source entity (player)
+     * @param {Object} event.target - Target entity (enemy)
+     * @param {Boolean} [event.isCritical] - Whether this was a critical hit
+     * @param {Boolean} [event.isHeadshot] - Whether this was a headshot
+     * @param {Number} [event.damage] - Damage amount
+     * @param {String} [event.weaponType] - Type of weapon used
      * @private
      */
-    _onHitConfirmed(event) {
+    _onHitRegistered(event) {
         this.showHitMarker(
             event.isCritical || false,
             event.isHeadshot || false

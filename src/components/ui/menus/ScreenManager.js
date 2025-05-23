@@ -343,10 +343,11 @@ export class ScreenManager extends UIComponent {
         screen.element.classList.add('rift-screen--active');
         
         // Emit event
-        EventManager.emit('screen:show', { 
+        EventManager.emit('screen:shown', { 
             id: id, 
             element: screen.element,
-            data: options.data || {}
+            data: options.data || {},
+            timestamp: performance.now()
         });
         
         // Call onShow callback if defined
@@ -417,9 +418,10 @@ export class ScreenManager extends UIComponent {
         }
         
         // Emit event
-        EventManager.emit('screen:hide', { 
+        EventManager.emit('screen:hidden', { 
             id: this.currentScreen, 
-            element: screen.element 
+            element: screen.element,
+            timestamp: performance.now()
         });
         
         const previousScreen = this.currentScreen;
@@ -506,10 +508,11 @@ export class ScreenManager extends UIComponent {
         }
         
         // Emit event
-        EventManager.emit('modal:show', { 
+        EventManager.emit('modal:shown', { 
             id: id, 
             element: modal.element,
-            data: options.data || {}
+            data: options.data || {},
+            timestamp: performance.now()
         });
         
         return this;
@@ -544,9 +547,10 @@ export class ScreenManager extends UIComponent {
         }
         
         // Emit event
-        EventManager.emit('modal:hide', { 
+        EventManager.emit('modal:hidden', { 
             id: id, 
-            element: modal.element 
+            element: modal.element,
+            timestamp: performance.now()
         });
         
         return this;
@@ -607,10 +611,11 @@ export class ScreenManager extends UIComponent {
         // End transition state
         this.isTransitioning = false;
         
-        // Emit completion event
-        EventManager.emit('screen:shown', { 
+        // Emit transition completion event
+        EventManager.emit('screen:transition-completed', { 
             id: this.currentScreen, 
-            element: screen.element 
+            element: screen.element,
+            timestamp: performance.now() 
         });
     }
     
@@ -674,11 +679,11 @@ export class ScreenManager extends UIComponent {
         
         // Register events
         this.registerEvents({
-            'ui:showScreen': ({ id, options }) => this.showScreen(id, options),
-            'ui:hideScreen': (options) => this.hideScreen(options),
-            'ui:showModal': ({ id, options }) => this.showModal(id, options),
-            'ui:hideModal': ({ id }) => this.hideModal(id),
-            'ui:goBack': (options) => this.goBack(options)
+            'ui:screen-shown': ({ id, options }) => this.showScreen(id, options),
+            'ui:screen-hidden': (options) => this.hideScreen(options),
+            'ui:modal-shown': ({ id, options }) => this.showModal(id, options),
+            'ui:modal-hidden': ({ id }) => this.hideModal(id),
+            'ui:back-navigated': (options) => this.goBack(options)
         });
     }
     

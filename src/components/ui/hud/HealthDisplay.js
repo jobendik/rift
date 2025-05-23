@@ -359,6 +359,12 @@ class HealthDisplay extends UIComponent {
     /**
      * Handle health changed event
      * @param {Object} event - Standardized state change event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {number} event.value - Current health value
+     * @param {number} event.previous - Previous health value
+     * @param {number} [event.delta] - Amount changed
+     * @param {number} [event.max] - Maximum possible health value
+     * @param {string} [event.source] - What caused the change (e.g., 'damage', 'heal')
      * @private
      */
     _onHealthChanged(event) {
@@ -378,6 +384,11 @@ class HealthDisplay extends UIComponent {
     /**
      * Handle max health changed event
      * @param {Object} event - Standardized state change event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {number} event.value - Current max health value
+     * @param {number} event.previous - Previous max health value
+     * @param {number} [event.delta] - Amount changed
+     * @param {string} [event.source] - What caused the change (e.g., 'upgrade', 'powerup')
      * @private
      */
     _onMaxHealthChanged(event) {
@@ -389,6 +400,15 @@ class HealthDisplay extends UIComponent {
     /**
      * Handle player damaged event
      * @param {Object} event - Standardized combat event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {number} [event.damage] - Amount of damage taken
+     * @param {number} [event.currentHealth] - Updated health value after damage
+     * @param {Object} [event.source] - Source entity that caused the damage
+     * @param {string} [event.source.id] - ID of the source entity
+     * @param {string} [event.source.type] - Type of the source entity
+     * @param {Object} [event.direction] - Direction vector of the damage source
+     * @param {string} [event.damageType] - Type of damage (e.g., 'bullet', 'explosion', 'melee')
+     * @param {boolean} [event.isCritical] - Whether this was a critical hit
      * @private
      */
     _onPlayerDamaged(event) {
@@ -408,6 +428,13 @@ class HealthDisplay extends UIComponent {
     /**
      * Handle player healed event
      * @param {Object} event - Standardized combat event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {number} [event.amount] - Amount of healing received
+     * @param {number} [event.currentHealth] - Updated health value after healing
+     * @param {Object} [event.source] - Source entity that provided the healing
+     * @param {string} [event.source.id] - ID of the source entity
+     * @param {string} [event.source.type] - Type of the source entity
+     * @param {string} [event.healType] - Type of healing (e.g., 'medkit', 'regeneration', 'ability')
      * @private
      */
     _onPlayerHealed(event) {

@@ -70,7 +70,10 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:enabled', { handler: this });
+            EventManager.emit('input:handler-enabled', { 
+                handler: this,
+                timestamp: performance.now()
+            });
         }
     }
     
@@ -103,7 +106,10 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:disabled', { handler: this });
+            EventManager.emit('input:handler-disabled', { 
+                handler: this,
+                timestamp: performance.now()
+            });
         }
     }
     
@@ -122,13 +128,14 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:pointer:move', {
+            EventManager.emit('input:pointer-moved', {
                 x: event.clientX,
                 y: event.clientY,
                 normalizedX: this.pointerNormalized.x,
                 normalizedY: this.pointerNormalized.y,
                 isDown: this.isPointerDown,
-                button: this.activePointerButton
+                button: this.activePointerButton,
+                timestamp: performance.now()
             });
         }
     }
@@ -149,17 +156,20 @@ class InputHandler {
             // Check if game is active before showing weapon wheel
             if (this.uiManager?.activeView === 'game' && !this.uiManager?.isGamePaused) {
                 if (EventManager) {
-                    EventManager.emit('input:weaponwheel:toggle', { show: true });
+                    EventManager.emit('input:weaponwheel:shown', { 
+                        timestamp: performance.now()
+                    });
                 }
             }
         }
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:pointer:down', {
+            EventManager.emit('input:pointer-downed', {
                 x: event.clientX,
                 y: event.clientY,
-                button: event.button
+                button: event.button,
+                timestamp: performance.now()
             });
         }
     }
@@ -176,16 +186,19 @@ class InputHandler {
         // Hide weapon wheel on right-click release
         if (event.button === 2) {
             if (EventManager) {
-                EventManager.emit('input:weaponwheel:toggle', { show: false });
+                EventManager.emit('input:weaponwheel:hidden', {
+                    timestamp: performance.now()
+                });
             }
         }
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:pointer:up', {
+            EventManager.emit('input:pointer-upped', {
                 x: event.clientX,
                 y: event.clientY,
-                button: event.button
+                button: event.button,
+                timestamp: performance.now()
             });
         }
     }
@@ -218,7 +231,9 @@ class InputHandler {
                 if (this.uiManager?.activeView === 'game') {
                     event.preventDefault();
                     if (EventManager) {
-                        EventManager.emit('input:scoreboard:toggle', { show: true });
+                        EventManager.emit('input:scoreboard:shown', {
+                            timestamp: performance.now()
+                        });
                     }
                 }
                 break;
@@ -226,7 +241,9 @@ class InputHandler {
             case 'Escape':
                 // Handle menu/pause toggling
                 if (EventManager) {
-                    EventManager.emit('input:pause:toggle');
+                    EventManager.emit('input:pause-toggled', {
+                        timestamp: performance.now()
+                    });
                 }
                 break;
                 
@@ -235,7 +252,9 @@ class InputHandler {
                 // Toggle map
                 if (this.uiManager?.activeView === 'game' && !this.uiManager?.isGamePaused) {
                     if (EventManager) {
-                        EventManager.emit('input:map:toggle');
+                        EventManager.emit('input:map-toggled', {
+                            timestamp: performance.now()
+                        });
                     }
                 }
                 break;
@@ -245,7 +264,9 @@ class InputHandler {
                 // Reload weapon
                 if (this.uiManager?.activeView === 'game' && !this.uiManager?.isGamePaused) {
                     if (EventManager) {
-                        EventManager.emit('input:weapon:reload');
+                        EventManager.emit('input:weapon:reloaded', {
+                            timestamp: performance.now()
+                        });
                     }
                 }
                 break;
@@ -254,7 +275,9 @@ class InputHandler {
                 // Start sprint
                 if (this.uiManager?.activeView === 'game' && !this.uiManager?.isGamePaused) {
                     if (EventManager) {
-                        EventManager.emit('input:player:sprint', { active: true });
+                        EventManager.emit('input:player:sprint-started', {
+                            timestamp: performance.now()
+                        });
                     }
                 }
                 break;
@@ -262,12 +285,13 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:key:down', {
+            EventManager.emit('input:key-downed', {
                 key: event.key,
                 code: event.code,
                 shift: event.shiftKey,
                 ctrl: event.ctrlKey,
-                alt: event.altKey
+                alt: event.altKey,
+                timestamp: performance.now()
             });
         }
         
@@ -276,7 +300,10 @@ class InputHandler {
         if (!isNaN(numKey) && numKey >= 1 && numKey <= 9) {
             if (this.uiManager?.activeView === 'game' && !this.uiManager?.isGamePaused) {
                 if (EventManager) {
-                    EventManager.emit('input:weapon:select', { index: numKey - 1 });
+                    EventManager.emit('input:weapon:selected', { 
+                        index: numKey - 1,
+                        timestamp: performance.now()
+                    });
                 }
             }
         }
@@ -296,26 +323,31 @@ class InputHandler {
             case 'Tab':
                 // Hide scoreboard
                 if (EventManager) {
-                    EventManager.emit('input:scoreboard:toggle', { show: false });
+                    EventManager.emit('input:scoreboard:hidden', {
+                        timestamp: performance.now()
+                    });
                 }
                 break;
                 
             case 'Shift':
                 // Stop sprint
                 if (EventManager) {
-                    EventManager.emit('input:player:sprint', { active: false });
+                    EventManager.emit('input:player:sprint-stopped', {
+                        timestamp: performance.now()
+                    });
                 }
                 break;
         }
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:key:up', {
+            EventManager.emit('input:key-upped', {
                 key: event.key,
                 code: event.code,
                 shift: event.shiftKey,
                 ctrl: event.ctrlKey,
-                alt: event.altKey
+                alt: event.altKey,
+                timestamp: performance.now()
             });
         }
     }
@@ -332,7 +364,9 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:blur');
+            EventManager.emit('input:blurred', {
+                timestamp: performance.now()
+            });
         }
     }
     
@@ -368,10 +402,11 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:touch:start', {
+            EventManager.emit('input:touch-started', {
                 x: this.pointerPosition.x,
                 y: this.pointerPosition.y,
-                touches: event.touches.length
+                touches: event.touches.length,
+                timestamp: performance.now()
             });
         }
     }
@@ -407,8 +442,9 @@ class InputHandler {
                 this.gestureScale = distance / this.gestureStartDistance;
                 
                 if (EventManager) {
-                    EventManager.emit('input:gesture:pinch', {
-                        scale: this.gestureScale
+                    EventManager.emit('input:gesture-pinched', {
+                        scale: this.gestureScale,
+                        timestamp: performance.now()
                     });
                 }
             }
@@ -416,10 +452,11 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:touch:move', {
+            EventManager.emit('input:touch-moved', {
                 x: this.pointerPosition.x,
                 y: this.pointerPosition.y,
-                touches: event.touches.length
+                touches: event.touches.length,
+                timestamp: performance.now()
             });
         }
     }
@@ -442,10 +479,11 @@ class InputHandler {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('input:touch:end', {
+            EventManager.emit('input:touch-ended', {
                 x: this.pointerPosition.x,
                 y: this.pointerPosition.y,
-                touches: event.touches.length
+                touches: event.touches.length,
+                timestamp: performance.now()
             });
         }
     }

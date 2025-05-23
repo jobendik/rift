@@ -398,93 +398,103 @@ class AmmoDisplay extends UIComponent {
         this.elements.currentAmmo.classList.add('rift-ammo__current--changed');
     }
     
-    /**
-     * Handle ammo changed event
-     * @param {Object} event - Standardized state change event
-     * @param {Number} event.value - Current ammo value
-     * @param {Number} event.previous - Previous ammo value
-     * @param {Number} [event.delta] - Amount changed
-     * @param {Number} [event.max] - Maximum magazine size
-     * @private
-     */
-    _onAmmoChanged(event) {
-        if (typeof event.value === 'number') {
-            this.updateAmmo(event.value);
-        }
+/**
+ * Handle ammo changed event
+ * @param {Object} event - Standardized state change event
+ * @param {number} event.timestamp - Time when the event occurred
+ * @param {number} event.value - Current ammo value
+ * @param {number} event.previous - Previous ammo value
+ * @param {number} [event.delta] - Amount changed
+ * @param {number} [event.max] - Maximum magazine size
+ * @param {string} [event.source] - What caused the change (e.g., 'fired', 'reload')
+ * @private
+ */
+_onAmmoChanged(event) {
+    if (typeof event.value === 'number') {
+        this.updateAmmo(event.value);
+    }
+}
+    
+/**
+ * Handle reserve ammo changed event
+ * @param {Object} event - Standardized state change event
+ * @param {number} event.timestamp - Time when the event occurred
+ * @param {number} event.value - Current reserve ammo value
+ * @param {number} event.previous - Previous reserve ammo value
+ * @param {number} [event.delta] - Amount changed
+ * @param {string} [event.source] - What caused the change (e.g., 'pickup', 'reload')
+ * @private
+ */
+_onTotalAmmoChanged(event) {
+    if (typeof event.value === 'number') {
+        this.updateTotalAmmo(event.value);
+    }
+}
+    
+/**
+ * Handle weapon reloading event
+ * @param {Object} event - Standardized weapon event
+ * @param {number} event.timestamp - Time when the event occurred
+ * @param {string} [event.weaponType] - Type of weapon being reloaded
+ * @param {number} [event.duration] - Reload duration in milliseconds
+ * @param {string} [event.source] - What triggered the reload (e.g., 'manual', 'auto')
+ * @private
+ */
+_onReloadStart(event) {
+    this.showReloadAnimation();
+}
+    
+/**
+ * Handle weapon reloaded event
+ * @param {Object} event - Standardized weapon event
+ * @param {number} event.timestamp - Time when the event occurred
+ * @param {number} [event.currentAmmo] - New magazine ammo count
+ * @param {number} [event.totalAmmo] - New reserve ammo count
+ * @param {boolean} [event.success] - Whether the reload was successful
+ * @private
+ */
+_onReloadComplete(event) {
+    if (typeof event.currentAmmo === 'number') {
+        this.updateAmmo(event.currentAmmo, false);
     }
     
-    /**
-     * Handle reserve ammo changed event
-     * @param {Object} event - Standardized state change event
-     * @param {Number} event.value - Current reserve ammo value
-     * @param {Number} event.previous - Previous reserve ammo value
-     * @param {Number} [event.delta] - Amount changed
-     * @private
-     */
-    _onTotalAmmoChanged(event) {
-        if (typeof event.value === 'number') {
-            this.updateTotalAmmo(event.value);
-        }
+    if (typeof event.totalAmmo === 'number') {
+        this.updateTotalAmmo(event.totalAmmo);
     }
     
-    /**
-     * Handle weapon reloading event
-     * @param {Object} event - Standardized weapon event
-     * @param {String} [event.weaponType] - Type of weapon being reloaded
-     * @param {Number} [event.duration] - Reload duration in milliseconds
-     * @private
-     */
-    _onReloadStart(event) {
-        this.showReloadAnimation();
+    this.setState({
+        isReloading: false
+    });
+}
+    
+/**
+ * Handle weapon switched event
+ * @param {Object} event - Standardized weapon event
+ * @param {number} event.timestamp - Time when the event occurred
+ * @param {string} [event.weaponType] - Type of weapon switched to
+ * @param {number} [event.magSize] - Magazine size of new weapon
+ * @param {number} [event.currentAmmo] - Current magazine ammo of new weapon
+ * @param {number} [event.totalAmmo] - Current reserve ammo of new weapon
+ * @param {string} [event.weaponId] - Unique identifier for the weapon
+ * @private
+ */
+_onWeaponSwitched(event) {
+    if (event.weaponType) {
+        this.updateWeaponType(event.weaponType);
     }
     
-    /**
-     * Handle weapon reloaded event
-     * @param {Object} event - Standardized weapon event
-     * @param {Number} [event.currentAmmo] - New magazine ammo count
-     * @param {Number} [event.totalAmmo] - New reserve ammo count
-     * @private
-     */
-    _onReloadComplete(event) {
-        if (typeof event.currentAmmo === 'number') {
-            this.updateAmmo(event.currentAmmo, false);
-        }
-        
-        if (typeof event.totalAmmo === 'number') {
-            this.updateTotalAmmo(event.totalAmmo);
-        }
-        
-        this.setState({
-            isReloading: false
-        });
+    if (typeof event.magSize === 'number') {
+        this.updateMagSize(event.magSize);
     }
     
-    /**
-     * Handle weapon switched event
-     * @param {Object} event - Standardized weapon event
-     * @param {String} [event.weaponType] - Type of weapon switched to
-     * @param {Number} [event.magSize] - Magazine size of new weapon
-     * @param {Number} [event.currentAmmo] - Current magazine ammo of new weapon
-     * @param {Number} [event.totalAmmo] - Current reserve ammo of new weapon
-     * @private
-     */
-    _onWeaponSwitched(event) {
-        if (event.weaponType) {
-            this.updateWeaponType(event.weaponType);
-        }
-        
-        if (typeof event.magSize === 'number') {
-            this.updateMagSize(event.magSize);
-        }
-        
-        if (typeof event.currentAmmo === 'number') {
-            this.updateAmmo(event.currentAmmo, false);
-        }
-        
-        if (typeof event.totalAmmo === 'number') {
-            this.updateTotalAmmo(event.totalAmmo);
-        }
+    if (typeof event.currentAmmo === 'number') {
+        this.updateAmmo(event.currentAmmo, false);
     }
+    
+    if (typeof event.totalAmmo === 'number') {
+        this.updateTotalAmmo(event.totalAmmo);
+    }
+}
 }
 
 export { AmmoDisplay };

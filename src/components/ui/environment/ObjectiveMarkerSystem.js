@@ -41,7 +41,7 @@ export class ObjectiveMarkerSystem extends UIComponent {
         this._onObjectiveAdded = this._onObjectiveAdded.bind(this);
         this._onObjectiveUpdated = this._onObjectiveUpdated.bind(this);
         this._onObjectiveRemoved = this._onObjectiveRemoved.bind(this);
-        this._onWaypointSet = this._onWaypointSet.bind(this);
+        this._onWaypointPlaced = this._onWaypointPlaced.bind(this);
         this._onWaypointRemoved = this._onWaypointRemoved.bind(this);
         
         // Initialize manually after all properties are set
@@ -69,7 +69,7 @@ export class ObjectiveMarkerSystem extends UIComponent {
             'objective:added': this._onObjectiveAdded, // Already correct
             'objective:updated': this._onObjectiveUpdated, // Already correct
             'objective:removed': this._onObjectiveRemoved, // Already correct
-            'waypoint:placed': this._onWaypointSet, // Changed from 'waypoint:set' to past tense action
+            'waypoint:placed': this._onWaypointPlaced, // Using consistent naming with method
             'waypoint:removed': this._onWaypointRemoved // Already correct
         });
         
@@ -604,11 +604,11 @@ export class ObjectiveMarkerSystem extends UIComponent {
     }
 
     /**
-     * Handle waypoint set event
+     * Handle waypoint placed event
      * @param {Object} data - Event data
      * @private
      */
-    _onWaypointSet(data) {
+    _onWaypointPlaced(data) {
         if (!data || !data.position) return;
         
         this.setWaypoint(data.position, data.label);

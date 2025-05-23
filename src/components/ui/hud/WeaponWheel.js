@@ -205,8 +205,8 @@ class WeaponWheel extends UIComponent {
         // Register game event listeners
         if (EventManager) {
             EventManager.on('weapon:changed', this._handleWeaponChange);
-            EventManager.on('weapon:pickup', this._handleWeaponPickup);
-            EventManager.on('weapon:drop', this._handleWeaponDrop);
+            EventManager.on('weapon:picked-up', this._handleWeaponPickup); // Standardized from weapon:pickup
+            EventManager.on('weapon:dropped', this._handleWeaponDrop); // Standardized from weapon:drop
             EventManager.on('pause:changed', (data) => {
                 // Auto-hide weapon wheel when game is paused
                 if (data.paused && this.isVisible) {
@@ -548,9 +548,15 @@ class WeaponWheel extends UIComponent {
     /**
      * Handle weapon change event from the weapon system
      * @private
-     * @param {Object} data - Event data
+     * @param {Object} event - Standardized weapon event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {string} [event.weaponType] - Type of weapon switched to
+     * @param {number} [event.magSize] - Magazine size of new weapon
+     * @param {number} [event.currentAmmo] - Current magazine ammo of new weapon
+     * @param {number} [event.totalAmmo] - Current reserve ammo of new weapon
+     * @param {string} [event.weaponId] - Unique identifier for the weapon
      */
-    _handleWeaponChange(data) {
+    _handleWeaponChange(event) {
         // Reload weapons to get updated state
         this._loadWeapons();
     }
@@ -558,9 +564,15 @@ class WeaponWheel extends UIComponent {
     /**
      * Handle weapon pickup event
      * @private
-     * @param {Object} data - Event data
+     * @param {Object} event - Standardized weapon event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {string} event.weaponType - Type of weapon picked up
+     * @param {number} [event.magSize] - Magazine size of picked up weapon
+     * @param {number} [event.currentAmmo] - Current magazine ammo of picked up weapon
+     * @param {number} [event.totalAmmo] - Current reserve ammo of picked up weapon
+     * @param {string} [event.weaponId] - Unique identifier for the weapon
      */
-    _handleWeaponPickup(data) {
+    _handleWeaponPickup(event) {
         // Refresh weapons when a new one is picked up
         this._loadWeapons();
     }
@@ -568,9 +580,13 @@ class WeaponWheel extends UIComponent {
     /**
      * Handle weapon drop event
      * @private
-     * @param {Object} data - Event data
+     * @param {Object} event - Standardized weapon event data
+     * @param {number} event.timestamp - Time when the event occurred
+     * @param {string} event.weaponType - Type of weapon dropped
+     * @param {string} [event.weaponId] - Unique identifier for the weapon
+     * @param {string} [event.reason] - Reason for dropping the weapon (e.g., 'manual', 'replaced', 'outOfAmmo')
      */
-    _handleWeaponDrop(data) {
+    _handleWeaponDrop(event) {
         // Refresh weapons when one is dropped
         this._loadWeapons();
     }
@@ -604,6 +620,7 @@ class WeaponWheel extends UIComponent {
         // Emit event
         if (EventManager) {
             EventManager.emit('weapon:selected', { 
+                timestamp: Date.now(),
                 index: index,
                 weapon: this.weapons[index],
                 type: weaponType
@@ -631,7 +648,9 @@ class WeaponWheel extends UIComponent {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('weapon:wheelshown', {});
+            EventManager.emit('weapon:wheel-shown', { 
+                timestamp: Date.now()
+            });
         }
         
         // Request a pause from the game if configured to do so
@@ -657,7 +676,9 @@ class WeaponWheel extends UIComponent {
         
         // Emit event
         if (EventManager) {
-            EventManager.emit('weapon:wheelhidden', {});
+            EventManager.emit('weapon:wheel-hidden', { 
+                timestamp: Date.now()
+            });
         }
         
         // Request to unpause the game
@@ -705,8 +726,8 @@ class WeaponWheel extends UIComponent {
         // Remove game event listeners
         if (EventManager) {
             EventManager.off('weapon:changed', this._handleWeaponChange);
-            EventManager.off('weapon:pickup', this._handleWeaponPickup);
-            EventManager.off('weapon:drop', this._handleWeaponDrop);
+            EventManager.off('weapon:picked-up', this._handleWeaponPickup); // Standardized from weapon:pickup
+            EventManager.off('weapon:dropped', this._handleWeaponDrop); // Standardized from weapon:drop
         }
         
         // Remove component from DOM

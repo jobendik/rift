@@ -50,11 +50,11 @@ export class PowerupDisplay extends UIComponent {
         
         // Register events
         this.registerEvents({
-            'powerup:add': this._onPowerupAdded,
-            'powerup:remove': this._onPowerupRemoved,
-            'powerup:update': this._onPowerupUpdated,
-            'game:pause': this._onGamePaused,
-            'game:resume': this._onGamePaused
+            'powerup:added': this._onPowerupAdded,
+            'powerup:removed': this._onPowerupRemoved,
+            'powerup:updated': this._onPowerupUpdated,
+            'game:paused': this._onGamePaused,
+            'game:resumed': this._onGameResumed
         });
         
         this.isInitialized = true;
@@ -158,7 +158,8 @@ export class PowerupDisplay extends UIComponent {
             id: powerup.id,
             type: powerup.type,
             duration: powerup.duration,
-            effects: powerup.effects
+            effects: powerup.effects,
+            timestamp: performance.now()
         });
         
         return powerup;
@@ -224,7 +225,8 @@ export class PowerupDisplay extends UIComponent {
         // Emit event
         EventManager.emit('powerup:deactivated', {
             id: powerup.id,
-            type: powerup.type
+            type: powerup.type,
+            timestamp: performance.now()
         });
         
         return true;
@@ -480,12 +482,26 @@ export class PowerupDisplay extends UIComponent {
     }
     
     /**
-     * Handle game pause/resume events
+     * Handle game paused events
      * @param {Object} event - Event data
      * @private
      */
     _onGamePaused(event) {
         // Handle pause state - we skip updates in the update method
+    }
+    
+    /**
+     * Handle game resumed events
+     * @param {Object} event - Event data 
+     * @private
+     */
+    _onGameResumed(event) {
+        // Immediately update all powerup displays when game resumes
+        this.activePowerups.forEach((powerup) => {
+            if (powerup.active && powerup.element) {
+                this._updatePowerupElement(powerup);
+            }
+        });
     }
     
     /**
@@ -546,6 +562,3 @@ export class PowerupDisplay extends UIComponent {
         super.dispose();
     }
 }
-
-
-

@@ -306,5 +306,5 @@ class DOMFactory {
 }
 
 // Add default export while maintaining named export for backward compatibility
-
 export { DOMFactory };
+export default DOMFactory;

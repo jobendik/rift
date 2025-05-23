@@ -153,8 +153,8 @@ class WeatherSystem extends UIComponent {
 
         // Register events
         this.registerEvents({
-            'window:resize': this._onResize,
-            'viewport:change': this._onViewportChange
+            'window:resized': this._onResize,
+            'viewport:changed': this._onViewportChange
         });
 
         // Initial setup
@@ -650,9 +650,10 @@ class WeatherSystem extends UIComponent {
         
         // Trigger screen shake if enabled
         if (lightning.screenShakeEnabled) {
-            EventManager.emit('screen:shake', {
+            EventManager.emit('screen:shaken', {
                 intensity: lightning.screenShakeIntensity,
-                duration: flashDuration * 2
+                duration: flashDuration * 2,
+                timestamp: performance.now()
             });
         }
         

@@ -74,10 +74,10 @@ export class MissionBriefing extends UIComponent {
         // Create DOM structure
         this._createElements();
         
-        // Register event handlers
+        // Register event handlers using standardized event names
         this.registerEvents({
-            'mission:update': (data) => this._onMissionUpdate(data),
-            'objective:update': (data) => this._onObjectiveUpdate(data)
+            'mission:updated': (data) => this._onMissionUpdated(data),
+            'objective:updated': (data) => this._onObjectiveUpdated(data)
         });
         
         this.isInitialized = true;
@@ -720,20 +720,32 @@ export class MissionBriefing extends UIComponent {
     }
     
     /**
-     * Handle mission update event
+     * Handle mission updated event
      * @private
-     * @param {Object} data - Event data
+     * @param {Object} data - Standardized mission event data
+     * @param {string} data.id - Mission identifier
+     * @param {string} data.title - Mission title
+     * @param {string} data.status - Mission status
+     * @param {Object[]} data.objectives - Mission objectives
+     * @param {Object[]} data.rewards - Mission rewards
+     * @param {Object} [data.timestamp] - Event timestamp
      */
-    _onMissionUpdate(data) {
+    _onMissionUpdated(data) {
         this.setMission(data);
     }
     
     /**
-     * Handle objective update event
+     * Handle objective updated event
      * @private
-     * @param {Object} data - Event data
+     * @param {Object} data - Standardized objective event data
+     * @param {string} data.id - Objective identifier
+     * @param {boolean} [data.completed] - Whether objective is completed
+     * @param {string} [data.text] - Objective text
+     * @param {boolean} [data.isPrimary] - Whether this is a primary objective
+     * @param {Object} [data.position] - Position in world coordinates
+     * @param {Object} [data.timestamp] - Event timestamp
      */
-    _onObjectiveUpdate(data) {
+    _onObjectiveUpdated(data) {
         this.updateObjective(data);
     }
     
@@ -749,10 +761,11 @@ export class MissionBriefing extends UIComponent {
             this.worldMap.centerOn(position);
         }
         
-        // Emit event for other systems
-        EventManager.emit('objective:focus', {
+        // Emit standardized event for other systems
+        EventManager.emit('objective:focused', {
             objectiveId: objectiveId,
-            position: position
+            position: position,
+            timestamp: Date.now()
         });
     }
     
@@ -763,14 +776,15 @@ export class MissionBriefing extends UIComponent {
     _onStartMissionClick() {
         if (!this.currentMission) return;
         
-        // Emit event that mission was started
-        EventManager.emit('mission:start', {
+        // Emit standardized event that mission was started
+        EventManager.emit('mission:started', {
             missionId: this.currentMission.id,
-            mission: this.currentMission
+            mission: this.currentMission,
+            timestamp: Date.now()
         });
         
-        // Close the mission briefing screen
-        EventManager.emit('ui:hideScreen');
+        // Close the mission briefing screen using standardized event name
+        EventManager.emit('ui:screen-hidden');
     }
     
     /**
@@ -780,14 +794,15 @@ export class MissionBriefing extends UIComponent {
     _onCancelMissionClick() {
         if (!this.currentMission) return;
         
-        // Emit event that mission was cancelled
-        EventManager.emit('mission:cancel', {
+        // Emit standardized event that mission was cancelled
+        EventManager.emit('mission:cancelled', {
             missionId: this.currentMission.id,
-            mission: this.currentMission
+            mission: this.currentMission,
+            timestamp: Date.now()
         });
         
-        // Close the mission briefing screen
-        EventManager.emit('ui:hideScreen');
+        // Close the mission briefing screen using standardized event name
+        EventManager.emit('ui:screen-hidden');
     }
     
     /**

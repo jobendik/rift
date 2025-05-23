@@ -1,0 +1,264 @@
+@@ -0,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT Event Standardization Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&family=Orbitron:wght@500;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #33a8ff;
+            --background-color: #121212;
+            --text-color: #f1f1f1;
+            --border-color: #333;
+            --panel-bg: rgba(20, 20, 20, 0.9);
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 2px solid var(--primary-color);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+        }
+        
+        h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+        
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .button:hover {
+            background-color: #c62f3b;
+            transform: translateY(-2px);
+        }
+        
+        .settings-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .settings-row label {
+            margin-right: 1rem;
+            font-weight: 600;
+        }
+        
+        .test-results {
+            padding: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .test-header {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin: 1rem 0 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+        
+        .test-message {
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.25rem;
+            border-left: 3px solid var(--primary-color);
+            font-family: 'Exo 2', monospace;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>RIFT Event Standardization Test</h1>
+    </header>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>Event System Settings</h2>
+            <div class="settings-row">
+                <label>Debug Mode:</label>
+                <input type="checkbox" id="debugMode" checked>
+            </div>
+            <div class="settings-row">
+                <label>Validate Event Names:</label>
+                <input type="checkbox" id="validateNames" checked>
+            </div>
+            <div class="settings-row">
+                <label>Validate Event Payloads:</label>
+                <input type="checkbox" id="validatePayloads" checked>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Test Controls</h2>
+            <div class="controls">
+                <button id="runAllTests" class="button">Run All Tests</button>
+                <button id="testStateChange" class="button">Test State Changes</button>
+                <button id="testCombat" class="button">Test Combat Events</button>
+                <button id="testNotification" class="button">Test Notifications</button>
+                <button id="testProgress" class="button">Test Progress Events</button>
+                <button id="testValidation" class="button">Test Validation</button>
+                <button id="clearResults" class="button">Clear Results</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Test Results</h2>
+            <div id="results" class="test-results">
+                <!-- Test results will appear here -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        RIFT FPS UI/CSS Redesign - Phase 4: Event Standardization
+    </footer>
+    
+    <script type="module">
+        import { EventStandardizationTest } from '../src/core/EventStandardizationTest.js';
+        import { EventManager } from '../src/core/EventManager.js';
+        
+        let testInstance = null;
+        
+        // Setup event listeners
+        document.getElementById('debugMode').addEventListener('change', updateSettings);
+        document.getElementById('validateNames').addEventListener('change', updateSettings);
+        document.getElementById('validatePayloads').addEventListener('change', updateSettings);
+        document.getElementById('runAllTests').addEventListener('click', runAllTests);
+        document.getElementById('testStateChange').addEventListener('click', () => runTest('state'));
+        document.getElementById('testCombat').addEventListener('click', () => runTest('combat'));
+        document.getElementById('testNotification').addEventListener('click', () => runTest('notification'));
+        document.getElementById('testProgress').addEventListener('click', () => runTest('progress'));
+        document.getElementById('testValidation').addEventListener('click', () => runTest('validation'));
+        document.getElementById('clearResults').addEventListener('click', clearResults);
+        
+        // Initialize settings
+        updateSettings();
+        
+        // Functions
+        function updateSettings() {
+            const debugMode = document.getElementById('debugMode').checked;
+            const validateNames = document.getElementById('validateNames').checked;
+            const validatePayloads = document.getElementById('validatePayloads').checked;
+            
+            EventManager.setDebugMode(debugMode);
+            EventManager.setValidateEventNames(validateNames);
+            EventManager.setValidateEventPayloads(validatePayloads);
+            
+            logMessage(`Settings updated: Debug=${debugMode}, ValidateNames=${validateNames}, ValidatePayloads=${validatePayloads}`);
+        }
+        
+        function runAllTests() {
+            clearResults();
+            testInstance = new EventStandardizationTest();
+        }
+        
+        function runTest(type) {
+            if (!testInstance) {
+                testInstance = new EventStandardizationTest();
+            }
+            
+            clearResults();
+            
+            switch(type) {
+                case 'state':
+                    testInstance.testStateChangeEvents();
+                    break;
+                case 'combat':
+                    testInstance.testCombatEvents();
+                    break;
+                case 'notification':
+                    testInstance.testNotificationEvents();
+                    break;
+                case 'progress':
+                    testInstance.testProgressEvents();
+                    break;
+                case 'validation':
+                    testInstance.testNamingValidation();
+                    break;
+            }
+        }
+        
+        function clearResults() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+        }
+        
+        function logMessage(message) {
+            const results = document.getElementById('results');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'test-message';
+            messageElement.textContent = message;
+            results.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>

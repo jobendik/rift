@@ -98,12 +98,12 @@ export class DangerZone extends UIComponent {
         
         // Register events
         this.registerEvents({
-            'player:move': this._onPlayerMove,
-            'danger:add': this._onZoneAdded,
-            'danger:remove': this._onZoneRemoved,
-            'danger:update': this._onZoneUpdated,
-            'game:pause': this._onGamePaused,
-            'game:resume': this._onGamePaused
+            'player:moved': this._onPlayerMove,
+            'danger:added': this._onZoneAdded,
+            'danger:removed': this._onZoneRemoved,
+            'danger:updated': this._onZoneUpdated,
+            'game:paused': this._onGamePaused,
+            'game:resumed': this._onGameResumed
         });
         
         this.isInitialized = true;
@@ -645,11 +645,12 @@ export class DangerZone extends UIComponent {
                 
                 // Emit event if in critical range
                 if (this.playerProximity.closestDistance <= this.config.criticalThreshold) {
-                    EventManager.emit('danger:critical', {
+                    EventManager.emit('danger:critical-detected', {
                         type: zone.type,
                         distance: this.playerProximity.closestDistance,
                         zone: zone.id,
-                        damageRate: this.config.types[zone.type]?.damageRate || 5
+                        damageRate: this.config.types[zone.type]?.damageRate || 5,
+                        timestamp: performance.now()
                     });
                 }
             } else {
@@ -722,12 +723,22 @@ export class DangerZone extends UIComponent {
     }
     
     /**
-     * Handle game pause/resume events
+     * Handle game paused events
      * @param {Object} event - Event data
      * @private
      */
     _onGamePaused(event) {
         // Handle pause state if needed
+    }
+    
+    /**
+     * Handle game resumed events
+     * @param {Object} event - Event data
+     * @private
+     */
+    _onGameResumed(event) {
+        // Handle resume state if needed
+        this._updateZonePositions();
     }
     
     /**
@@ -805,4 +816,3 @@ export class DangerZone extends UIComponent {
         super.dispose();
     }
 }
-
