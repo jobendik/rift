@@ -63,14 +63,14 @@ export class ObjectiveMarkerSystem extends UIComponent {
         // Get container reference
         this.markerContainer = this.element.querySelector('.rift-objective-markers__container');
         
-        // Register events
+        // Register events with standardized names
         this.registerEvents({
-            'window:resize': this._onResize,
-            'objective:added': this._onObjectiveAdded,
-            'objective:updated': this._onObjectiveUpdated,
-            'objective:removed': this._onObjectiveRemoved,
-            'waypoint:set': this._onWaypointSet,
-            'waypoint:removed': this._onWaypointRemoved
+            'window:resized': this._onResize, // Changed from 'window:resize' to past tense
+            'objective:added': this._onObjectiveAdded, // Already correct
+            'objective:updated': this._onObjectiveUpdated, // Already correct
+            'objective:removed': this._onObjectiveRemoved, // Already correct
+            'waypoint:placed': this._onWaypointSet, // Changed from 'waypoint:set' to past tense action
+            'waypoint:removed': this._onWaypointRemoved // Already correct
         });
         
         // Update screen dimensions
@@ -633,4 +633,3 @@ export class ObjectiveMarkerSystem extends UIComponent {
         super.dispose();
     }
 }
-

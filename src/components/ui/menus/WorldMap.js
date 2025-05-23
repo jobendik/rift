@@ -349,7 +349,7 @@ export default class WorldMap extends UIComponent {
         
         // Register game event listeners
         this.registerEvents({
-            'player:position': this._onPlayerPositionUpdate,
+            'player:position-changed': this._onPlayerPositionUpdate,
             'objective:added': this._onObjectiveAdded,
             'objective:completed': this._onObjectiveCompleted,
             'objective:updated': this._onObjectiveUpdated,
@@ -626,7 +626,7 @@ export default class WorldMap extends UIComponent {
      * @param {Object} objective - Objective data
      */
     _showObjectiveDetails(objective) {
-        EventManager.emit('ui:showModal', {
+        EventManager.emit('ui:modal-shown', {
             id: 'objective-details',
             options: {
                 data: objective
@@ -799,7 +799,7 @@ export default class WorldMap extends UIComponent {
      */
     _renameWaypoint(waypoint) {
         // Use modal to get new name
-        EventManager.emit('ui:showModal', {
+        EventManager.emit('ui:modal-shown', {
             id: 'rename-waypoint',
             options: {
                 data: {

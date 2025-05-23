@@ -15,6 +15,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 export class AchievementDisplay extends UIComponent {
     /**
@@ -44,6 +45,7 @@ export class AchievementDisplay extends UIComponent {
         this.isPaused = false;
         this.pauseStartTime = 0;
         this.pausedRemainingTime = 0;
+        this.eventSubscriptions = [];
     }
     
     /**
@@ -54,8 +56,37 @@ export class AchievementDisplay extends UIComponent {
             this._createRootElement();
         }
         
+        // Set up event listeners
+        this._setupEventListeners();
+        
         this.isInitialized = true;
         return this;
+    }
+    
+    /**
+     * Set up event listeners for achievements and game state
+     * @private
+     */
+    _setupEventListeners() {
+        this.eventSubscriptions.push(
+            EventManager.subscribe('achievement:unlocked', this._onAchievementUnlocked.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:paused', this.pauseTimers.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:resumed', this.resumeTimers.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('challenge:completed', this._onChallengeCompleted.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('item:unlocked', this._onItemUnlocked.bind(this))
+        );
     }
     
     /**
@@ -135,6 +166,12 @@ export class AchievementDisplay extends UIComponent {
             this.currentAchievement = null;
         }
         
+        // Unsubscribe from events
+        this.eventSubscriptions.forEach(subscription => {
+            EventManager.unsubscribe(subscription);
+        });
+        this.eventSubscriptions = [];
+        
         // Clear queue
         this.queue = [];
         
@@ -142,6 +179,72 @@ export class AchievementDisplay extends UIComponent {
         super.dispose();
         
         return this;
+    }
+    
+    /**
+     * Handle achievement:unlocked event
+     * @param {Object} event - Standardized achievement event
+     * @private
+     */
+    _onAchievementUnlocked(event) {
+        const achievementData = {
+            title: event.name || 'Achievement Unlocked',
+            description: event.description || '',
+            type: 'achievement',
+            iconUrl: event.iconUrl || null,
+            value: event.value || null,
+            progress: event.progress || null,
+            duration: event.duration || this.displayDuration
+        };
+        
+        this.showAchievement(achievementData);
+        
+        // Emit notification
+        EventManager.emit('notification:displayed', {
+            message: event.name || 'Achievement Unlocked',
+            category: 'achievement',
+            duration: 5000,
+            priority: 2,
+            id: `achievement-${event.id || Date.now()}`,
+            icon: event.iconUrl
+        });
+    }
+    
+    /**
+     * Handle challenge:completed event
+     * @param {Object} event - Standardized challenge event
+     * @private
+     */
+    _onChallengeCompleted(event) {
+        const challengeData = {
+            title: event.name || 'Challenge Completed',
+            description: event.description || '',
+            type: 'challenge',
+            iconUrl: event.iconUrl || null,
+            value: event.value || null,
+            progress: event.progress || null,
+            duration: event.duration || this.displayDuration
+        };
+        
+        this.showAchievement(challengeData);
+    }
+    
+    /**
+     * Handle item:unlocked event
+     * @param {Object} event - Standardized item unlock event
+     * @private
+     */
+    _onItemUnlocked(event) {
+        const unlockData = {
+            title: event.name || 'Item Unlocked',
+            description: event.description || '',
+            type: 'unlock',
+            iconUrl: event.iconUrl || null,
+            value: event.value || null,
+            duration: event.duration || this.displayDuration
+        };
+        
+        this.showAchievement(unlockData);
     }
     
     /**
@@ -465,6 +568,3 @@ export class AchievementDisplay extends UIComponent {
         }
     }
 }
-
-
-

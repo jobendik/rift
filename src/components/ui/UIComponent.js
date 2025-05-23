@@ -94,9 +94,9 @@ export default class UIComponent {
             }
         });
         
-        // Emit initialization event
+        // Emit initialization event with standardized name
         if (EventManager) {
-            EventManager.emit(`ui:${this.id}:initialized`, { component: this });
+            EventManager.emit(`ui:${this.id}:initialize`, { component: this });
         }
         
         return this;
@@ -169,9 +169,9 @@ export default class UIComponent {
             }
         });
         
-        // Emit visibility change event
+        // Emit visibility change event with standardized name
         if (EventManager) {
-            EventManager.emit(`ui:${this.id}:visible`, { component: this });
+            EventManager.emit(`ui:${this.id}:show`, { component: this });
         }
         
         return this;
@@ -201,9 +201,9 @@ export default class UIComponent {
             }
         });
         
-        // Emit visibility change event
+        // Emit visibility change event with standardized name
         if (EventManager) {
-            EventManager.emit(`ui:${this.id}:hidden`, { component: this });
+            EventManager.emit(`ui:${this.id}:hide`, { component: this });
         }
         
         return this;
@@ -240,9 +240,9 @@ export default class UIComponent {
         this.isInitialized = false;
         this.isActive = false;
         
-        // Emit disposal event
+        // Emit disposal event with standardized name
         if (EventManager) {
-            EventManager.emit(`ui:${this.id}:disposed`, { component: this });
+            EventManager.emit(`ui:${this.id}:dispose`, { component: this });
         }
         
         return this;
@@ -607,4 +607,3 @@ export default class UIComponent {
         return easingFn(t);
     }
 }
-

@@ -269,8 +269,15 @@ The event system has been enhanced with standardization support, implementing th
 
 1. **Standardized Event Names**
    - Follows `namespace:action` pattern (e.g., `health:changed`, `player:damaged`)
-   - Consistent verb forms (mostly past tense for state changes: changed, updated, damaged, killed)
-   - Predefined set of standard namespaces (player, health, weapon, etc.)
+   - Consistent verb forms using past tense for actions (changed, updated, damaged, killed, placed)
+   - Past tense indicates the event represents something that has already occurred
+   - Predefined set of standard namespaces (player, health, weapon, environment, etc.)
+   - Examples from environment components:
+     - `window:resized` (not `window:resize`) - A resizing has happened
+     - `weather:changed` (not `weather:change`) - Weather has changed
+     - `environment:updated` (not `environment:update`) - Environment state has updated
+     - `waypoint:placed` (not `waypoint:set`) - A waypoint has been placed
+     - `game:paused` and `game:resumed` - Game state has changed
 
 2. **Standardized Event Payloads**
    - Consistent structure based on event type

@@ -39,6 +39,8 @@ class EnvironmentSystem extends UIComponent {
 
         // Bind methods
         this._onGamePauseChange = this._onGamePauseChange.bind(this);
+        this._onWeatherChanged = this._onWeatherChanged.bind(this);
+        this._onEnvironmentUpdated = this._onEnvironmentUpdated.bind(this);
         
         // Initialize manually after properties are set
         this.init();
@@ -97,12 +99,12 @@ class EnvironmentSystem extends UIComponent {
         // Initialize powerup display system
         this._initPowerupDisplaySystem();
 
-        // Register events
+        // Register events with standardized names (past tense for actions)
         this.registerEvents({
-            'game:pause': this._onGamePauseChange,
-            'game:resume': this._onGamePauseChange,
-            'weather:change': this._onWeatherChange,
-            'environment:update': this._onEnvironmentUpdate
+            'game:paused': this._onGamePauseChange,
+            'game:resumed': this._onGamePauseChange,
+            'weather:changed': this._onWeatherChanged,
+            'environment:updated': this._onEnvironmentUpdated
         });
 
         this.isInitialized = true;
@@ -403,22 +405,22 @@ class EnvironmentSystem extends UIComponent {
     }
 
     /**
-     * Handle weather change events
+     * Handle weather changed events
      * @param {Object} event - Event data
      * @private
      */
-    _onWeatherChange(event) {
+    _onWeatherChanged(event) {
         if (!event || !event.type || !event.intensity) return;
         
         this.setWeather(event.type, event.intensity);
     }
 
     /**
-     * Handle general environment updates
+     * Handle general environment updated events
      * @param {Object} event - Event data
      * @private
      */
-    _onEnvironmentUpdate(event) {
+    _onEnvironmentUpdated(event) {
         // Handle general environment updates
         // This will be expanded as more environmental systems are added
     }

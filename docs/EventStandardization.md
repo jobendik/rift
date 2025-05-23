@@ -23,6 +23,20 @@ Where:
 - `id` (optional) identifies a specific component instance (e.g., health-display, rift-hud-system)
 - `action` describes what happened (e.g., damaged, killed, updated)
 
+### Action Naming Rules
+
+**Important**: Actions should use past tense to indicate the event represents something that has already occurred:
+
+- ✅ `changed` (not `change`) - The value has changed
+- ✅ `damaged` (not `damage`) - Damage has been applied
+- ✅ `killed` (not `kill`) - An entity has been killed
+- ✅ `resized` (not `resize`) - A resize has occurred
+- ✅ `paused` (not `pause`) - The game has been paused
+- ✅ `position-changed` (not just `position`) - The position has changed
+- ✅ `modal-shown` (not `showModal`) - A modal has been shown
+
+The past tense indicates that the event represents the notification of something that has already happened, not a command to do something.
+
 ### Examples of Standard Events
 - `health:changed` - Player health value changed
 - `weapon:fired` - Weapon was fired

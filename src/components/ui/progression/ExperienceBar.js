@@ -109,40 +109,48 @@ class ExperienceBar extends UIComponent {
      */
     _setupEventListeners() {
         if (EventManager) {
-            EventManager.on('player:xp:gain', this._handleXPGain);
-            EventManager.on('player:level:up', this._handleLevelUp);
+            this.eventSubscriptions.push(
+                EventManager.subscribe('xp:gained', this._onXPGained.bind(this))
+            );
+            this.eventSubscriptions.push(
+                EventManager.subscribe('xp:levelup', this._onLevelUp.bind(this))
+            );
         }
     }
     
     /**
-     * Handle XP gain events
+     * Handle xp:gained event
+     * @param {Object} event - Standardized progress event
+     * @param {number} event.amount - Amount of XP gained
+     * @param {string} event.source - Source of XP (kill, objective, etc.)
+     * @param {number} event.total - New total XP
      * @private
-     * @param {Object} data - Event data
-     * @param {number} data.amount - Amount of XP gained
-     * @param {string} data.source - Source of XP (kill, objective, etc.)
      */
-    _handleXPGain(data) {
-        if (!data || typeof data.amount !== 'number') return;
+    _onXPGained(event) {
+        if (!event || typeof event.amount !== 'number') return;
         
-        const amount = data.amount || 0;
+        const amount = event.amount || 0;
         this.gainXP(amount);
         
         // Display floating XP indicator if enabled
         if (this.config.displayXpGain && amount > 0) {
-            this._showXPGainIndicator(amount, data.source);
+            this._showXPGainIndicator(amount, event.source);
         }
     }
     
     /**
-     * Handle level up events
+     * Handle xp:levelup event
+     * @param {Object} event - Standardized progress event
+     * @param {number} event.value - New player level
+     * @param {number} event.previous - Previous player level
+     * @param {Object} event.level - Level information
+     * @param {boolean} event.level.isLevelUp - Whether this caused a level up
      * @private
-     * @param {Object} data - Event data
-     * @param {number} data.level - New level
      */
-    _handleLevelUp(data) {
-        if (!data || typeof data.level !== 'number') return;
+    _onLevelUp(event) {
+        if (!event || typeof event.value !== 'number') return;
         
-        this.setLevel(data.level);
+        this.setLevel(event.value);
         
         // Show level up animation if enabled
         if (this.config.displayLevelUp) {
@@ -293,11 +301,19 @@ class ExperienceBar extends UIComponent {
         
         // Emit level up event if we leveled up
         if (didLevelUp && EventManager) {
-            EventManager.emit('player:level:up', { 
-                level: this.level,
-                levelsGained: levelsGained,
-                skillPoints: levelsGained * (this.config.skillPointsPerLevel || 1)
-            });
+            EventManager.emit('xp:levelup', 
+                EventManager.createProgressEvent(
+                    levelsGained * (this.config.skillPointsPerLevel || 1), // amount
+                    'experience-gain',                                      // source
+                    this.currentXP,                                         // total
+                    {                                                       // level
+                        current: this.level,
+                        previous: this.level - levelsGained,
+                        isLevelUp: true
+                    },
+                    []                                                      // rewards (empty array as default)
+                )
+            );
         }
         
         return this;
@@ -354,11 +370,8 @@ class ExperienceBar extends UIComponent {
      * Clean up the component
      */
     dispose() {
-        // Remove event listeners
-        if (EventManager) {
-            EventManager.off('player:xp:gain', this._handleXPGain);
-            EventManager.off('player:level:up', this._handleLevelUp);
-        }
+        // Unsubscribe from all events using parent class method
+        super.dispose();
         
         // Remove DOM elements
         if (this.container && this.container.parentNode) {

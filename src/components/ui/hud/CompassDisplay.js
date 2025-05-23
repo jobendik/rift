@@ -65,10 +65,10 @@ class CompassDisplay extends UIComponent {
         
         // Register events
         this.registerEvents({
-            'player:rotation': this._onPlayerRotation,
+            'player:rotation-changed': this._onPlayerRotation,
             'waypoint:added': this._onWaypointAdded,
             'waypoint:removed': this._onWaypointRemoved,
-            'enemy:spotted': this._onEnemySpotted,
+            'enemy:detected': this._onEnemySpotted,
             'enemy:lost': this._onEnemyLost
         });
     }
@@ -418,21 +418,25 @@ class CompassDisplay extends UIComponent {
     }
     
     /**
-     * Handle player rotation events
-     * @param {Object} event - Event data
+     * Handle player rotation changed events
+     * @param {Object} event - Standardized state change event
+     * @param {number} event.value - Current rotation value in radians
+     * @param {number} event.previous - Previous rotation value in radians
      * @private
      */
     _onPlayerRotation(event) {
-        if (event && typeof event.rotation === 'number') {
+        if (event && typeof event.value === 'number') {
             // Convert rotation to degrees
-            const degrees = (event.rotation * 180 / Math.PI) % 360;
+            const degrees = (event.value * 180 / Math.PI) % 360;
             this.updateRotation(degrees);
         }
     }
     
     /**
      * Handle waypoint added events
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized event
+     * @param {Object} event.waypoint - Waypoint data
+     * @param {string} event.source - Source that added the waypoint
      * @private
      */
     _onWaypointAdded(event) {
@@ -443,7 +447,9 @@ class CompassDisplay extends UIComponent {
     
     /**
      * Handle waypoint removed events
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized event
+     * @param {string} event.id - Waypoint identifier
+     * @param {string} event.source - Source that removed the waypoint
      * @private
      */
     _onWaypointRemoved(event) {
@@ -453,15 +459,19 @@ class CompassDisplay extends UIComponent {
     }
     
     /**
-     * Handle enemy spotted events
-     * @param {Object} event - Event data
+     * Handle enemy detected events
+     * @param {Object} event - Standardized combat event
+     * @param {Object} event.target - Target entity information (the enemy)
+     * @param {string} event.target.id - Enemy identifier
+     * @param {string} event.target.type - Enemy type
+     * @param {Object} event.target.position - Enemy position
      * @private
      */
     _onEnemySpotted(event) {
-        if (event && event.enemy) {
+        if (event && event.target) {
             const enemy = {
-                id: event.enemy.id,
-                direction: this._calculateDirectionToEntity(event.enemy)
+                id: event.target.id,
+                direction: this._calculateDirectionToEntity(event.target)
             };
             this.addEnemy(enemy);
         }
@@ -469,12 +479,13 @@ class CompassDisplay extends UIComponent {
     
     /**
      * Handle enemy lost events
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized combat event
+     * @param {string} event.target.id - Enemy identifier
      * @private
      */
     _onEnemyLost(event) {
-        if (event && event.id) {
-            this.removeEnemy(event.id);
+        if (event && event.target && event.target.id) {
+            this.removeEnemy(event.target.id);
         }
     }
     

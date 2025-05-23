@@ -48,9 +48,9 @@ class MinimapSystem extends UIComponent {
         
         // Register events
         this.registerEvents({
-            'game:mapToggle': this._onMapToggle,
+            'game:map-toggled': this._onMapToggle,
             'hud:resized': this._onHudResized,
-            'minimap:toggle': this._onMinimapToggle
+            'minimap:toggled': this._onMinimapToggle
         });
     }
     
@@ -252,14 +252,16 @@ class MinimapSystem extends UIComponent {
     }
     
     /**
-     * Handle minimap toggle event
-     * @param {Object} event - Event data
+     * Handle minimap toggled event
+     * @param {Object} event - Standardized state change event
+     * @param {boolean} event.value - Whether the minimap should be visible
+     * @param {boolean} event.previous - Previous visibility state
      * @private
      */
     _onMinimapToggle(event) {
-        if (event.visible === true) {
+        if (event.value === true) {
             this.show();
-        } else if (event.visible === false) {
+        } else if (event.value === false) {
             this.hide();
         } else {
             this.toggle();
@@ -320,10 +322,12 @@ class MinimapSystem extends UIComponent {
         if (this.minimapIntegration) {
             const isRotating = this.minimapIntegration.toggleRotation();
             
-            // Emit event for potential listeners
+            // Emit standardized event for potential listeners
             if (EventManager) {
-                EventManager.emit('minimap:rotation', { 
-                    rotating: isRotating 
+                EventManager.emit('minimap:rotation-changed', { 
+                    value: isRotating,
+                    previous: !isRotating,
+                    source: 'user-action'
                 });
             }
         }
@@ -343,9 +347,13 @@ class MinimapSystem extends UIComponent {
         
         this.setState({ expanded });
         
-        // Emit event
+        // Emit standardized event
         if (EventManager) {
-            EventManager.emit('minimap:expanded', { expanded });
+            EventManager.emit('minimap:expanded', { 
+                value: expanded,
+                previous: !expanded,
+                source: 'user-action'
+            });
         }
         
         // Update minimap renderer size

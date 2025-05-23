@@ -117,28 +117,32 @@ class PlayerRank extends UIComponent {
         }
     }
     
-    /**
-     * Set up event listeners
-     * @private
-     */
-    _setupEventListeners() {
-        if (EventManager) {
-            EventManager.on('player:level:up', this._handleLevelUp);
-        }
+/**
+ * Set up event listeners
+ * @private
+ */
+_setupEventListeners() {
+    if (EventManager) {
+        this.eventSubscriptions.push(
+            EventManager.subscribe('xp:levelup', this._onLevelUp.bind(this))
+        );
     }
+}
+
+/**
+ * Handle xp:levelup event
+ * @param {Object} event - Standardized progress event
+ * @param {number} event.value - New player level
+ * @param {number} event.previous - Previous player level
+ * @param {boolean} event.level.isLevelUp - Whether this caused a level up
+ * @private
+ */
+_onLevelUp(event) {
+    if (!event || typeof event.value !== 'number') return;
     
-    /**
-     * Handle level up events
-     * @private
-     * @param {Object} data - Event data
-     * @param {number} data.level - New level
-     */
-    _handleLevelUp(data) {
-        if (!data || typeof data.level !== 'number') return;
-        
-        // Update rank based on new level
-        this.updateRank(data.level);
-    }
+    // Update rank based on new level
+    this.updateRank(event.value);
+}
     
     /**
      * Get the rank data for a given level
@@ -196,13 +200,27 @@ class PlayerRank extends UIComponent {
         if (rankChanged) {
             this._showRankUpAnimation();
             
-            // Emit rank up event
+            // Emit rank changed event using standardized payload
             if (EventManager) {
-                EventManager.emit('player:rank:up', { 
-                    rank: this.rank.name,
-                    tier: this.rank.tier,
-                    level: this.level 
-                });
+                EventManager.emit('rank:changed', 
+                    EventManager.createStateChangeEvent(
+                        'rank', 
+                        {
+                            name: this.rank.name,
+                            tier: this.rank.tier,
+                            level: this.level
+                        },
+                        // Previous value not available here, but we include it for structure
+                        {
+                            name: this.rank.name,
+                            tier: this.rank.tier,
+                            level: this.level
+                        },
+                        null, // delta
+                        null, // max
+                        'level-increase' // source
+                    )
+                );
             }
         }
         
@@ -277,10 +295,8 @@ class PlayerRank extends UIComponent {
      * Clean up the component
      */
     dispose() {
-        // Remove event listeners
-        if (EventManager) {
-            EventManager.off('player:level:up', this._handleLevelUp);
-        }
+        // Unsubscribe from all events using parent class method
+        super.dispose();
         
         // Remove DOM elements
         if (this.container && this.container.parentNode) {

@@ -16,6 +16,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 export class NotificationManager extends UIComponent {
     /**
@@ -63,10 +64,43 @@ export class NotificationManager extends UIComponent {
         // Call parent init first to create root element
         super.init();
         
+        // Set up event listeners
+        this._setupEventListeners();
+        
         // Set initialized flag early to prevent infinite recursion
         this.isInitialized = true;
         
         return this;
+    }
+    
+    /**
+     * Set up event listeners for notification events
+     * @private
+     */
+    _setupEventListeners() {
+        this.eventSubscriptions.push(
+            EventManager.subscribe('notification:displayed', this._onNotificationDisplay.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('notification:dismissed', this._onNotificationClear.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:paused', () => this.pauseTimers())
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:resumed', () => this.resumeTimers())
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('achievement:unlocked', this._onAchievementUnlocked.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('objective:completed', this._onObjectiveCompleted.bind(this))
+        );
     }
     
     /**
@@ -146,10 +180,119 @@ export class NotificationManager extends UIComponent {
         this.notifications = [];
         this.queue = [];
         
+        // Unsubscribe from events
+        this.eventSubscriptions.forEach(subscription => {
+            EventManager.unsubscribe(subscription);
+        });
+        this.eventSubscriptions = [];
+        
         // Call parent dispose
         super.dispose();
         
         return this;
+    }
+    
+    /**
+     * Handle notification:displayed event
+     * @param {Object} event - Standardized notification event
+     * @param {string} event.message - The notification message text
+     * @param {string} event.category - Notification category (e.g., "info", "warning")
+     * @param {number} event.duration - Duration to display the notification in milliseconds
+     * @param {number} event.priority - Priority level of the notification
+     * @param {string} event.id - Unique identifier for the notification
+     * @param {string} event.icon - Icon to display with the notification
+     * @private
+     */
+    _onNotificationDisplay(event) {
+        // Map notification category to type
+        const typeMap = {
+            'info': 'info',
+            'warning': 'warning',
+            'error': 'error',
+            'success': 'success',
+            'achievement': 'success',
+            'objective': 'info'
+        };
+        
+        const type = typeMap[event.category] || 'info';
+        const options = {
+            title: event.title,
+            duration: event.duration,
+            dismissible: true,
+            onDismiss: () => {
+                // Emit notification:dismissed event
+                EventManager.emit('notification:dismissed', {
+                    id: event.id,
+                    category: event.category
+                });
+            },
+            id: event.id
+        };
+        
+        this.addNotification(event.message, type, options);
+    }
+    
+    /**
+     * Handle notification:dismissed event
+     * @param {Object} event - Event data
+     * @param {string} event.id - Optional ID of notification to clear, if not provided all notifications will be cleared
+     * @param {string} event.category - Optional category of notifications to clear
+     * @private
+     */
+    _onNotificationClear(event) {
+        if (!event.id && !event.category) {
+            // Clear all notifications if no specific ID or category
+            this.clearAll();
+            return;
+        }
+        
+        // Filter notifications to dismiss based on ID or category
+        const notificationsToDismiss = this.notifications.filter(notif => {
+            if (event.id && notif.options && notif.options.id === event.id) {
+                return true;
+            }
+            if (event.category && notif.type === event.category) {
+                return true;
+            }
+            return false;
+        });
+        
+        // Dismiss matching notifications
+        notificationsToDismiss.forEach(notif => {
+            this._dismissNotification(notif);
+        });
+    }
+    
+    /**
+     * Handle achievement:unlocked event
+     * @param {Object} event - Achievement event data
+     * @private
+     */
+    _onAchievementUnlocked(event) {
+        const options = {
+            title: 'Achievement Unlocked',
+            duration: 6000, // Show achievements for longer
+            dismissible: true,
+            id: `achievement-${event.id || Date.now()}`
+        };
+        
+        this.addNotification(event.name || event.message, 'success', options);
+    }
+    
+    /**
+     * Handle objective:completed event
+     * @param {Object} event - Objective event data
+     * @private
+     */
+    _onObjectiveCompleted(event) {
+        const options = {
+            title: 'Objective Completed',
+            duration: 5000,
+            dismissible: true,
+            id: `objective-${event.id || Date.now()}`
+        };
+        
+        this.addNotification(event.description || event.message, 'info', options);
     }
     
     /**
@@ -408,5 +551,3 @@ export class NotificationManager extends UIComponent {
         this.addNotification(next.text, next.type, next.options);
     }
 }
-
-

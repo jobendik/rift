@@ -64,11 +64,11 @@ class StaminaSystem extends UIComponent {
         this.registerEvents({
             'stamina:changed': this._onStaminaChanged,
             'stamina:max-changed': this._onMaxStaminaChanged,
-            'player:sprint-start': this._onSprintStart,
-            'player:sprint-end': this._onSprintEnd,
+            'player:sprint-started': this._onSprintStart,
+            'player:sprint-ended': this._onSprintEnd,
             'stamina:depleted': this._onStaminaDepleted,
-            'stamina:cooldown-start': this._onCooldownStart,
-            'stamina:cooldown-end': this._onCooldownEnd
+            'stamina:cooldown-started': this._onCooldownStart,
+            'stamina:cooldown-ended': this._onCooldownEnd
         });
         
         // Create configuration if it doesn't exist
@@ -410,7 +410,10 @@ class StaminaSystem extends UIComponent {
     
     /**
      * Handle stamina changed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized state change event
+     * @param {number} event.value - Current stamina value
+     * @param {number} event.previous - Previous stamina value
+     * @param {string} event.source - Source of the change
      * @private
      */
     _onStaminaChanged(event) {
@@ -421,7 +424,10 @@ class StaminaSystem extends UIComponent {
     
     /**
      * Handle max stamina changed event
-     * @param {Object} event - Event data
+     * @param {Object} event - Standardized state change event
+     * @param {number} event.value - Current max stamina value
+     * @param {number} event.previous - Previous max stamina value
+     * @param {string} event.source - Source of the change
      * @private
      */
     _onMaxStaminaChanged(event) {
@@ -431,8 +437,10 @@ class StaminaSystem extends UIComponent {
     }
     
     /**
-     * Handle sprint start event
-     * @param {Object} event - Event data
+     * Handle sprint started event
+     * @param {Object} event - Standardized state change event
+     * @param {boolean} event.value - Sprint state (true for started)
+     * @param {Object} event.source - Source of the change
      * @private
      */
     _onSprintStart(event) {
@@ -440,8 +448,10 @@ class StaminaSystem extends UIComponent {
     }
     
     /**
-     * Handle sprint end event
-     * @param {Object} event - Event data
+     * Handle sprint ended event
+     * @param {Object} event - Standardized state change event
+     * @param {boolean} event.value - Sprint state (false for ended)
+     * @param {Object} event.source - Source of the change
      * @private
      */
     _onSprintEnd(event) {
@@ -450,7 +460,7 @@ class StaminaSystem extends UIComponent {
     
     /**
      * Handle stamina depleted event
-     * @param {Object} [event] - Event data (optional)
+     * @param {Object} [event] - Standardized state change event
      * @private
      */
     _onStaminaDepleted(event) {
@@ -462,14 +472,20 @@ class StaminaSystem extends UIComponent {
         // Emit event if not already triggered externally
         if (!event) {
             EventManager.emit('stamina:depleted', {
+                value: this.state.currentStamina,
+                previous: this.config.stamina.depletedThreshold + 1, // Just above threshold
+                max: this.state.maxStamina,
+                source: 'system',
                 timestamp: performance.now()
             });
         }
     }
     
     /**
-     * Handle cooldown start event
-     * @param {Object} event - Event data
+     * Handle cooldown started event
+     * @param {Object} event - Standardized state change event
+     * @param {number} event.duration - Duration of cooldown in seconds
+     * @param {string} event.source - Source of the cooldown
      * @private
      */
     _onCooldownStart(event) {
@@ -480,8 +496,9 @@ class StaminaSystem extends UIComponent {
     }
     
     /**
-     * Handle cooldown end event
-     * @param {Object} event - Event data
+     * Handle cooldown ended event
+     * @param {Object} event - Standardized state change event
+     * @param {string} event.source - Source of the cooldown end
      * @private
      */
     _onCooldownEnd(event) {

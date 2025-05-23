@@ -119,24 +119,28 @@ class SkillPointsDisplay extends UIComponent {
      */
     _setupEventListeners() {
         if (EventManager) {
-            EventManager.on('player:level:up', this._handleLevelUp);
-            EventManager.on('player:skill:points:changed', this._handleSkillPointsChanged);
+            this.eventSubscriptions.push(
+                EventManager.subscribe('xp:levelup', this._onLevelUp.bind(this))
+            );
+            this.eventSubscriptions.push(
+                EventManager.subscribe('skill:changed', this._onSkillPointsChanged.bind(this))
+            );
         }
     }
     
     /**
-     * Handle skill points changed events
+     * Handle skill:changed event
+     * @param {Object} event - Standardized state change event
+     * @param {number} event.value - New skill points total
+     * @param {number} event.previous - Previous skill points total
+     * @param {number} event.delta - Change in points (positive or negative)
      * @private
-     * @param {Object} data - Event data
-     * @param {number} data.points - New skill points total
-     * @param {number} data.change - Change in points (positive or negative)
      */
-    _handleSkillPointsChanged(data) {
-        if (!data || typeof data.points !== 'number') return;
+    _onSkillPointsChanged(event) {
+        if (!event || typeof event.value !== 'number') return;
         
-        const oldPoints = this.skillPoints;
-        const newPoints = data.points;
-        const change = data.change || (newPoints - oldPoints);
+        const newPoints = event.value;
+        const change = event.delta || (newPoints - this.skillPoints);
         
         this.updateDisplay(newPoints);
         
@@ -147,21 +151,22 @@ class SkillPointsDisplay extends UIComponent {
     }
     
     /**
-     * Handle level up events
+     * Handle xp:levelup event
+     * @param {Object} event - Standardized progress event
+     * @param {number} event.amount - Skill points awarded
+     * @param {Object} event.level - Level information
+     * @param {number} event.level.current - Current level
      * @private
-     * @param {Object} data - Event data
-     * @param {number} data.level - New level
-     * @param {number} data.skillPoints - Skill points awarded
      */
-    _handleLevelUp(data) {
-        if (!data || !data.skillPoints) return;
+    _onLevelUp(event) {
+        if (!event || !event.amount) return;
         
         // Add skill points and update display
-        const newTotal = this.skillPoints + data.skillPoints;
+        const newTotal = this.skillPoints + event.amount;
         this.updateDisplay(newTotal);
         
         // Show animation for gained points
-        this._showPointChangeAnimation(data.skillPoints);
+        this._showPointChangeAnimation(event.amount);
     }
     
     /**
@@ -176,10 +181,13 @@ class SkillPointsDisplay extends UIComponent {
         // Don't do anything if no points available
         if (this.skillPoints <= 0) return;
         
-        // Emit the event to open skill tree
+        // Emit the event to open skill tree using standardized menu event
         if (EventManager) {
-            EventManager.emit('ui:skill:tree:open', { 
-                availablePoints: this.skillPoints 
+            EventManager.emit('menu:opened', { 
+                type: 'skill-tree',
+                data: {
+                    availablePoints: this.skillPoints
+                }
             });
         }
     }
@@ -293,12 +301,18 @@ class SkillPointsDisplay extends UIComponent {
         // Show animation
         this._showPointChangeAnimation(amount);
         
-        // Emit event for other components
+        // Emit event for other components using standardized payload
         if (EventManager) {
-            EventManager.emit('player:skill:points:changed', { 
-                points: this.skillPoints,
-                change: amount 
-            });
+            EventManager.emit('skill:changed', 
+                EventManager.createStateChangeEvent(
+                    'skill', 
+                    this.skillPoints,              // value (new total)
+                    this.skillPoints - amount,     // previous
+                    amount,                        // delta (change amount)
+                    null,                          // max
+                    'skill-gain'                   // source
+                )
+            );
         }
         
         return this;
@@ -318,12 +332,18 @@ class SkillPointsDisplay extends UIComponent {
         // Show animation
         this._showPointChangeAnimation(-amount);
         
-        // Emit event for other components
+        // Emit event for other components using standardized payload
         if (EventManager) {
-            EventManager.emit('player:skill:points:changed', { 
-                points: this.skillPoints,
-                change: -amount 
-            });
+            EventManager.emit('skill:changed', 
+                EventManager.createStateChangeEvent(
+                    'skill', 
+                    this.skillPoints,              // value (new total)
+                    this.skillPoints + amount,     // previous
+                    -amount,                       // delta (change amount, negative)
+                    null,                          // max
+                    'skill-spend'                  // source
+                )
+            );
         }
         
         return this;
@@ -343,10 +363,16 @@ class SkillPointsDisplay extends UIComponent {
         
         // Emit event for other components if there was a change
         if (change !== 0 && EventManager) {
-            EventManager.emit('player:skill:points:changed', { 
-                points: this.skillPoints,
-                change: change 
-            });
+            EventManager.emit('skill:changed',
+                EventManager.createStateChangeEvent(
+                    'skill',
+                    this.skillPoints,              // value (new total)
+                    oldPoints,                     // previous
+                    change,                        // delta
+                    null,                          // max
+                    'skill-set'                    // source
+                )
+            );
         }
         
         return this;
@@ -384,12 +410,10 @@ class SkillPointsDisplay extends UIComponent {
      * Clean up the component
      */
     dispose() {
-        // Remove event listeners
-        if (EventManager) {
-            EventManager.off('player:level:up', this._handleLevelUp);
-            EventManager.off('player:skill:points:changed', this._handleSkillPointsChanged);
-        }
+        // Use parent class method to unsubscribe from all events
+        super.dispose();
         
+        // Clean up DOM-specific event listeners
         if (this.spendButton) {
             this.spendButton.removeEventListener('click', this._handleSpendBtnClick);
         }

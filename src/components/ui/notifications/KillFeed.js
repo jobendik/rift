@@ -14,6 +14,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 export class KillFeed extends UIComponent {
     /**
@@ -82,8 +83,80 @@ export class KillFeed extends UIComponent {
             this._createRootElement();
         }
         
+        this._setupEventListeners();
+        
         this.isInitialized = true;
         return this;
+    }
+    
+    /**
+     * Set up event listeners for kill events
+     * @private
+     */
+    _setupEventListeners() {
+        this.eventSubscriptions.push(
+            EventManager.subscribe('enemy:killed', this._onEnemyKilled.bind(this))
+        );
+        
+        // Listen for player kills in case of multiplayer scenarios
+        this.eventSubscriptions.push(
+            EventManager.subscribe('player:killed', this._onPlayerKilled.bind(this))
+        );
+        
+        // Listen for game state changes to pause/resume timers
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:paused', () => this.pauseTimers())
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:resumed', () => this.resumeTimers())
+        );
+    }
+    
+    /**
+     * Handle enemy:killed event
+     * @param {Object} event - Standardized combat event
+     * @param {Object} event.source - Source entity information
+     * @param {Object} event.target - Target entity information
+     * @param {Object} event.weapon - Weapon information
+     * @param {boolean} event.isHeadshot - Whether the hit was a headshot
+     * @param {boolean} event.isCritical - Whether the hit was a critical hit
+     * @private
+     */
+    _onEnemyKilled(event) {
+        this.addKillMessage({
+            killer: event.source.name || event.source.id,
+            victim: event.target.name || event.target.id,
+            weapon: event.weapon ? event.weapon.type : 'unknown',
+            isHeadshot: event.isHeadshot || false,
+            isTeamkill: event.isTeamkill || false,
+            killerTeam: event.source.team,
+            victimTeam: event.target.team,
+            specialType: event.specialType
+        });
+    }
+    
+    /**
+     * Handle player:killed event
+     * @param {Object} event - Standardized combat event
+     * @param {Object} event.source - Source entity information
+     * @param {Object} event.target - Target entity information
+     * @param {Object} event.weapon - Weapon information
+     * @param {boolean} event.isHeadshot - Whether the hit was a headshot
+     * @param {boolean} event.isCritical - Whether the hit was a critical hit
+     * @private
+     */
+    _onPlayerKilled(event) {
+        this.addKillMessage({
+            killer: event.source.name || event.source.id,
+            victim: event.target.name || event.target.id,
+            weapon: event.weapon ? event.weapon.type : 'unknown',
+            isHeadshot: event.isHeadshot || false,
+            isTeamkill: event.isTeamkill || false,
+            killerTeam: event.source.team,
+            victimTeam: event.target.team,
+            specialType: event.specialType
+        });
     }
     
     /**
@@ -224,6 +297,12 @@ export class KillFeed extends UIComponent {
         this.activeTimers = [];
         this.messages = [];
         this._resetStreak();
+        
+        // Unsubscribe from events
+        this.eventSubscriptions.forEach(subscription => {
+            EventManager.unsubscribe(subscription);
+        });
+        this.eventSubscriptions = [];
         
         // Call parent dispose
         super.dispose();
@@ -519,6 +598,3 @@ export class KillFeed extends UIComponent {
         };
     }
 }
-
-
-

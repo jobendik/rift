@@ -15,6 +15,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 export class EventBanner extends UIComponent {
     /**
@@ -44,6 +45,7 @@ export class EventBanner extends UIComponent {
         this.pauseStartTime = 0;
         this.queue = [];
         this.isDisplayingOutcome = false;
+        this.eventSubscriptions = [];
     }
     
     /**
@@ -54,8 +56,41 @@ export class EventBanner extends UIComponent {
             this._createRootElement();
         }
         
+        // Set up event listeners
+        this._setupEventListeners();
+        
         this.isInitialized = true;
         return this;
+    }
+    
+    /**
+     * Set up event listeners for banner events
+     * @private
+     */
+    _setupEventListeners() {
+        this.eventSubscriptions.push(
+            EventManager.subscribe('objective:completed', this._onObjectiveCompleted.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('round:end', this._onRoundEnd.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:paused', this.pauseTimers.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:resumed', this.resumeTimers.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('achievement:unlocked', this._onAchievementUnlocked.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('mission:updated', this._onMissionUpdated.bind(this))
+        );
     }
     
     /**
@@ -221,6 +256,12 @@ export class EventBanner extends UIComponent {
             }
         });
         
+        // Unsubscribe from events
+        this.eventSubscriptions.forEach(subscription => {
+            EventManager.unsubscribe(subscription);
+        });
+        this.eventSubscriptions = [];
+        
         this.activeMessages = [];
         this.queue = [];
         this.isDisplayingOutcome = false;
@@ -229,6 +270,70 @@ export class EventBanner extends UIComponent {
         super.dispose();
         
         return this;
+    }
+    
+    /**
+     * Handle objective:completed event
+     * @param {Object} event - Standardized objective event
+     * @private
+     */
+    _onObjectiveCompleted(event) {
+        const options = {
+            title: 'Objective Completed',
+            subtitle: event.description || '',
+            duration: 4000
+        };
+        
+        this.showBanner(event.name || 'Objective Completed', 'objective', options);
+    }
+    
+    /**
+     * Handle round:end event
+     * @param {Object} event - Standardized round event
+     * @private
+     */
+    _onRoundEnd(event) {
+        if (event.outcome) {
+            this.showRoundOutcome(event.outcome, event.message || '');
+        }
+    }
+    
+    /**
+     * Handle achievement:unlocked event
+     * @param {Object} event - Standardized achievement event
+     * @private
+     */
+    _onAchievementUnlocked(event) {
+        const options = {
+            title: 'Achievement Unlocked',
+            subtitle: event.description || '',
+            duration: 5000
+        };
+        
+        this.showBanner(event.name || event.message, 'success', options);
+    }
+    
+    /**
+     * Handle mission:updated event
+     * @param {Object} event - Standardized mission event
+     * @private
+     */
+    _onMissionUpdated(event) {
+        const options = {
+            title: event.title || 'Mission Update',
+            subtitle: event.description || '',
+            duration: 4000
+        };
+        
+        if (event.timer) {
+            options.timer = {
+                duration: event.timer.total || 0,
+                remaining: event.timer.remaining || 0,
+                displayTime: true
+            };
+        }
+        
+        this.showBanner(event.message, event.category || 'default', options);
     }
     
     /**
@@ -492,6 +597,3 @@ export class EventBanner extends UIComponent {
         }
     }
 }
-
-
-

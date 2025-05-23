@@ -18,6 +18,7 @@ import { NotificationManager } from './NotificationManager.js';
 import { KillFeed } from './KillFeed.js';
 import { EventBanner } from './EventBanner.js';
 import { AchievementDisplay } from './AchievementDisplay.js';
+import { EventManager } from '../../../core/EventManager.js';
 
 class NotificationSystem extends UIComponent {
     /**
@@ -60,11 +61,19 @@ class NotificationSystem extends UIComponent {
         // Initialize components
         this._initComponents();
         
-        // Register event handlers
+        // Register event handlers with standardized event names
         this.registerEvents({
-            'game:paused': () => this._onGamePaused(),
-            'game:resumed': () => this._onGameResumed()
+            'game:paused': this._onGamePaused.bind(this),
+            'game:resumed': this._onGameResumed.bind(this),
+            'enemy:killed': this._onEnemyKilled.bind(this),
+            'player:died': this._onPlayerDied.bind(this),
+            'notification:request': this._onNotificationRequest.bind(this),
+            'objective:completed': this._onObjectiveCompleted.bind(this),
+            'objective:failed': this._onObjectiveFailed.bind(this),
+            'round:end': this._onRoundEnd.bind(this),
+            'player:levelup': this._onPlayerLevelUp.bind(this)
         });
+        
         return this;
     }
 
@@ -176,10 +185,11 @@ class NotificationSystem extends UIComponent {
     }
 
     /**
-     * Handle game paused event
+     * Handle game:paused event
+     * @param {Object} event - Standardized event object
      * @private
      */
-    _onGamePaused() {
+    _onGamePaused(event) {
         // Pause any animations or timers for notifications
         if (this.notificationManager) this.notificationManager.pauseTimers();
         if (this.killFeed) this.killFeed.pauseTimers();
@@ -188,15 +198,186 @@ class NotificationSystem extends UIComponent {
     }
 
     /**
-     * Handle game resumed event
+     * Handle game:resumed event
+     * @param {Object} event - Standardized event object
      * @private
      */
-    _onGameResumed() {
+    _onGameResumed(event) {
         // Resume animations and timers for notifications
         if (this.notificationManager) this.notificationManager.resumeTimers();
         if (this.killFeed) this.killFeed.resumeTimers();
         if (this.eventBanner) this.eventBanner.resumeTimers();
         if (this.achievementDisplay) this.achievementDisplay.resumeTimers();
+    }
+    
+    /**
+     * Handle enemy:killed event
+     * @param {Object} event - Standardized combat event
+     * @private
+     */
+    _onEnemyKilled(event) {
+        // Format kill message for KillFeed
+        const killData = {
+            killer: event.source?.name || 'Player',
+            victim: event.target?.name || 'Enemy',
+            weapon: event.weapon?.type || 'weapon',
+            isHeadshot: event.isHeadshot || false,
+            isCritical: event.isCritical || false
+        };
+        
+        // Add to kill feed
+        this.addKillMessage(killData);
+        
+        // Check for kill streaks
+        if (event.killStreak) {
+            this.showKillStreak(
+                killData.killer,
+                this._getStreakType(event.killStreak.count),
+                event.killStreak.count
+            );
+        }
+    }
+    
+    /**
+     * Handle player:died event
+     * @param {Object} event - Standardized player death event
+     * @private
+     */
+    _onPlayerDied(event) {
+        // Show death notification
+        const options = {
+            title: 'You Died',
+            icon: 'skull',
+            priority: 3
+        };
+        
+        // Show relevant message based on death cause
+        let message = 'You have been eliminated';
+        let type = 'error';
+        
+        if (event.source) {
+            if (event.source.type === 'enemy') {
+                message = `Killed by ${event.source.name || 'Enemy'}`;
+            } else if (event.source.type === 'environment') {
+                message = `Killed by ${event.source.name || 'the environment'}`;
+            }
+        }
+        
+        this.addNotification(message, type, options);
+    }
+    
+    /**
+     * Handle notification:request event
+     * @param {Object} event - Standardized notification event
+     * @private
+     */
+    _onNotificationRequest(event) {
+        this.addNotification(
+            event.message, 
+            event.category || 'info', 
+            {
+                title: event.title || '',
+                icon: event.icon || null,
+                duration: event.duration || null,
+                priority: event.priority || 1,
+                id: event.id || null
+            }
+        );
+    }
+    
+    /**
+     * Handle objective:completed event
+     * @param {Object} event - Standardized objective event
+     * @private
+     */
+    _onObjectiveCompleted(event) {
+        // Show objective completion banner
+        this.showBanner(
+            event.name || 'Objective Complete', 
+            'objective',
+            {
+                title: 'Objective Completed',
+                subtitle: event.description || '',
+                duration: event.duration || 4000
+            }
+        );
+    }
+    
+    /**
+     * Handle objective:failed event
+     * @param {Object} event - Standardized objective event
+     * @private
+     */
+    _onObjectiveFailed(event) {
+        // Show objective failed banner
+        this.showBanner(
+            event.name || 'Objective Failed', 
+            'danger',
+            {
+                title: 'Objective Failed',
+                subtitle: event.description || '',
+                duration: event.duration || 4000
+            }
+        );
+    }
+    
+    /**
+     * Handle round:end event
+     * @param {Object} event - Standardized round event
+     * @private
+     */
+    _onRoundEnd(event) {
+        if (event.outcome) {
+            this.showRoundOutcome(event.outcome, event.message || '');
+        }
+    }
+    
+    /**
+     * Handle player:levelup event
+     * @param {Object} event - Standardized player level event
+     * @private
+     */
+    _onPlayerLevelUp(event) {
+        // Show level up notification
+        this.showBanner(
+            `Level ${event.level || 'Up'}`, 
+            'success',
+            {
+                title: 'Level Up',
+                subtitle: event.message || 'You have reached a new level!',
+                duration: 5000
+            }
+        );
+        
+        // Show achievements if any
+        if (event.rewards && event.rewards.length > 0) {
+            event.rewards.forEach(reward => {
+                if (reward.type === 'achievement') {
+                    const achievementData = {
+                        title: reward.name || 'Achievement Unlocked',
+                        description: reward.description || '',
+                        type: 'achievement',
+                        value: reward.value || null,
+                        iconUrl: reward.iconUrl || null
+                    };
+                    this.showAchievement(achievementData);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Get streak type based on kill count
+     * @param {number} kills - Kill count
+     * @returns {string} - Streak type descriptor
+     * @private
+     */
+    _getStreakType(kills) {
+        if (kills >= 10) return 'unstoppable';
+        if (kills >= 8) return 'dominating';
+        if (kills >= 5) return 'rampage';
+        if (kills >= 3) return 'killing-spree';
+        return 'streak';
     }
 
     /**
