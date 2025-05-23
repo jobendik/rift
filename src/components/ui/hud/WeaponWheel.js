@@ -65,20 +65,48 @@ class WeaponWheel extends UIComponent {
         this._waitForPlayer();
         
         console.log('WeaponWheel initialized');
-    }
-    
-    /**
+    }      /**
      * Wait for player to be available and get weapon system
      * @private
      */
     _waitForPlayer() {
-        // Check if player exists
-        if (this.world.player && this.world.player.weaponSystem) {
+        // Check if world and player exist
+        if (this.world && this.world.player && this.world.player.weaponSystem) {
             this.weaponSystem = this.world.player.weaponSystem;
             this._loadWeapons();
+            console.log('[WeaponWheel] Successfully connected to player weapon system');
         } else {
-            // Try again in a moment
-            setTimeout(() => this._waitForPlayer(), 100);
+            // Use event system to wait for player initialization instead of polling
+            if (EventManager) {
+                // Listen for player ready event
+                EventManager.subscribe('player:ready', this._onPlayerReady.bind(this));
+                console.log('[WeaponWheel] Waiting for player ready event...');
+            } else {
+                // Fallback to single retry with longer delay
+                this._playerWaitRetries = (this._playerWaitRetries || 0) + 1;
+                if (this._playerWaitRetries < 5) { // Reduced to 5 retries max
+                    setTimeout(() => this._waitForPlayer(), 500); // Longer delay
+                } else {
+                    console.warn('[WeaponWheel] Player not available after retries, will try to connect later');
+                }
+            }
+        }
+    }
+    
+    /**
+     * Handle player ready event
+     * @private
+     */
+    _onPlayerReady() {
+        if (this.world && this.world.player && this.world.player.weaponSystem) {
+            this.weaponSystem = this.world.player.weaponSystem;
+            this._loadWeapons();
+            console.log('[WeaponWheel] Connected to player weapon system via event');
+            
+            // Unsubscribe from the event
+            if (EventManager) {
+                EventManager.unsubscribe('player:ready', this._onPlayerReady.bind(this));
+            }
         }
     }
     

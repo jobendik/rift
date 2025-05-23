@@ -62,12 +62,10 @@ export class MenuSystem extends UIComponent {
         this.isInitialized = true;
         
         console.log('Initializing Menu System...');
-        
-        // Initialize screen manager
+          // Initialize screen manager
         this.screenManager = new ScreenManager({
             world: this.world
         });
-        this.screenManager.init();
         
         // Initialize world map screen
         this.worldMapScreen = new WorldMapScreen({

@@ -14,6 +14,17 @@ Key components of the system include:
 - UIManager integration for enabling tracking
 - A dedicated performance monitoring dashboard UI
 
+### Element Pooling System
+
+We've implemented a comprehensive DOM element pooling system to significantly reduce garbage collection and DOM operations during gameplay. The ElementPool utility provides efficient reuse of DOM elements for frequently created and destroyed UI components.
+
+Key components of the system include:
+- Core ElementPool utility with configurable options
+- Block container optimization for better performance
+- Comprehensive API for acquiring and releasing elements
+- Statistics tracking for pool usage
+- Integration with the component lifecycle
+
 ### Developer Tools Integration
 
 We've added a developer tools panel accessible via Ctrl+Shift+D that provides quick access to:
@@ -43,6 +54,7 @@ This helps streamline the development workflow and makes it easier to debug and 
 ## Active Decisions
 
 - **Element Pooling Implementation**: We're implementing element pooling for frequent UI elements to reduce DOM operations and garbage collection. The EnhancedDamageNumbers component serves as the first implementation and template for other components.
+- **Block Container Strategy**: Using DOM blocks for pooled elements to further optimize rendering performance and minimize DOM operations.
 - **Batch DOM Operations**: Group DOM updates to minimize reflows and repaints.
 - **Use Performance Metrics**: Use the new performance monitoring dashboard to identify and fix bottlenecks.
 - **Throttle High-Frequency Events**: Events firing more than 60 times per second should be throttled or batched.
@@ -54,6 +66,8 @@ This helps streamline the development workflow and makes it easier to debug and 
 3. Optimize slow event handlers identified by the performance monitoring system
 4. Enhance animation performance using requestAnimationFrame and CSS transitions
 5. Document performance best practices for the team
+6. Implement throttling for high-frequency events identified in the performance dashboard
+7. Create additional test pages to validate performance improvements
 
 ## Current Implementation Status
 
@@ -79,3 +93,5 @@ This helps streamline the development workflow and makes it easier to debug and 
 - Several events are firing at very high frequencies and need throttling
 - Some event handlers are performing expensive DOM operations synchronously
 - Some components still create excessive DOM nodes during high-frequency updates
+- Need to implement performance budget monitoring for critical UI components
+- Consider implementing Virtual DOM or similar approach for certain components with complex state updates

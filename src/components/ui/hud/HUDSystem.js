@@ -15,6 +15,7 @@ import { MinimapSystem } from './MinimapSystem.js';
 import { StaminaSystem } from './StaminaSystem.js';
 import { CompassDisplay } from './CompassDisplay.js';
 import { WeaponWheel } from './WeaponWheel.js';
+import { NotificationSystem } from '../notifications/NotificationSystem.js';
 
 class HUDSystem extends UIComponent {
     /**
@@ -32,8 +33,7 @@ class HUDSystem extends UIComponent {
         });
         
         this.world = world;
-        
-        // Store HUD components
+          // Store HUD components
         this.components = {
             health: null,
             ammo: null,
@@ -41,7 +41,8 @@ class HUDSystem extends UIComponent {
             compass: null,
             minimap: null,
             stamina: null,
-            weaponWheel: null
+            weaponWheel: null,
+            notifications: null
         };
         
         // Container elements for different screen regions
@@ -151,62 +152,53 @@ class HUDSystem extends UIComponent {
                 showEffects: true
             });
             this.addChild(this.components.health);
+              // Stamina display (bottom left, next to health)
+            this.components.stamina = new StaminaSystem({
+                container: this.containers.bottomLeft
+            });
+            this.addChild(this.components.stamina);
             
-            // Create a simple stamina placeholder for now
-            this.components.stamina = {
-                init: () => { console.log('[HUDSystem] Stamina placeholder initialized'); },
-                update: () => {},
-                dispose: () => {},
-                updateStamina: () => {},
-                updateMaxStamina: () => {},
-                startSprint: () => {},
-                endSprint: () => {},
-                state: { currentStamina: 100, maxStamina: 100, isSprinting: false }
-            };
+            // Ammo display (bottom right)
+            this.components.ammo = new AmmoDisplay({
+                container: this.containers.bottomRight,
+                showIcon: true,
+                showValue: true
+            });
+            this.addChild(this.components.ammo);
             
-            // Create a simple ammo placeholder for now
-            this.components.ammo = {
-                init: () => { console.log('[HUDSystem] Ammo placeholder initialized'); },
-                update: () => {},
-                dispose: () => {},
-                updateAmmo: () => {},
-                updateTotalAmmo: () => {},
-                updateMagSize: () => {},
-                updateWeaponType: () => {},
-                state: { currentAmmo: 30, totalAmmo: 120, maxMagSize: 30, weaponType: 'rifle' }
-            };
+            // Crosshair system (center)
+            this.components.crosshair = new CrosshairSystem({
+                container: this.containers.center,
+                dynamic: true,
+                showDot: true
+            });
+            this.addChild(this.components.crosshair);
             
-            // Create a simple crosshair placeholder for now
-            this.components.crosshair = {
-                init: () => { console.log('[HUDSystem] Crosshair placeholder initialized'); },
-                update: () => {},
-                dispose: () => {},
-                updateSpread: () => {},
-                updateWeaponType: () => {},
-                state: { currentWeaponType: 'rifle' }
-            };
+            // Minimap system (bottom left)
+            this.components.minimap = new MinimapSystem(this.world, {
+                container: this.containers.bottomLeft,
+                size: 180,
+                interactive: true
+            });
+            this.addChild(this.components.minimap);
+              // Compass display (top center)
+            this.components.compass = new CompassDisplay({
+                container: this.containers.topCenter
+            });
+            this.addChild(this.components.compass);
             
-            // Create a simple minimap placeholder for now
-            this.components.minimap = {
-                init: () => { console.log('[HUDSystem] Minimap placeholder initialized'); },
-                update: () => {},
-                dispose: () => {}
-            };
+            // Notification system (manages kill feed, notifications, etc.) - uses container's root
+            this.components.notifications = new NotificationSystem(this.world, {
+                container: this.element // Use HUD system's root element as container
+            });
+            this.addChild(this.components.notifications);
             
-            // Create a simple compass placeholder for now
-            this.components.compass = {
-                init: () => { console.log('[HUDSystem] Compass placeholder initialized'); },
-                update: () => {},
-                dispose: () => {},
-                updateRotation: () => {}
-            };
-            
-            // Create a simple weapon wheel placeholder for now
-            this.components.weaponWheel = {
-                init: () => { console.log('[HUDSystem] WeaponWheel placeholder initialized'); },
-                update: () => {},
-                dispose: () => {}
-            };
+            // Weapon wheel (center, initially hidden)
+            this.components.weaponWheel = new WeaponWheel({
+                container: this.containers.center,
+                world: this.world
+            });
+            this.addChild(this.components.weaponWheel);
             
             console.log('[HUDSystem] All components initialized');
             
@@ -329,8 +321,7 @@ class HUDSystem extends UIComponent {
         // Adjust HUD layout based on screen size if needed
         // For example, reposition elements for different screen sizes
     }
-    
-    /**
+      /**
      * Set the size of the HUD based on screen dimensions
      * @param {Number} width - Screen width
      * @param {Number} height - Screen height
@@ -343,6 +334,27 @@ class HUDSystem extends UIComponent {
         if (EventManager) {
             EventManager.emit('hud:resized', { width, height });
         }
+        
+        return this;
+    }
+    
+    /**
+     * Dispose of all HUD components and clean up resources
+     */
+    dispose() {
+        // Dispose all components
+        Object.values(this.components).forEach(component => {
+            if (component && typeof component.dispose === 'function') {
+                component.dispose();
+            }
+        });
+        
+        // Clear component references
+        this.components = {};
+        this.containers = {};
+        
+        // Call parent dispose
+        super.dispose();
         
         return this;
     }

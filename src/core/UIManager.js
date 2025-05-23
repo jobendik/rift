@@ -366,6 +366,7 @@ export class UIManager {
      * @return {UIManager} This UIManager instance
      */
     showFPSInterface() {
+        const previousView = this.activeView;
         this.activeView = 'game';
         
         // Show HUD
@@ -373,9 +374,13 @@ export class UIManager {
             this.systems.hud.show();
         }
         
-        // Emit event
+        // Emit event with standardized format
         if (EventManager) {
-            EventManager.emit('ui:view:changed', { view: 'game' });
+            EventManager.emit('ui:view:changed', {
+                value: 'visible',      // Current state
+                previous: 'hidden',    // Previous state
+                view: 'game'          // Additional context
+            });
         }
         
         return this;
@@ -386,14 +391,20 @@ export class UIManager {
      * @return {UIManager} This UIManager instance
      */
     hideFPSInterface() {
+        const previousView = this.activeView;
+        
         // Hide HUD
         if (this.systems.hud?.hide) {
             this.systems.hud.hide();
         }
         
-        // Emit event
+        // Emit event with standardized format
         if (EventManager) {
-            EventManager.emit('ui:view:changed', { view: 'hidden' });
+            EventManager.emit('ui:view:changed', {
+                value: 'hidden',       // Current state
+                previous: 'visible',   // Previous state
+                view: 'hidden'        // Additional context
+            });
         }
         
         return this;
@@ -505,14 +516,19 @@ export class UIManager {
      */
     showScreen(id, options = {}) {
         if (this.systems.screens?.showScreen) {
+            const previousView = this.activeView;
             this.systems.screens.showScreen(id, options);
             
             // Update active view
             this.activeView = 'menu';
             
-            // Emit view change event
+            // Emit view change event with standardized format
             if (EventManager) {
-                EventManager.emit('ui:view:changed', { view: 'menu', screen: id });
+                EventManager.emit('ui:view:changed', {
+                    value: 'menu',         // Current view
+                    previous: previousView, // Previous view
+                    screen: id             // Additional context
+                });
             }
         } else {
             console.log(`[Screen] Show: ${id}`);
@@ -528,14 +544,18 @@ export class UIManager {
      */
     hideScreen(options = {}) {
         if (this.systems.screens?.hideScreen) {
+            const previousView = this.activeView;
             this.systems.screens.hideScreen(options);
             
             // Update active view back to game
             this.activeView = 'game';
             
-            // Emit view change event
+            // Emit view change event with standardized format
             if (EventManager) {
-                EventManager.emit('ui:view:changed', { view: 'game' });
+                EventManager.emit('ui:view:changed', {
+                    value: 'game',         // Current view
+                    previous: previousView, // Previous view
+                });
             }
         } else {
             console.log('[Screen] Hide current screen');

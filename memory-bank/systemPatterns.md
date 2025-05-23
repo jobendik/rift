@@ -96,6 +96,11 @@ The UI is organized into system components that orchestrate related functionalit
    - Orchestrates environment-related UI elements
    - Manages objective markers, danger zones, weather effects
    - Coordinates world-space UI elements
+   
+7. **MovementSystem**
+   - Tracks entity positions and detects movement
+   - Provides spatial awareness through footstep indicators
+   - Handles movement patterns detection and visualization
 
 Each system extends `UIComponent` and follows a consistent pattern:
 
@@ -160,6 +165,7 @@ CSS is organized into multiple layers:
    - `_typography.css`: Text styles and fonts
    - `_animations.css`: Shared animation keyframes
    - `_layout.css`: Layout structures and grid
+   - `_ui-states.css`: Common UI state styles
 
 2. **Utils**
    - `_mixins.css`: Reusable property sets
@@ -246,6 +252,7 @@ class EventManager {
   constructor() {
     this._events = new Map();
     this._subscriptionId = 0;
+    this._eventMetrics = new Map(); // Performance tracking
   }
   
   subscribe(eventType, handler) {
@@ -258,7 +265,30 @@ class EventManager {
   }
   
   emit(eventType, data) {
+    // Start performance tracking
+    const startTime = performance.now();
+    
     // Notify all handlers for this event type
+    
+    // Track performance metrics
+    this._trackEventPerformance(eventType, startTime);
+  }
+  
+  // Performance tracking methods
+  _trackEventPerformance(eventType, startTime) {
+    // Calculate execution time and update metrics
+  }
+  
+  getPerformanceMetrics() {
+    // Return current metrics data
+  }
+  
+  enablePerformanceTracking() {
+    // Enable tracking with configurable thresholds
+  }
+  
+  disablePerformanceTracking() {
+    // Disable tracking
   }
 }
 ```
@@ -365,6 +395,27 @@ The event system has been enhanced with standardization support, implementing th
        rewards: ['skill-point'] // Any rewards earned
      }
      ```
+     
+   - **Movement Events**: For entity movement
+     ```javascript
+     // Example: movement:footstep event
+     {
+       type: 'movement:footstep',
+       timestamp: 1621603987123,
+       source: {               // Source entity
+         id: 'enemy-442',
+         type: 'enemy',
+         name: 'Grunt',
+         position: {x: 5, y: 0, z: 3}
+       },
+       playerPosition: {x: 0, y: 0, z: 0},  // Player position
+       playerRotation: 1.57,                // Player rotation in radians
+       isFriendly: false,                   // Friend or foe
+       isContinuous: true,                  // Part of continuous movement
+       distance: 10.5,                      // Distance from player
+       direction: 45,                       // Direction in degrees
+     }
+     ```
 
 4. **Event Standardization Implementation Tools**
    - `EventStandardizationImplementer`: Utility for analyzing and migrating components
@@ -378,6 +429,7 @@ The event system has been enhanced with standardization support, implementing th
    - `createCombatEvent()`: For combat-related events
    - `createNotificationEvent()`: For notification events
    - `createProgressEvent()`: For progression events
+   - `createMovementEvent()`: For movement and position events
 
 6. **Event Validation**
    - Validation for event names (namespace:action pattern)
@@ -393,6 +445,8 @@ The event system now includes comprehensive performance monitoring:
    - Handler execution time measurement
    - Event throughput calculation
    - Memory usage estimation
+   - Min/max/avg execution time tracking
+   - High-frequency event detection
 
 2. **Configuration Options**
    ```javascript
@@ -411,12 +465,14 @@ The event system now includes comprehensive performance monitoring:
    - Handler execution time analysis
    - High-impact event identification
    - Automatic optimization recommendations
+   - Filtering and sorting capabilities
+   - Export functionality for sharing/analysis
 
 4. **Developer Tools Integration**
    - Accessible via keyboard shortcut (Ctrl+Shift+D)
    - Integrated with other development tools
-   - Filtering and sorting capabilities
-   - Export functionality for sharing/analysis
+   - Performance recommendations
+   - Visual indicators for problematic events
 
 ### Event Usage Pattern in Components
 
@@ -823,7 +879,9 @@ class OptimizedUIComponent extends UIComponent {
       elementType: 'div',
       container: this.element,
       className: 'rift-component-element',
-      initialSize: 20
+      initialSize: 20,
+      useBlocks: true,  // Use block containers for better performance
+      blockSize: 10     // Elements per block
     });
   }
   
@@ -889,7 +947,39 @@ class OptimizedUIComponent extends UIComponent {
 }
 ```
 
-This pattern is implemented in components like EnhancedDamageNumbers, which handle frequent visual indicators with minimal DOM operations.
+This pattern is implemented in components like EnhancedDamageNumbers, EnhancedHitIndicator, EnhancedDamageIndicator, and EnhancedKillFeed, which handle frequent visual indicators with minimal DOM operations.
+
+### Block Container Strategy
+
+For improved performance when using ElementPool, the block container approach groups elements under parent containers:
+
+```javascript
+// Benefits of block container strategy
+// 1. Reduced parent-child relationship tracking overhead
+// 2. Better memory locality for DOM operations
+// 3. Fewer individual insertions into the document
+// 4. Improved rendering pipeline efficiency
+
+// Implementation in ElementPool
+const useBlocks = true;
+const blockSize = 10; // Elements per block
+
+// When growing the pool with blocks
+if (useBlocks && (!block || blockCount >= blockSize)) {
+  block = document.createElement('div');
+  block.className = 'rift-element-pool-block';
+  this.container.appendChild(block);
+  this.blocks.push(block);
+  blockCount = 0;
+}
+
+// Adding elements to blocks instead of directly to container
+if (useBlocks && block) {
+  block.appendChild(element);
+} else {
+  this.container.appendChild(element);
+}
+```
 
 ### Hardware-Accelerated Animations
 
@@ -942,347 +1032,3 @@ window.addEventListener('resize', this.onResize);
 The `UIComponent` base class provides animation utilities:
 
 ```javascript
-// In UIComponent class
-animate(property, startValue, endValue, duration, easing = 'linear', callback) {
-  const startTime = performance.now();
-  const change = endValue - startValue;
-  
-  const step = (currentTime) => {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const easedProgress = this._applyEasing(progress, easing);
-    const currentValue = startValue + (change * easedProgress);
-    
-    // Update property
-    this[property] = currentValue;
-    
-    // Continue animation if not complete
-    if (progress < 1) {
-      this._animationFrame = requestAnimationFrame(step);
-    } else if (callback) {
-      callback();
-    }
-  };
-  
-  // Start animation
-  this._animationFrame = requestAnimationFrame(step);
-}
-
-_applyEasing(progress, easing) {
-  // Implement easing functions (linear, easeIn, easeOut, etc.)
-}
-```
-
-### CSS Animation Classes
-
-For simpler animations, toggle CSS classes:
-
-```javascript
-// In component
-showWithAnimation() {
-  this.element.classList.add('rift-appear');
-  
-  // Clean up after animation
-  const onAnimationEnd = () => {
-    this.element.removeEventListener('animationend', onAnimationEnd);
-    this.element.classList.remove('rift-appear');
-    this.element.classList.add('rift-visible');
-  };
-  
-  this.element.addEventListener('animationend', onAnimationEnd);
-}
-```
-
-```css
-/* In CSS */
-.rift-appear {
-  animation: fade-in 300ms var(--rift-ease-out);
-}
-
-.rift-visible {
-  opacity: 1;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-```
-
-## Enhanced Combat Feedback System
-
-### Component Architecture
-
-The Enhanced Combat Feedback system follows these architectural patterns:
-
-1. **Enhanced Variants of Base Components**
-   - Enhanced components extend the base functionality
-   - Base component API is preserved for compatibility
-   - Enhanced features are added on top of base implementation
-
-2. **Type-Based Visual Differentiation**
-   - Components use data attributes to drive visual variations
-   - CSS selectors target these attributes for styling
-   - JS code sets attributes based on event data
-
-3. **Intensity Scaling**
-   - Visual effects scale based on intensity values
-   - CSS custom properties control visual intensity
-   - JS calculates appropriate intensity values from gameplay data
-
-4. **Multi-Layer Composition**
-   - Complex visual effects use multiple DOM elements
-   - Elements are composed to create compound effects
-   - Each layer has a specific visual responsibility
-
-5. **Hardware-Accelerated Animation**
-   - Transform and opacity for performance
-   - Animation orchestration via JS for complex sequences
-   - CSS keyframes for repeatable animations
-
-### Example: Enhanced Damage Indicator Pattern
-
-```javascript
-// Component implementation pattern
-class EnhancedDamageIndicator extends UIComponent {
-  init() {
-    super.init();
-    this._createIndicators();
-    this._setupEventListeners();
-  }
-  
-  _createIndicators() {
-    this.element = DOMFactory.createElement('damage-indicator');
-    
-    // Create indicators for each direction
-    this.indicators = {
-      front: this._createDirectionalIndicator('front'),
-      back: this._createDirectionalIndicator('back'),
-      left: this._createDirectionalIndicator('left'),
-      right: this._createDirectionalIndicator('right')
-    };
-  }
-  
-  _createDirectionalIndicator(direction) {
-    const indicator = DOMFactory.createElement('damage-indicator', 'direction');
-    indicator.dataset.direction = direction;
-    
-    // Create inner elements for multi-layer effect
-    const outer = DOMFactory.createElement('damage-indicator', 'outer');
-    const inner = DOMFactory.createElement('damage-indicator', 'inner');
-    const pulse = DOMFactory.createElement('damage-indicator', 'pulse');
-    
-    indicator.appendChild(outer);
-    indicator.appendChild(inner);
-    indicator.appendChild(pulse);
-    
-    this.element.appendChild(indicator);
-    return indicator;
-  }
-  
-  showDamageIndicator(direction, intensity, damageType) {
-    const indicator = this.indicators[direction];
-    
-    if (!indicator) return;
-    
-    // Set attributes for styling
-    indicator.dataset.active = 'true';
-    indicator.dataset.damageType = damageType || 'bullet';
-    
-    // Set intensity via CSS custom property
-    indicator.style.setProperty('--damage-intensity', intensity.toFixed(2));
-    
-    // Trigger animation
-    indicator.classList.add('rift-damage-indicator__direction--active');
-    
-    // Schedule cleanup
-    setTimeout(() => {
-      indicator.classList.remove('rift-damage-indicator__direction--active');
-      indicator.dataset.active = 'false';
-    }, 1000); // Animation duration
-  }
-  
-  _onPlayerDamaged(event) {
-    // Calculate direction from damage source
-    const direction = this._calculateDamageDirection(event.source.position);
-    
-    // Calculate intensity based on damage amount and max health
-    const intensity = Math.min(event.damage / (event.max * 0.3), 1);
-    
-    // Show indicator
-    this.showDamageIndicator(direction, intensity, event.damageType);
-  }
-}
-```
-
-```css
-/* CSS pattern */
-.rift-damage-indicator__direction {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 300ms var(--rift-ease-out);
-}
-
-.rift-damage-indicator__direction--active {
-  opacity: 1;
-}
-
-/* Direction-specific positioning */
-.rift-damage-indicator__direction[data-direction="front"] {
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Similar for other directions... */
-
-/* Damage type differentiation */
-.rift-damage-indicator__direction[data-damage-type="bullet"] {
-  --indicator-color: var(--rift-color-damage-bullet);
-}
-
-.rift-damage-indicator__direction[data-damage-type="explosion"] {
-  --indicator-color: var(--rift-color-damage-explosion);
-}
-
-/* Intensity control */
-.rift-damage-indicator__inner {
-  transform: scale(calc(0.8 + (var(--damage-intensity) * 0.4)));
-  opacity: var(--damage-intensity);
-}
-```
-
-## Event Standardization Implementation
-
-### Complete Standardization Implementation
-
-The completed event standardization implementation follows a multi-faceted approach:
-
-1. **Core EventManager Enhancements**
-   - Added validation systems for event names and payloads:
-     ```javascript
-     // Event validation
-     if (this._validateEventNames && !this._isValidEventName(eventType)) {
-       console.warn(`[EventManager] Event name '${eventType}' does not follow pattern`);
-     }
-     
-     if (this._validateEventPayloads) {
-       this._validatePayload(eventType, data);
-     }
-     ```
-   - Support for both two-part (namespace:action) and three-part (namespace:id:action) event names:
-     ```javascript
-     _isValidEventName(eventName) {
-       const parts = eventName.split(':');
-       
-       // Accept both 2-part and 3-part event names
-       if (parts.length < 2 || parts.length > 3) return false;
-       
-       // For 2-part events: namespace:action
-       if (parts.length === 2) {
-         const [namespace, action] = parts;
-         return namespace.length > 0 && action.length > 0;
-       }
-       
-       // For 3-part events (component-specific): namespace:id:action
-       if (parts.length === 3) {
-         const [namespace, id, action] = parts;
-         return namespace.length > 0 && id.length > 0 && action.length > 0;
-       }
-     }
-     ```
-   - Standardized payload creation and validation methods:
-     ```javascript
-     createStateChangeEvent(namespace, newValue, previousValue, delta, max, source) {
-       return {
-         value: newValue,
-         previous: previousValue,
-         ...(delta !== undefined && { delta }),
-         ...(max !== undefined && { max }),
-         ...(source !== undefined && { source })
-       };
-     }
-     
-     createCombatEvent(source, target, weapon, damage, isCritical, isHeadshot, direction) {
-       return {
-         source,
-         target,
-         ...(weapon !== undefined && { weapon }),
-         ...(damage !== undefined && { damage }),
-         ...(isCritical !== undefined && { isCritical }),
-         ...(isHeadshot !== undefined && { isHeadshot }),
-         ...(direction !== undefined && { direction })
-       };
-     }
-     ```
-
-2. **EventStandardizationImplementer Tool**
-   - Centralized tools for analyzing and migrating components
-   - Handles tracking of progress and compliance across the codebase
-   - Provides a flexible migration path from legacy to standardized events
-
-3. **Interactive Testing & Implementation Tools**
-   - Test frameworks for validating compliance:
-     ```javascript
-     // Event standardization test example
-     class EventStandardizationTest {
-       testStateChangeEvent() {
-         const event = {
-           type: 'health:changed',
-           timestamp: performance.now(),
-           value: 80,
-           previous: 100,
-           delta: -20,
-           max: 100
-         };
-         
-         return this._validateStateChangeEvent(event);
-       }
-       
-       _validateStateChangeEvent(event) {
-         return (
-           event.type && 
-           event.timestamp && 
-           event.value !== undefined && 
-           event.previous !== undefined
-         );
-       }
-     }
-     ```
-   - Visual dashboards for standardization progress monitoring
-   - Documentation generation for event handlers
-
-4. **Component Analysis and Compliance**
-   - Analysis of event usage patterns across components
-   - Identification of non-standard event naming
-   - Validation of payload structures based on event types
-   - JSDoc comment generation for enhanced code documentation
-
-### Pattern for Updated Components
-
-Components using standardized events now follow this pattern:
-
-```javascript
-class ModernComponent extends UIComponent {
-  _setupEventListeners() {
-    this.eventSubscriptions.push(
-      // Standard two-part event format
-      EventManager.subscribe('health:changed', this._onHealthChanged.bind(this)),
-      
-      // Component-specific three-part event format
-      EventManager.subscribe('ui:health-display:visibility-changed', 
-        this._onHealthDisplayVisibilityChanged.bind(this)),
-      
-      // Standard combat event
-      EventManager.subscribe('enemy:killed', this._onEnemyKilled.bind(this))
-    );
-  }
-  
-  /**
-   * Handle health:changed event
-   * @param {Object} event - Standardized state change event
-   * @param {number} event.value - Current health value
-   * @param {number} event.previous - Previous health value
-   * @param {number} event.delta - Change amount
-   * @param {number

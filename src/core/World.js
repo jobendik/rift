@@ -12,6 +12,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { AssetManager } from './AssetManager.js';
 import { SpawningManager } from './SpawningManager.js';
 import { UIManager } from './UIManager.js';
+import { EventManager } from './EventManager.js';
 import { FirstPersonControls } from '../controls/FirstPersonControls.js';
 import { NavMeshUtils } from '../etc/NavMeshUtils.js';
 import { SceneUtils } from '../etc/SceneUtils.js';
@@ -1512,12 +1513,17 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 		}
 
 		//
-
 		this.player = player;
 
 		// Initialize the event bridge after creating the player
 		this.gameEventBridge = new GameEventBridge(this);
 		this.gameEventBridge.init(this.player);
+
+		// Emit player ready event for UI components that need the weapon system
+		if (typeof EventManager !== 'undefined' && EventManager) {
+			EventManager.emit('player:ready', { player: this.player });
+			console.log('[World] Player ready event emitted');
+		}
 
 		console.log('[World] Game event bridge initialized');
 

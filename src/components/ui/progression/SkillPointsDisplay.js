@@ -21,14 +21,8 @@ class SkillPointsDisplay extends UIComponent {
         this.world = world;
         this.options = options || {};
         this.config = UIConfig.xp;
-        this.skillPoints = this.options.skillPoints || 0;
-        this.isVisible = this.options.visible !== false;
+        this.skillPoints = this.options.skillPoints || 0;        this.isVisible = this.options.visible !== false;
         this.floatingNumbers = [];
-        
-        // Bind methods
-        this._handleLevelUp = this._handleLevelUp.bind(this);
-        this._handleSkillPointsChanged = this._handleSkillPointsChanged.bind(this);
-        this._handleSpendBtnClick = this._handleSpendBtnClick.bind(this);
         
         // Manual initialization after all properties are set
         this.init();
@@ -102,9 +96,8 @@ class SkillPointsDisplay extends UIComponent {
                 },
                 parent: this.container
             });
-            
-            // Add event listener for the button
-            this.spendButton.addEventListener('click', this._handleSpendBtnClick);
+              // Add event listener for the button
+            this.spendButton.addEventListener('click', this._handleSpendBtnClick.bind(this));
             
             // Disable button if no points
             if (this.skillPoints <= 0) {
@@ -168,30 +161,23 @@ class SkillPointsDisplay extends UIComponent {
         // Show animation for gained points
         this._showPointChangeAnimation(event.amount);
     }
-    
-    /**
+      /**
      * Handle spend button click
      * @private
      * @param {Event} event - Click event
      */
     _handleSpendBtnClick(event) {
-        // Prevent default button behavior
         event.preventDefault();
+        event.stopPropagation();
         
-        // Don't do anything if no points available
-        if (this.skillPoints <= 0) return;
-        
-        // Emit the event to open skill tree using standardized menu event
+        // Emit event to open skill tree
         if (EventManager) {
-            EventManager.emit('menu:opened', { 
-                type: 'skill-tree',
-                data: {
-                    availablePoints: this.skillPoints
-                }
+            EventManager.emit('ui:skill:open', {
+                availablePoints: this.skillPoints
             });
         }
     }
-    
+
     /**
      * Show animation for point change
      * @private
@@ -409,14 +395,8 @@ class SkillPointsDisplay extends UIComponent {
     /**
      * Clean up the component
      */
-    dispose() {
-        // Use parent class method to unsubscribe from all events
+    dispose() {        // Use parent class method to unsubscribe from all events
         super.dispose();
-        
-        // Clean up DOM-specific event listeners
-        if (this.spendButton) {
-            this.spendButton.removeEventListener('click', this._handleSpendBtnClick);
-        }
         
         // Remove DOM elements
         if (this.container && this.container.parentNode) {

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - HUD System Integration Test</title>
+    <link rel="icon" href="rift_logo.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #00a8ff;
+            --secondary-color: #0097e6;
+            --accent-color: #ff9f43;
+            --dark-bg: #1e272e;
+            --darker-bg: #151c21;
+            --light-text: #f5f6fa;
+            --header-height: 60px;
+            --section-gap: 20px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background-color: var(--darker-bg);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            margin-left: 10px;
+        }
+        
+        .logo {
+            height: 40px;
+        }
+        
+        .container {
+            padding: var(--section-gap);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background-color: var(--darker-bg);
+            padding: 20px;
+            margin-bottom: var(--section-gap);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e17e25;
+        }
+        
+        .test-area {
+            position: relative;
+            height: 600px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .status {
+            background-color: var(--dark-bg);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .status.success {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .status.error {
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .status.info {
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-card {
+            background-color: var(--dark-bg);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .info-card h3 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .info-card p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+    </style>
+    
+    <!-- Import RIFT UI Styles -->
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+<body>
+    <header>
+        <img src="rift_logo.png" alt="RIFT Logo" class="logo">
+        <h1>HUD System Integration Test</h1>
+    </header>
+    
+    <div class="container">
+        <div class="section">
+            <h2>🎯 HUD System Integration Test</h2>
+            <p>This test verifies that the NotificationSystem is properly integrated into the HUDSystem and all components work together.</p>
+            
+            <div class="controls">
+                <button class="btn" id="initHUD">Initialize HUD System</button>
+                <button class="btn" id="testKillFeed">Test Kill Feed</button>
+                <button class="btn" id="testNotifications">Test Notifications</button>
+                <button class="btn" id="testHealthUpdate">Test Health Update</button>
+                <button class="btn" id="testAmmoUpdate">Test Ammo Update</button>
+                <button class="btn btn-secondary" id="disposeHUD">Dispose HUD</button>
+            </div>
+            
+            <div class="test-area" id="testArea">
+                <!-- HUD System will be rendered here -->
+            </div>
+            
+            <div class="status info" id="status">
+                Status: Ready to initialize HUD system...
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Integration Details</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Components Integrated</h3>
+                    <p>✅ HealthDisplay<br>✅ AmmoDisplay<br>✅ CrosshairSystem<br>✅ MinimapSystem<br>✅ StaminaSystem<br>✅ CompassDisplay<br>✅ WeaponWheel<br>✅ NotificationSystem</p>
+                </div>
+                <div class="info-card">
+                    <h3>Notification Sub-components</h3>
+                    <p>✅ EnhancedKillFeed<br>✅ NotificationManager<br>✅ EventBanner<br>✅ AchievementDisplay</p>
+                </div>
+                <div class="info-card">
+                    <h3>CSS Integration</h3>
+                    <p>✅ HUD styles imported<br>✅ Notification styles included<br>✅ Component styles loaded</p>
+                </div>
+                <div class="info-card">
+                    <h3>Event System</h3>
+                    <p>✅ Kill events<br>✅ Health updates<br>✅ Achievement notifications<br>✅ Game state events</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { EventManager } from '../src/core/EventManager.js';
+        import { HUDSystem } from '../src/components/ui/hud/HUDSystem.js';
+        
+        let hudSystem = null;
+        let mockWorld = null;
+        
+        // Create mock world object for testing
+        function createMockWorld() {
+            return {
+                player: {
+                    health: 85,
+                    maxHealth: 100,
+                    stamina: 75,
+                    maxStamina: 100,
+                    isSprinting: false,
+                    rotation: { y: 0 },
+                    weapon: {
+                        ammo: 24,
+                        maxAmmo: 30,
+                        type: 'assault_rifle'
+                    }
+                },
+                enemies: [
+                    { id: 'enemy1', name: 'Hostile Alpha', health: 50 },
+                    { id: 'enemy2', name: 'Hostile Beta', health: 75 }
+                ]
+            };
+        }
+        
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = `Status: ${message}`;
+            statusEl.className = `status ${type}`;
+        }
+        
+        // Initialize HUD System
+        function initializeHUD() {
+            try {
+                if (hudSystem) {
+                    hudSystem.dispose();
+                }
+                
+                mockWorld = createMockWorld();
+                const testArea = document.getElementById('testArea');
+                
+                hudSystem = new HUDSystem(mockWorld, {
+                    container: testArea
+                });
+                
+                updateStatus('HUD System initialized successfully with NotificationSystem integrated!', 'success');
+                
+                // Log component status
+                console.log('[HUD Integration Test] Components:', Object.keys(hudSystem.components));
+                console.log('[HUD Integration Test] Notification System:', hudSystem.components.notifications);
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error initializing HUD:', error);
+                updateStatus(`Error initializing HUD: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test kill feed functionality
+        function testKillFeed() {
+            if (!hudSystem || !hudSystem.components.notifications) {
+                updateStatus('HUD System must be initialized first!', 'error');
+                return;
+            }
+            
+            try {
+                // Simulate kill events
+                const killEvents = [
+                    {
+                        killerName: 'Player',
+                        victimName: 'Hostile Alpha',
+                        weaponType: 'assault_rifle',
+                        isHeadshot: true,
+                        timestamp: Date.now()
+                    },
+                    {
+                        killerName: 'Player',
+                        victimName: 'Hostile Beta',
+                        weaponType: 'sniper_rifle',
+                        isHeadshot: false,
+                        timestamp: Date.now() + 1000
+                    }
+                ];
+                
+                killEvents.forEach((killEvent, index) => {
+                    setTimeout(() => {
+                        EventManager.emit('enemy:killed', killEvent);
+                    }, index * 1500);
+                });
+                
+                updateStatus('Kill feed test events triggered - check the HUD display!', 'success');
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error testing kill feed:', error);
+                updateStatus(`Error testing kill feed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test notification system
+        function testNotifications() {
+            if (!hudSystem || !hudSystem.components.notifications) {
+                updateStatus('HUD System must be initialized first!', 'error');
+                return;
+            }
+            
+            try {
+                // Test various notification types
+                const notifications = [
+                    {
+                        type: 'achievement',
+                        title: 'First Blood',
+                        message: 'Get your first kill',
+                        icon: '🎯'
+                    },
+                    {
+                        type: 'objective',
+                        title: 'Objective Complete',
+                        message: 'Secure the extraction point',
+                        icon: '✅'
+                    },
+                    {
+                        type: 'warning',
+                        title: 'Low Health',
+                        message: 'Find a health pack quickly!',
+                        icon: '⚠️'
+                    }
+                ];
+                
+                notifications.forEach((notification, index) => {
+                    setTimeout(() => {
+                        EventManager.emit('notification:request', notification);
+                    }, index * 2000);
+                });
+                
+                updateStatus('Notification test events triggered - check the HUD display!', 'success');
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error testing notifications:', error);
+                updateStatus(`Error testing notifications: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test health update
+        function testHealthUpdate() {
+            if (!hudSystem || !mockWorld) {
+                updateStatus('HUD System must be initialized first!', 'error');
+                return;
+            }
+            
+            try {
+                // Simulate health changes
+                const healthValues = [85, 60, 45, 25, 50, 75, 100];
+                let currentIndex = 0;
+                
+                const updateHealth = () => {
+                    if (currentIndex < healthValues.length) {
+                        mockWorld.player.health = healthValues[currentIndex];
+                        currentIndex++;
+                        setTimeout(updateHealth, 1000);
+                    }
+                };
+                
+                updateHealth();
+                updateStatus('Health update test started - watch the health display!', 'success');
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error testing health update:', error);
+                updateStatus(`Error testing health update: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test ammo update
+        function testAmmoUpdate() {
+            if (!hudSystem || !mockWorld) {
+                updateStatus('HUD System must be initialized first!', 'error');
+                return;
+            }
+            
+            try {
+                // Simulate ammo changes
+                const ammoValues = [24, 18, 12, 6, 0, 30];
+                let currentIndex = 0;
+                
+                const updateAmmo = () => {
+                    if (currentIndex < ammoValues.length) {
+                        mockWorld.player.weapon.ammo = ammoValues[currentIndex];
+                        currentIndex++;
+                        setTimeout(updateAmmo, 800);
+                    }
+                };
+                
+                updateAmmo();
+                updateStatus('Ammo update test started - watch the ammo display!', 'success');
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error testing ammo update:', error);
+                updateStatus(`Error testing ammo update: ${error.message}`, 'error');
+            }
+        }
+        
+        // Dispose HUD system
+        function disposeHUD() {
+            try {
+                if (hudSystem) {
+                    hudSystem.dispose();
+                    hudSystem = null;
+                    mockWorld = null;
+                }
+                
+                // Clear test area
+                const testArea = document.getElementById('testArea');
+                testArea.innerHTML = '';
+                
+                updateStatus('HUD System disposed successfully!', 'success');
+                
+            } catch (error) {
+                console.error('[HUD Integration Test] Error disposing HUD:', error);
+                updateStatus(`Error disposing HUD: ${error.message}`, 'error');
+            }
+        }
+        
+        // Bind event handlers
+        document.getElementById('initHUD').addEventListener('click', initializeHUD);
+        document.getElementById('testKillFeed').addEventListener('click', testKillFeed);
+        document.getElementById('testNotifications').addEventListener('click', testNotifications);
+        document.getElementById('testHealthUpdate').addEventListener('click', testHealthUpdate);
+        document.getElementById('testAmmoUpdate').addEventListener('click', testAmmoUpdate);
+        document.getElementById('disposeHUD').addEventListener('click', disposeHUD);
+        
+        // Auto-initialize for demo
+        setTimeout(initializeHUD, 1000);
+        
+        console.log('[HUD Integration Test] Test page loaded successfully');
+    </script>
+</body>
+</html>

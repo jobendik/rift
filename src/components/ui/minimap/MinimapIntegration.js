@@ -17,6 +17,10 @@ class MinimapIntegration {
     this.lastPlayerPosition = null;
     this.movementVector = { x: 0, z: -1 }; // Default forward
     this.frameCount = 0;
+    
+    // Track markers for better management
+    this._enemyMarkers = new Map();
+    this._itemMarkers = new Map();
   }
 
   init() {
@@ -65,6 +69,9 @@ class MinimapIntegration {
         getPlayerDirection: () => this.getPlayerCameraDirection()
       }
     );
+    
+    // Ensure the minimap has the required methods
+    this._ensureMinimapMethods();
 
     // Override container to use our prepared DOM element
     if (this.minimapContainer && this.minimap.container) {
@@ -298,171 +305,401 @@ class MinimapIntegration {
     return Math.atan2(this.movementVector.x, this.movementVector.z);
   }
   
+  /**
+   * Ensure the minimap has all required methods
+   * Adds stubs for missing methods to prevent errors
+   * @private
+   */
+  _ensureMinimapMethods() {
+    if (!this.minimap) return;
+    
+    console.log('[MinimapIntegration] Ensuring required methods exist');
+    
+    // Add stub for addEnemyMarker if missing
+    if (typeof this.minimap.addEnemyMarker !== 'function') {
+      console.warn('[MinimapIntegration] Adding stub implementation for addEnemyMarker');
+      
+      this.minimap.addEnemyMarker = (enemy) => {
+        // Skip if already marked
+        if (this._enemyMarkers.has(enemy)) {
+          return this._enemyMarkers.get(enemy);
+        }
+        
+        // Create a simple marker if minimap scene exists
+        if (this.minimap.minimapScene) {
+          const markerGeometry = new THREE.SphereGeometry(1.0, 8, 8);
+          const markerMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff0000, // Red for enemies
+            transparent: true,
+            opacity: 0.8
+          });
+          
+          const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+          
+          // Set initial position
+          if (enemy.position) {
+            marker.position.set(enemy.position.x, 0, enemy.position.z);
+          }
+          
+          // Store reference data
+          marker.userData = { 
+            enemy: enemy, 
+            type: 'enemy',
+            update: (delta) => {
+              // Update marker position if enemy moved
+              if (enemy.position) {
+                marker.position.set(enemy.position.x, 0, enemy.position.z);
+              }
+            }
+          };
+          
+          // Add to scene
+          this.minimap.minimapScene.add(marker);
+          
+          // Store for tracking
+          this._enemyMarkers.set(enemy, marker);
+          
+          return marker;
+        }
+        
+        return null;
+      };
+    }
+    
+    // Add stub for addItemMarker if missing
+    if (typeof this.minimap.addItemMarker !== 'function') {
+      console.warn('[MinimapIntegration] Adding stub implementation for addItemMarker');
+      
+      this.minimap.addItemMarker = (item, itemType = 'generic') => {
+        // Skip if already marked
+        if (this._itemMarkers.has(item)) {
+          return this._itemMarkers.get(item);
+        }
+        
+        // Create a simple marker if minimap scene exists
+        if (this.minimap.minimapScene) {
+          // Choose color based on item type
+          let color = 0x00ff00; // Default green
+          
+          if (itemType === 'health') color = 0x00ff00; // Green
+          else if (itemType === 'weapon' || itemType === 'blaster' || 
+                   itemType === 'shotgun' || itemType === 'assaultRifle') color = 0xffff00; // Yellow
+          else if (itemType === 'ammo') color = 0x0088ff; // Blue
+          
+          const markerGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+          const markerMaterial = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.8
+          });
+          
+          const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+          
+          // Set initial position
+          if (item.position) {
+            marker.position.set(item.position.x, 0, item.position.z);
+          }
+          
+          // Store reference data
+          marker.userData = { 
+            item: item, 
+            type: itemType,
+            update: (delta) => {
+              // Update marker position if item moved
+              if (item.position) {
+                marker.position.set(item.position.x, 0, item.position.z);
+              }
+            }
+          };
+          
+          // Add to scene
+          this.minimap.minimapScene.add(marker);
+          
+          // Store for tracking
+          this._itemMarkers.set(item, marker);
+          
+          return marker;
+        }
+        
+        return null;
+      };
+    }
+    
+    // Log available methods for debugging
+    if (this.world.isDebugMode) {
+      this._debugMinimapMethods();
+    }
+  }
+  
+  /**
+   * Debug method to log available methods on the minimap
+   * @private
+   */
+  _debugMinimapMethods() {
+    console.log('[MinimapIntegration] Debugging AdvancedMinimap methods:');
+    
+    // Get all properties and methods
+    const properties = [];
+    const methods = [];
+    
+    // Check own properties
+    for (let prop in this.minimap) {
+      if (this.minimap.hasOwnProperty(prop)) {
+        if (typeof this.minimap[prop] === 'function') {
+          methods.push(prop);
+        } else {
+          properties.push(prop);
+        }
+      }
+    }
+    
+    // Check prototype methods
+    const proto = Object.getPrototypeOf(this.minimap);
+    const protoMethods = Object.getOwnPropertyNames(proto)
+      .filter(name => typeof proto[name] === 'function' && name !== 'constructor');
+    
+    console.log('Direct methods:', methods);
+    console.log('Prototype methods:', protoMethods);
+    
+    // Check for specific expected methods
+    const expectedMethods = [
+      'addEnemyMarker', 'addItemMarker', 'update', 'destroy'
+    ];
+    
+    console.log('\nChecking expected methods:');
+    expectedMethods.forEach(method => {
+      const exists = typeof this.minimap[method] === 'function';
+      console.log(`- ${method}: ${exists ? '✓ exists' : '✗ missing'}`);
+    });
+  }
+  
   // Add all enemies to the minimap
   addAllEnemies() {
-    // Add competitors (bots, other players)
-    if (this.world.competitors) {
-      this.world.competitors.forEach(competitor => {
-        if (competitor !== this.world.player && competitor.position) {
-          this.minimap.addEnemyMarker(competitor);
-        }
-      });
+    // First check if minimap and the required method exist
+    if (!this.minimap) {
+      console.error('[MinimapIntegration] Minimap not initialized');
+      return;
     }
+    
+    // Check if the addEnemyMarker method exists
+    if (typeof this.minimap.addEnemyMarker !== 'function') {
+      console.warn('[MinimapIntegration] addEnemyMarker method not available');
+      
+      // Try to ensure methods are available
+      this._ensureMinimapMethods();
+      
+      // If still not available after ensuring, log and return
+      if (typeof this.minimap.addEnemyMarker !== 'function') {
+        console.error('[MinimapIntegration] Could not create addEnemyMarker method stub');
+        return;
+      }
+    }
+    
+    try {
+      // Add competitors (bots, other players)
+      if (this.world.competitors) {
+        this.world.competitors.forEach(competitor => {
+          if (competitor !== this.world.player && competitor.position) {
+            try {
+              this.minimap.addEnemyMarker(competitor);
+            } catch (err) {
+              console.warn(`[MinimapIntegration] Error adding competitor ${competitor.name || 'unnamed'}:`, err);
+            }
+          }
+        });
+      }
 
-    // Also check enemies array if it exists
-    if (this.world.enemies) {
-      this.world.enemies.forEach(enemy => {
-        this.minimap.addEnemyMarker(enemy);
-      });
+      // Also check enemies array if it exists
+      if (this.world.enemies) {
+        this.world.enemies.forEach(enemy => {
+          try {
+            this.minimap.addEnemyMarker(enemy);
+          } catch (err) {
+            console.warn(`[MinimapIntegration] Error adding enemy ${enemy.name || 'unnamed'}:`, err);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('[MinimapIntegration] Error adding enemies:', error);
     }
-  }  
+  }
   
   // Add all items to the minimap
   addAllItems() {
-    const itemArrays = [
-      this.world.items,
-      this.world.pickups,
-      this.world.pickableItems,
-      this.world.collectibles
-    ];
-
-    // Add items from spawning manager if available
-    if (this.world.spawningManager) {
-      const spawner = this.world.spawningManager;
-
-      if (spawner.healthPacks && Array.isArray(spawner.healthPacks)) {
-        console.log("Adding health packs to minimap:", spawner.healthPacks.length);
-        itemArrays.push(spawner.healthPacks);
-      }
-
-      if (spawner.blasters && Array.isArray(spawner.blasters)) {
-        console.log("Adding blasters to minimap:", spawner.blasters.length);
-        itemArrays.push(spawner.blasters);
-      }
-
-      if (spawner.shotguns && Array.isArray(spawner.shotguns)) {
-        console.log("Adding shotguns to minimap:", spawner.shotguns.length);
-        itemArrays.push(spawner.shotguns);
-      }
-
-      if (spawner.assaultRifles && Array.isArray(spawner.assaultRifles)) {
-        console.log("Adding assault rifles to minimap:", spawner.assaultRifles.length);
-        itemArrays.push(spawner.assaultRifles);
+    // First check if minimap exists
+    if (!this.minimap) {
+      console.error('[MinimapIntegration] Minimap not initialized');
+      return;
+    }
+    
+    // Check if the addItemMarker method exists
+    if (typeof this.minimap.addItemMarker !== 'function') {
+      console.warn('[MinimapIntegration] addItemMarker method not available');
+      
+      // Try to ensure methods are available
+      this._ensureMinimapMethods();
+      
+      // If still not available after ensuring, log and return
+      if (typeof this.minimap.addItemMarker !== 'function') {
+        console.error('[MinimapIntegration] Could not create addItemMarker method stub');
+        return;
       }
     }
+    
+    try {
+      const itemArrays = [
+        this.world.items,
+        this.world.pickups,
+        this.world.pickableItems,
+        this.world.collectibles
+      ];
 
-    let totalWeaponsAdded = 0;
-    let totalHealthAdded = 0;
+      // Add items from spawning manager if available
+      if (this.world.spawningManager) {
+        const spawner = this.world.spawningManager;
 
-    itemArrays.forEach(items => {
-      if (!items || !Array.isArray(items)) return;
-
-      items.forEach(item => {
-        if (!item || !item.position) return;
-
-        let itemType = 'generic';
-
-        // Check render component name
-        if (item._renderComponent) {
-          const model = item._renderComponent;
-          const modelName = model.name?.toLowerCase() || '';
-
-          if (modelName.includes('health')) {
-            itemType = 'health';
-          } else if (modelName.includes('blaster')) {
-            itemType = 'blaster';
-          } else if (modelName.includes('shotgun')) {
-            itemType = 'shotgun';
-          } else if (modelName.includes('assault') || modelName.includes('rifle')) {
-            itemType = 'assaultRifle';
-          }
+        if (spawner.healthPacks && Array.isArray(spawner.healthPacks)) {
+          console.log("Adding health packs to minimap:", spawner.healthPacks.length);
+          itemArrays.push(spawner.healthPacks);
         }
 
-        // Check item name
-        if (itemType === 'generic' && item.name) {
-          const name = item.name.toLowerCase();
-          if (name.includes('health') || name.includes('med')) {
-            itemType = 'health';
-          } else if (name.includes('ammo') || name.includes('bullet')) {
-            itemType = 'ammo';
-          } else if (name.includes('blaster')) {
-            itemType = 'blaster';
-          } else if (name.includes('shotgun')) {
-            itemType = 'shotgun';
-          } else if (name.includes('rifle') || name.includes('assault')) {
-            itemType = 'assaultRifle';
-          } else if (name.includes('gun') || name.includes('weapon') || name.includes('pistol')) {
-            itemType = 'weapon';
-          }
+        if (spawner.blasters && Array.isArray(spawner.blasters)) {
+          console.log("Adding blasters to minimap:", spawner.blasters.length);
+          itemArrays.push(spawner.blasters);
         }
 
-        // Check item type constant
-        if (itemType === 'generic' && item.type !== undefined) {
-          switch (item.type) {
-            case 1: itemType = 'blaster'; break;
-            case 2: itemType = 'shotgun'; break;
-            case 3: itemType = 'assaultRifle'; break;
-            case 15: itemType = 'health'; break;
-          }
+        if (spawner.shotguns && Array.isArray(spawner.shotguns)) {
+          console.log("Adding shotguns to minimap:", spawner.shotguns.length);
+          itemArrays.push(spawner.shotguns);
         }
 
-        // Check userData
-        if (itemType === 'generic' && item.userData?.type) {
-          itemType = item.userData.type;
+        if (spawner.assaultRifles && Array.isArray(spawner.assaultRifles)) {
+          console.log("Adding assault rifles to minimap:", spawner.assaultRifles.length);
+          itemArrays.push(spawner.assaultRifles);
         }
+      }
 
-        // Check file path
-        if (itemType === 'generic' && item.filePath) {
-          const path = item.filePath.toLowerCase();
-          if (path.includes('blaster')) {
-            itemType = 'blaster';
-          } else if (path.includes('shotgun')) {
-            itemType = 'shotgun';
-          } else if (path.includes('assault') || path.includes('rifle')) {
-            itemType = 'assaultRifle';
-          } else if (path.includes('health')) {
-            itemType = 'health';
-          }
-        }
+      let totalWeaponsAdded = 0;
+      let totalHealthAdded = 0;
 
-        // Check model path
-        if (itemType === 'generic' && item._modelPath) {
-          const modelPath = item._modelPath.toLowerCase();
-          if (modelPath.includes('blaster')) {
-            itemType = 'blaster';
-          } else if (modelPath.includes('shotgun')) {
-            itemType = 'shotgun';
-          } else if (modelPath.includes('assault') || modelPath.includes('rifle')) {
-            itemType = 'assaultRifle';
-          } else if (modelPath.includes('health')) {
-            itemType = 'health';
-          }
-        }
+      itemArrays.forEach(items => {
+        if (!items || !Array.isArray(items)) return;
 
-        // Log item type detection for debugging
-        console.log("Item type detected:", itemType, "for item:", item.name || "unnamed", "at position:", item.position.x.toFixed(2), item.position.y.toFixed(2), item.position.z.toFixed(2));
+        items.forEach(item => {
+          if (!item || !item.position) return;
 
-        // Add to minimap
-        if (this.minimap?.addItemMarker) {
-          const marker = this.minimap.addItemMarker(item, itemType || 'generic');
-          
-          // Ensure marker is initially visible
-          if (marker) {
-            marker.visible = true;
-            
-            // Track item types added for debugging
-            if (itemType === 'health') {
-              totalHealthAdded++;
-            } else if (['blaster', 'shotgun', 'assaultRifle', 'weapon'].includes(itemType)) {
-              totalWeaponsAdded++;
+          let itemType = 'generic';
+
+          // Check render component name
+          if (item._renderComponent) {
+            const model = item._renderComponent;
+            const modelName = model.name?.toLowerCase() || '';
+
+            if (modelName.includes('health')) {
+              itemType = 'health';
+            } else if (modelName.includes('blaster')) {
+              itemType = 'blaster';
+            } else if (modelName.includes('shotgun')) {
+              itemType = 'shotgun';
+            } else if (modelName.includes('assault') || modelName.includes('rifle')) {
+              itemType = 'assaultRifle';
             }
           }
-        }
+
+          // Check item name
+          if (itemType === 'generic' && item.name) {
+            const name = item.name.toLowerCase();
+            if (name.includes('health') || name.includes('med')) {
+              itemType = 'health';
+            } else if (name.includes('ammo') || name.includes('bullet')) {
+              itemType = 'ammo';
+            } else if (name.includes('blaster')) {
+              itemType = 'blaster';
+            } else if (name.includes('shotgun')) {
+              itemType = 'shotgun';
+            } else if (name.includes('rifle') || name.includes('assault')) {
+              itemType = 'assaultRifle';
+            } else if (name.includes('gun') || name.includes('weapon') || name.includes('pistol')) {
+              itemType = 'weapon';
+            }
+          }
+
+          // Check item type constant
+          if (itemType === 'generic' && item.type !== undefined) {
+            switch (item.type) {
+              case 1: itemType = 'blaster'; break;
+              case 2: itemType = 'shotgun'; break;
+              case 3: itemType = 'assaultRifle'; break;
+              case 15: itemType = 'health'; break;
+            }
+          }
+
+          // Check userData
+          if (itemType === 'generic' && item.userData?.type) {
+            itemType = item.userData.type;
+          }
+
+          // Check file path
+          if (itemType === 'generic' && item.filePath) {
+            const path = item.filePath.toLowerCase();
+            if (path.includes('blaster')) {
+              itemType = 'blaster';
+            } else if (path.includes('shotgun')) {
+              itemType = 'shotgun';
+            } else if (path.includes('assault') || path.includes('rifle')) {
+              itemType = 'assaultRifle';
+            } else if (path.includes('health')) {
+              itemType = 'health';
+            }
+          }
+
+          // Check model path
+          if (itemType === 'generic' && item._modelPath) {
+            const modelPath = item._modelPath.toLowerCase();
+            if (modelPath.includes('blaster')) {
+              itemType = 'blaster';
+            } else if (modelPath.includes('shotgun')) {
+              itemType = 'shotgun';
+            } else if (modelPath.includes('assault') || modelPath.includes('rifle')) {
+              itemType = 'assaultRifle';
+            } else if (modelPath.includes('health')) {
+              itemType = 'health';
+            }
+          }
+
+          // Log item type detection for debugging
+          console.log("Item type detected:", itemType, "for item:", item.name || "unnamed", "at position:", item.position.x.toFixed(2), item.position.y.toFixed(2), item.position.z.toFixed(2));
+
+          // Add to minimap - now with error handling
+          try {
+            if (typeof this.minimap.addItemMarker === 'function') {
+              const marker = this.minimap.addItemMarker(item, itemType || 'generic');
+              
+              // Ensure marker is initially visible
+              if (marker) {
+                marker.visible = true;
+                
+                // Track item types added for debugging
+                if (itemType === 'health') {
+                  totalHealthAdded++;
+                } else if (['blaster', 'shotgun', 'assaultRifle', 'weapon'].includes(itemType)) {
+                  totalWeaponsAdded++;
+                }
+              }
+            } else {
+              console.warn('[MinimapIntegration] addItemMarker method not available');
+            }
+          } catch (error) {
+            console.error('[MinimapIntegration] Error adding item marker:', error);
+          }
+        });
       });
-    });
-    
-    // Log summary of items added
-    console.log("Minimap items summary - Health packs:", totalHealthAdded, "Weapons:", totalWeaponsAdded);
+      
+      // Log summary of items added
+      console.log("Minimap items summary - Health packs:", totalHealthAdded, "Weapons:", totalWeaponsAdded);
+    } catch (error) {
+      console.error('[MinimapIntegration] Error in addAllItems:', error);
+    }
   }
 
   // Add debug markers for development and testing
@@ -552,7 +789,30 @@ class MinimapIntegration {
 
       // Update the minimap
       this.minimap.update();
+      
+      // Update enemy and item markers (if using stubs)
+      this._updateMarkers();
     }
+  }
+
+  /**
+   * Update all markers created by our stub implementation
+   * @private
+   */
+  _updateMarkers() {
+    // Update enemy markers
+    this._enemyMarkers.forEach((marker, enemy) => {
+      if (marker && marker.userData && marker.userData.update) {
+        marker.userData.update();
+      }
+    });
+    
+    // Update item markers
+    this._itemMarkers.forEach((marker, item) => {
+      if (marker && marker.userData && marker.userData.update) {
+        marker.userData.update();
+      }
+    });
   }
 
   // Show the minimap
@@ -593,4 +853,3 @@ class MinimapIntegration {
 }
 
 export { MinimapIntegration };
-

@@ -26,10 +26,6 @@ class ExperienceBar extends UIComponent {
         this.config = UIConfig.xp;
         this.isVisible = this.options.visible !== false;
         
-        // Bind methods
-        this._handleLevelUp = this._handleLevelUp.bind(this);
-        this._handleXPGain = this._handleXPGain.bind(this);
-        
         // Manual initialization after all properties are set
         this.init();
     }

@@ -104,28 +104,40 @@ class ProgressionSystem extends UIComponent {
     _createComponents() {
         // Experience Bar
         if (this.config.showXpInHUD !== false) {
-            this.components.experienceBar = new ExperienceBar(this.world, {
-                parent: this.containers.main,
-                level: this.level,
-                currentXP: this.currentXP
-            });
-            this.components.experienceBar.init();
+            try {
+                this.components.experienceBar = new ExperienceBar(this.world, {
+                    parent: this.containers.main,
+                    level: this.level,
+                    currentXP: this.currentXP
+                });
+                this.components.experienceBar.init();
+            } catch (error) {
+                console.error('[ProgressionSystem] Failed to create ExperienceBar:', error);
+            }
         }
         
         // Player Rank
-        this.components.playerRank = new PlayerRank(this.world, {
-            parent: this.containers.main,
-            level: this.level
-        });
-        this.components.playerRank.init();
+        try {
+            this.components.playerRank = new PlayerRank(this.world, {
+                parent: this.containers.main,
+                level: this.level
+            });
+            this.components.playerRank.init();
+        } catch (error) {
+            console.error('[ProgressionSystem] Failed to create PlayerRank:', error);
+        }
         
         // Skill Points Display (if enabled)
         if (this.config.enableSkillPoints) {
-            this.components.skillPoints = new SkillPointsDisplay(this.world, {
-                parent: this.containers.main,
-                skillPoints: this.skillPoints
-            });
-            this.components.skillPoints.init();
+            try {
+                this.components.skillPoints = new SkillPointsDisplay(this.world, {
+                    parent: this.containers.main,
+                    skillPoints: this.skillPoints
+                });
+                this.components.skillPoints.init();
+            } catch (error) {
+                console.error('[ProgressionSystem] Failed to create SkillPointsDisplay:', error);
+            }
         }
     }
     
@@ -133,10 +145,9 @@ class ProgressionSystem extends UIComponent {
      * Set up event listeners
      * @private
      */
-    _setupEventListeners() {
-        if (EventManager) {
+    _setupEventListeners() {        if (EventManager) {
             // Listen for skill tree opening request
-            EventManager.on('ui:skill:tree:open', this._handleSkillTreeOpen);
+            EventManager.on('ui:skill:open', this._handleSkillTreeOpen);
             
             // Additional game events can be handled here
             EventManager.on('game:started', () => this.show());
@@ -345,11 +356,10 @@ class ProgressionSystem extends UIComponent {
     
     /**
      * Clean up all progression components
-     */
-    dispose() {
+     */    dispose() {
         // Remove event listeners
         if (EventManager) {
-            EventManager.off('ui:skill:tree:open', this._handleSkillTreeOpen);
+            EventManager.off('ui:skill:open', this._handleSkillTreeOpen);
             EventManager.off('debug:add:xp');
             EventManager.off('game:started');
             EventManager.off('game:ended');

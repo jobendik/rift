@@ -544,41 +544,36 @@ export class EnhancedKillFeed extends UIComponent {
         element.className = messageClass;
         
         // Add killer name
-        const killer = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__player', 'rift-kill-message__killer'],
+        const killer = DOMFactory.createElement('span', {
+            className: 'rift-kill-message__player rift-kill-message__killer',
             text: data.killer
         });
         element.appendChild(killer);
         
         // Add weapon icon
         const weaponClass = this.weaponIcons[data.weapon] || 'icon-weapon';
-        const weapon = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__weapon', weaponClass]
+        const weapon = DOMFactory.createElement('span', {
+            className: `rift-kill-message__weapon ${weaponClass}`
         });
         element.appendChild(weapon);
         
         // Add victim name
-        const victim = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__player', 'rift-kill-message__victim'],
+        const victim = DOMFactory.createElement('span', {
+            className: 'rift-kill-message__player rift-kill-message__victim',
             text: data.victim
         });
         element.appendChild(victim);
         
         // Add special indicator (e.g., headshot)
         if (data.isHeadshot) {
-            const special = DOMFactory.createElement({
-                type: 'span',
-                classes: ['rift-kill-message__special', 'rift-kill-message__special--headshot'],
+            const special = DOMFactory.createElement('span', {
+                className: 'rift-kill-message__special rift-kill-message__special--headshot',
                 text: 'HEADSHOT'
             });
             element.appendChild(special);
         } else if (data.specialType) {
-            const special = DOMFactory.createElement({
-                type: 'span',
-                classes: ['rift-kill-message__special'],
+            const special = DOMFactory.createElement('span', {
+                className: 'rift-kill-message__special',
                 text: data.specialType.toUpperCase()
             });
             element.appendChild(special);

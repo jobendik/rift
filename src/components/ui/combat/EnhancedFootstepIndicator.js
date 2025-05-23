@@ -62,12 +62,15 @@ class EnhancedFootstepIndicator extends UIComponent {
         this.indicatorPool = null;
         this.indicatorContainer = null;
         this.isActive = false;
-    }
-
-    /**
+    }    /**
      * Initialize the enhanced footstep indicator component
      */
     init() {
+        if (this.isInitialized) return this;
+        
+        // Call parent init first to create the root element
+        super.init();
+        
         this._createElements();
         this._initElementPool();
         this._registerEventListeners();
@@ -355,21 +358,26 @@ class EnhancedFootstepIndicator extends UIComponent {
         super.dispose();
         
         return this;
-    }
-
-    /**
+    }    /**
      * Create the main container and elements
      * @private
      */
     _createElements() {
-        // Create the root element if it doesn't exist
-        if (!this.element) {
-            this._createRootElement();
-        }
+        try {
+            // Verify element exists (should be created by parent init)
+            if (!this.element) {
+                console.error('[EnhancedFootstepIndicator] Root element not found - parent init may not have been called');
+                return;
+            }
 
-        // Create the indicator container
-        this.indicatorContainer = DOMFactory.createElement('footstep-indicator', 'container');
-        this.element.appendChild(this.indicatorContainer);
+            // Create the indicator container
+            this.indicatorContainer = DOMFactory.createElement('div', {
+                className: 'rift-footstep-indicator__container',
+                parent: this.element
+            });
+        } catch (error) {
+            console.error('[EnhancedFootstepIndicator] Error creating elements:', error);
+        }
     }
 
     /**

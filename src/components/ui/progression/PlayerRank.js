@@ -22,11 +22,7 @@ class PlayerRank extends UIComponent {
         this.options = options || {};
         this.config = UIConfig.xp;
         this.level = this.options.level || 1;
-        this.rank = this._getRankForLevel(this.level);
-        this.isVisible = this.options.visible !== false;
-        
-        // Bind methods
-        this._handleLevelUp = this._handleLevelUp.bind(this);
+        this.rank = this._getRankForLevel(this.level);        this.isVisible = this.options.visible !== false;
         
         // Manual initialization after all properties are set
         this.init();
@@ -143,6 +139,17 @@ _onLevelUp(event) {
     // Update rank based on new level
     this.updateRank(event.value);
 }
+    
+    /**
+     * Handle level up event
+     * @private
+     * @param {Object} data - Event data containing new level
+     */
+    _handleLevelUp(data) {
+        if (data && data.newLevel) {
+            this.updateRank(data.newLevel);
+        }
+    }
     
     /**
      * Get the rank data for a given level
@@ -290,8 +297,7 @@ _onLevelUp(event) {
     update(delta) {
         // Currently no tick-based updates needed for this component
     }
-    
-    /**
+      /**
      * Clean up the component
      */
     dispose() {

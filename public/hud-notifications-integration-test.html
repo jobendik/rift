@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - HUD + Notifications Integration Test</title>
+    <link rel="icon" href                <div class="control-group">
+                    <label>Stamina System</label>
+                    <div class="input-group">
+                        <input type="number" id="staminaValue" value="100" min="0" max="100" placeholder="Stamina">
+                        <button class="btn" onclick="updateStamina()">Update</button>
+                    </div>
+                    <button class="btn warning" onclick="simulateSprint()">Toggle Sprint</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Crosshair System</label>
+                    <button class="btn" onclick="testCrosshair()">Debug Crosshair</button>
+                    <button class="btn" onclick="toggleCrosshairSpread()">Toggle Spread</button>
+                    <button class="btn warning" onclick="simulateHitMarker()">Hit Marker</button>
+                </div>ogo.ico" type="image/x-icon">
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components/hud.css">
+    
+    <style>
+        :root {
+            --primary-color: #00a8ff;
+            --secondary-color: #0097e6;
+            --accent-color: #ff9f43;
+            --danger-color: #ff3838;
+            --success-color: #2ed573;
+            --dark-bg: #1e272e;
+            --darker-bg: #151c21;
+            --light-text: #f5f6fa;
+            --header-height: 60px;
+            --section-gap: 20px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            color: var(--light-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: var(--darker-bg);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            margin-left: 10px;
+        }
+        
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+        
+        .test-container {
+            display: flex;
+            height: calc(100vh - var(--header-height));
+        }
+        
+        .controls-panel {
+            width: 300px;
+            background-color: var(--darker-bg);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-viewport {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(45deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            overflow: hidden;
+        }
+        
+        .section {
+            margin-bottom: var(--section-gap);
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 2px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 168, 255, 0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #e74c3c 100%);
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #27ae60 100%);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #e67e22 100%);
+        }
+        
+        .btn.primary {
+            background: linear-gradient(135deg, #0066ff 0%, #0088cc 100%);
+            font-weight: bold;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .input-group input,
+        .input-group select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--light-text);
+            font-size: 0.85rem;
+        }
+        
+        .status-display {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .status-display .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .status-display .log-entry.info {
+            background-color: rgba(0, 168, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .status-display .log-entry.success {
+            background-color: rgba(46, 213, 115, 0.1);
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .status-display .log-entry.warning {
+            background-color: rgba(255, 159, 67, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .status-display .log-entry.error {
+            background-color: rgba(255, 56, 56, 0.1);
+            border-left: 3px solid var(--danger-color);
+        }        </style>
+</head>
+<body>
+    <header>
+        <img src="rift_logo.png" alt="RIFT Logo" class="logo">
+        <h1>HUD + Notifications Integration Test</h1>
+    </header>
+    
+    <div class="test-container">
+        <div class="controls-panel">
+            <!-- HUD Component Tests -->
+            <div class="section">
+                <h3>HUD Components</h3>
+                
+                <div class="control-group">
+                    <label>Health System</label>
+                    <div class="input-group">
+                        <input type="number" id="healthValue" value="75" min="0" max="100" placeholder="Health">
+                        <button class="btn" onclick="updateHealth()">Update</button>
+                    </div>
+                    <button class="btn danger" onclick="simulateDamage()">Take Damage</button>
+                    <button class="btn success" onclick="simulateHeal()">Heal</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Ammo System</label>
+                    <div class="input-group">
+                        <input type="number" id="ammoValue" value="30" min="0" max="50" placeholder="Ammo">
+                        <input type="number" id="totalAmmo" value="150" min="0" max="300" placeholder="Total">
+                        <button class="btn" onclick="updateAmmo()">Update</button>
+                    </div>
+                    <button class="btn warning" onclick="simulateReload()">Reload</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Stamina System</label>
+                    <div class="input-group">
+                        <input type="number" id="staminaValue" value="80" min="0" max="100" placeholder="Stamina">
+                        <button class="btn" onclick="updateStamina()">Update</button>
+                    </div>
+                    <button class="btn" onclick="toggleSprint()">Toggle Sprint</button>
+                </div>
+            </div>
+            
+            <!-- Notification Tests -->
+            <div class="section">
+                <h3>Notification System</h3>
+                
+                <div class="control-group">
+                    <label>Kill Feed</label>
+                    <div class="input-group">
+                        <select id="killType">
+                            <option value="rifle">Rifle Kill</option>
+                            <option value="headshot">Headshot</option>
+                            <option value="melee">Melee Kill</option>
+                            <option value="explosive">Explosive</option>
+                        </select>
+                        <button class="btn danger" onclick="simulateKill()">Add Kill</button>
+                    </div>
+                    <button class="btn" onclick="simulateMultiKill()">Multi-Kill</button>
+                    <button class="btn warning" onclick="simulatePlayerDeath()">Player Death</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>General Notifications</label>
+                    <div class="input-group">
+                        <select id="notificationType">
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="success">Success</option>
+                        </select>
+                        <button class="btn" onclick="showNotification()">Show</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Achievements</label>
+                    <button class="btn success" onclick="simulateAchievement()">Unlock Achievement</button>
+                    <button class="btn" onclick="simulateLevelUp()">Level Up</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Event Banners</label>
+                    <button class="btn warning" onclick="simulateObjective()">Objective Complete</button>
+                    <button class="btn danger" onclick="simulateRoundEnd()">Round End</button>
+                </div>
+            </div>
+            
+            <!-- System Controls -->
+            <div class="section">
+                <h3>System Controls</h3>
+                  <div class="control-group">
+                    <button class="btn" onclick="initializeSystem()">Initialize HUD</button>
+                    <button class="btn primary" onclick="initializeSystemDetailed()">Initialize HUD (Detailed)</button>
+                    <button class="btn warning" onclick="toggleHUD()">Toggle HUD</button>
+                    <button class="btn danger" onclick="disposeSystem()">Dispose System</button>
+                </div>
+                
+                <div class="control-group">
+                    <button class="btn" onclick="runIntegrationTest()">Run Integration Test</button>
+                    <button class="btn" onclick="testAllHUDComponents()">Test All Components</button>
+                    <button class="btn" onclick="debugAllComponents()">Debug Components</button>
+                    <button class="btn" onclick="clearLogs()">Clear Logs</button>
+                </div>
+            </div>
+            
+            <!-- Status Display -->
+            <div class="section">
+                <h3>System Status</h3>
+                <div class="status-display" id="statusLog">
+                    <div class="log-entry info">System ready for testing...</div>
+                </div>
+            </div>
+        </div>
+          <div class="game-viewport" id="gameViewport">
+            <!-- HUD System will be mounted here -->
+        </div>
+    </div>
+
+    <!-- Import Core Components -->
+    <script type="module">
+        import { HUDSystem } from '../src/components/ui/hud/HUDSystem.js';
+        import { EventManager } from '../src/core/EventManager.js';
+        
+        // Global variables
+        let hudSystem = null;
+        let mockWorld = null;
+        let isHUDVisible = true;
+        let isSprinting = false;
+        
+        // Mock world data for testing
+        function createMockWorld() {
+            return {
+                player: {
+                    health: 75,
+                    maxHealth: 100,
+                    stamina: 80,
+                    maxStamina: 100,
+                    isSprinting: false,
+                    rotation: { y: 0 },
+                    weaponSystem: {
+                        currentWeapon: {
+                            roundsLeft: 30,
+                            totalRounds: 150,
+                            roundsPerClip: 30,
+                            type: 'rifle',
+                            getSpread: () => 0.1
+                        }
+                    }
+                }
+            };
+        }
+        
+        // Logging utility
+        function log(message, type = 'info') {
+            const statusLog = document.getElementById('statusLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            statusLog.appendChild(entry);
+            statusLog.scrollTop = statusLog.scrollHeight;
+            console.log(`[HUD Test] ${message}`);
+        }
+        
+        // Initialize the HUD system
+        window.initializeSystem = function() {
+            try {
+                if (hudSystem) {
+                    hudSystem.dispose();
+                }
+                
+                mockWorld = createMockWorld();
+                
+                hudSystem = new HUDSystem(mockWorld, {
+                    container: document.getElementById('gameViewport')
+                });
+                
+                log('HUD System initialized successfully', 'success');
+                
+                // Start update loop
+                startUpdateLoop();
+                
+            } catch (error) {
+                log(`Failed to initialize HUD System: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // Enhanced initialization with detailed logging
+        window.initializeSystemDetailed = function() {
+            try {
+                log('Starting detailed HUD initialization...', 'info');
+                
+                if (hudSystem) {
+                    log('Disposing existing HUD system...', 'warning');
+                    hudSystem.dispose();
+                }
+                
+                log('Creating mock world data...', 'info');
+                mockWorld = createMockWorld();
+                log(`Mock world created: Player health=${mockWorld.player.health}, Ammo=${mockWorld.player.ammo.current}`, 'success');
+                
+                log('Initializing HUD System...', 'info');
+                hudSystem = new HUDSystem(mockWorld, {
+                    container: document.getElementById('gameViewport')
+                });
+                
+                log('HUD System created, checking components...', 'info');
+                
+                // Wait a moment for initialization to complete
+                setTimeout(() => {
+                    log('=== POST-INITIALIZATION COMPONENT CHECK ===', 'warning');
+                    debugAllComponents();
+                    
+                    // Force render all components
+                    if (hudSystem && hudSystem.components) {
+                        Object.keys(hudSystem.components).forEach(name => {
+                            const component = hudSystem.components[name];
+                            if (component && component.render) {
+                                try {
+                                    component.render();
+                                    log(`✅ ${name} rendered successfully`, 'success');
+                                } catch (error) {
+                                    log(`❌ ${name} render failed: ${error.message}`, 'error');
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Start update loop
+                    startUpdateLoop();
+                    log('Update loop started', 'success');
+                }, 100);
+                
+            } catch (error) {
+                log(`Failed to initialize HUD System: ${error.message}`, 'error');
+                console.error('HUD Initialization Error:', error);
+            }
+        };
+        
+        // Update loop for real-time data
+        function startUpdateLoop() {
+            function update() {
+                if (hudSystem && mockWorld) {
+                    hudSystem.update(0.016); // 60 FPS
+                }
+                requestAnimationFrame(update);
+            }
+            update();
+        }
+        
+        // HUD Component Test Functions
+        window.updateHealth = function() {
+            const healthValue = parseInt(document.getElementById('healthValue').value);
+            if (mockWorld && mockWorld.player) {
+                mockWorld.player.health = healthValue;
+                log(`Health updated to ${healthValue}`, 'info');
+            }
+        };
+        
+        window.simulateDamage = function() {
+            if (mockWorld && mockWorld.player) {
+                const damage = Math.floor(Math.random() * 20) + 10;
+                mockWorld.player.health = Math.max(0, mockWorld.player.health - damage);
+                document.getElementById('healthValue').value = mockWorld.player.health;
+                log(`Player took ${damage} damage, health: ${mockWorld.player.health}`, 'warning');
+                
+                // Emit damage event for notifications
+                EventManager.emit('player:damaged', { damage, health: mockWorld.player.health });
+            }
+        };
+        
+        window.simulateHeal = function() {
+            if (mockWorld && mockWorld.player) {
+                const heal = Math.floor(Math.random() * 15) + 5;
+                mockWorld.player.health = Math.min(mockWorld.player.maxHealth, mockWorld.player.health + heal);
+                document.getElementById('healthValue').value = mockWorld.player.health;
+                log(`Player healed ${heal} HP, health: ${mockWorld.player.health}`, 'success');
+                
+                // Emit heal event
+                EventManager.emit('player:healed', { heal, health: mockWorld.player.health });
+            }
+        };
+        
+        window.updateAmmo = function() {
+            const ammoValue = parseInt(document.getElementById('ammoValue').value);
+            const totalAmmo = parseInt(document.getElementById('totalAmmo').value);
+            if (mockWorld && mockWorld.player && mockWorld.player.weaponSystem) {
+                mockWorld.player.weaponSystem.currentWeapon.roundsLeft = ammoValue;
+                mockWorld.player.weaponSystem.currentWeapon.totalRounds = totalAmmo;
+                log(`Ammo updated: ${ammoValue}/${totalAmmo}`, 'info');
+            }
+        };
+        
+        window.simulateReload = function() {
+            if (mockWorld && mockWorld.player && mockWorld.player.weaponSystem) {
+                const weapon = mockWorld.player.weaponSystem.currentWeapon;
+                const ammoNeeded = weapon.roundsPerClip - weapon.roundsLeft;
+                const ammoToReload = Math.min(ammoNeeded, weapon.totalRounds);
+                
+                weapon.roundsLeft += ammoToReload;
+                weapon.totalRounds -= ammoToReload;
+                
+                document.getElementById('ammoValue').value = weapon.roundsLeft;
+                document.getElementById('totalAmmo').value = weapon.totalRounds;
+                
+                log(`Reloaded weapon: ${weapon.roundsLeft}/${weapon.totalRounds}`, 'success');
+                
+                // Emit reload event
+                EventManager.emit('weapon:reloaded', { 
+                    roundsLeft: weapon.roundsLeft, 
+                    totalRounds: weapon.totalRounds 
+                });
+            }
+        };
+        
+        window.updateStamina = function() {
+            const staminaValue = parseInt(document.getElementById('staminaValue').value);
+            if (mockWorld && mockWorld.player) {
+                mockWorld.player.stamina = staminaValue;
+                log(`Stamina updated to ${staminaValue}`, 'info');
+            }
+        };
+        
+        window.toggleSprint = function() {
+            if (mockWorld && mockWorld.player) {
+                isSprinting = !isSprinting;
+                mockWorld.player.isSprinting = isSprinting;
+                log(`Sprint ${isSprinting ? 'started' : 'stopped'}`, 'info');
+                
+                // Emit sprint events
+                EventManager.emit(isSprinting ? 'player:sprint_start' : 'player:sprint_end');
+            }
+        };
+        
+        // Notification Test Functions
+        window.simulateKill = function() {
+            const killType = document.getElementById('killType').value;
+            const victims = ['Enemy Alpha', 'Enemy Bravo', 'Enemy Charlie', 'Elite Guard', 'Sniper Delta'];
+            const weapons = {
+                rifle: 'Assault Rifle',
+                headshot: 'Sniper Rifle',
+                melee: 'Combat Knife',
+                explosive: 'Grenade'
+            };
+            
+            const victim = victims[Math.floor(Math.random() * victims.length)];
+            const weapon = weapons[killType] || 'Unknown Weapon';
+            
+            EventManager.emit('enemy:killed', {
+                victim: victim,
+                killer: 'Player',
+                weapon: weapon,
+                isHeadshot: killType === 'headshot',
+                distance: Math.floor(Math.random() * 100) + 10
+            });
+            
+            log(`Kill simulated: ${victim} eliminated with ${weapon}`, 'success');
+        };
+        
+        window.simulateMultiKill = function() {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    window.simulateKill();
+                }, i * 500);
+            }
+            log('Multi-kill sequence started', 'warning');
+        };
+        
+        window.simulatePlayerDeath = function() {
+            EventManager.emit('player:died', {
+                killer: 'Enemy Sniper',
+                weapon: 'Sniper Rifle',
+                cause: 'headshot'
+            });
+            log('Player death simulated', 'error');
+        };
+        
+        window.showNotification = function() {
+            const type = document.getElementById('notificationType').value;
+            const messages = {
+                info: 'New objective available',
+                warning: 'Low ammunition warning',
+                error: 'Connection lost to server',
+                success: 'Checkpoint reached'
+            };
+            
+            EventManager.emit('notification:request', {
+                type: type,
+                message: messages[type],
+                duration: 3000
+            });
+            
+            log(`${type.toUpperCase()} notification shown: ${messages[type]}`, type);
+        };
+        
+        window.simulateAchievement = function() {
+            const achievements = [
+                { name: 'First Blood', description: 'Get your first kill' },
+                { name: 'Marksman', description: 'Get 10 headshots' },
+                { name: 'Survivor', description: 'Complete a round without dying' },
+                { name: 'Weapon Master', description: 'Use all weapon types' }
+            ];
+            
+            const achievement = achievements[Math.floor(Math.random() * achievements.length)];
+            
+            EventManager.emit('player:achievement', achievement);
+            log(`Achievement unlocked: ${achievement.name}`, 'success');
+        };
+        
+        window.simulateLevelUp = function() {
+            EventManager.emit('player:levelup', {
+                newLevel: Math.floor(Math.random() * 10) + 1,
+                experience: Math.floor(Math.random() * 1000) + 500
+            });
+            log('Level up simulated', 'success');
+        };
+        
+        window.simulateObjective = function() {
+            EventManager.emit('objective:completed', {
+                name: 'Secure the Area',
+                reward: 250,
+                bonusReward: 50
+            });
+            log('Objective completion simulated', 'success');
+        };
+        
+        window.simulateRoundEnd = function() {
+            EventManager.emit('round:end', {
+                result: Math.random() > 0.5 ? 'victory' : 'defeat',
+                score: Math.floor(Math.random() * 1000) + 500,
+                kills: Math.floor(Math.random() * 20) + 5,
+                deaths: Math.floor(Math.random() * 5) + 1
+            });
+            log('Round end simulated', 'info');
+        };
+
+        // Crosshair Test Functions
+        window.testCrosshair = function() {
+            if (!hudSystem || !hudSystem.components.crosshair) {
+                log('Crosshair system not initialized!', 'error');
+                return;
+            }
+            
+            const crosshair = hudSystem.components.crosshair;
+            log(`Crosshair initialized: ${crosshair.isInitialized}`, 'info');
+            log(`Crosshair active: ${crosshair.isActive}`, 'info');
+            log(`Crosshair element: ${crosshair.element ? 'Found' : 'Missing'}`, crosshair.element ? 'success' : 'error');
+            
+            if (crosshair.element) {
+                log(`Crosshair classes: ${crosshair.element.className}`, 'info');
+                log(`Crosshair position: ${window.getComputedStyle(crosshair.element).position}`, 'info');
+                log(`Crosshair visibility: ${window.getComputedStyle(crosshair.element).visibility}`, 'info');
+                log(`Crosshair z-index: ${window.getComputedStyle(crosshair.element).zIndex}`, 'info');
+                
+                // Make crosshair more visible for testing
+                crosshair.element.style.border = '2px solid red';
+                crosshair.element.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+                log('Added red border to crosshair for visibility testing', 'warning');
+            }
+        };
+        
+        window.toggleCrosshairSpread = function() {
+            if (!hudSystem || !hudSystem.components.crosshair) {
+                log('Crosshair system not available', 'error');
+                return;
+            }
+            
+            const crosshair = hudSystem.components.crosshair;
+            const currentSpread = crosshair.state.spread || 0;
+            const newSpread = currentSpread > 50 ? 0 : 100;
+            
+            crosshair.updateSpread(newSpread);
+            log(`Crosshair spread updated: ${currentSpread} → ${newSpread}`, 'info');
+        };
+        
+        window.simulateHitMarker = function() {
+            if (!hudSystem || !hudSystem.components.crosshair) {
+                log('Crosshair system not available', 'error');
+                return;
+            }
+            
+            const isHeadshot = Math.random() > 0.7;
+            const isCritical = Math.random() > 0.5;
+            
+            hudSystem.components.crosshair.showHitMarker(isCritical, isHeadshot);
+            log(`Hit marker shown - Critical: ${isCritical}, Headshot: ${isHeadshot}`, 'success');
+        };
+
+        // Comprehensive HUD Component Testing
+        window.debugAllComponents = function() {
+            if (!hudSystem) {
+                log('HUD System not initialized!', 'error');
+                return;
+            }
+            
+            log('=== HUD System Component Analysis ===', 'info');
+            
+            const components = hudSystem.components;
+            const componentNames = Object.keys(components);
+            
+            componentNames.forEach(name => {
+                const component = components[name];
+                if (component) {
+                    log(`✅ ${name}: Initialized=${component.isInitialized}, Active=${component.isActive}`, 'success');
+                    if (component.element) {
+                        const style = window.getComputedStyle(component.element);
+                        log(`   Element: ${component.element.tagName}.${component.element.className}`, 'info');
+                        log(`   Position: ${style.position}, Display: ${style.display}, Visibility: ${style.visibility}`, 'info');
+                    } else {
+                        log(`   ⚠️ Missing DOM element!`, 'warning');
+                    }
+                } else {
+                    log(`❌ ${name}: Not initialized`, 'error');
+                }
+            });
+            
+            // Check containers
+            log('=== HUD Container Analysis ===', 'info');
+            const containers = hudSystem.containers;
+            Object.keys(containers).forEach(name => {
+                const container = containers[name];
+                if (container) {
+                    log(`📦 ${name}: Children=${container.children.length}`, 'info');
+                } else {
+                    log(`❌ ${name}: Missing container`, 'error');
+                }
+            });
+        };
+        
+        window.testAllHUDComponents = function() {
+            log('=== Running Comprehensive HUD Test ===', 'warning');
+            
+            // Test each component individually
+            setTimeout(() => window.testCrosshair(), 100);
+            setTimeout(() => window.updateHealth(), 200);
+            setTimeout(() => window.updateAmmo(), 300);
+            setTimeout(() => window.updateStamina(), 400);
+            setTimeout(() => window.simulateHitMarker(), 500);
+            setTimeout(() => window.debugAllComponents(), 600);
+            
+            log('HUD component test sequence started...', 'info');
+        };
+
+        // System Control Functions
+        window.toggleHUD = function() {
+            if (hudSystem) {
+                isHUDVisible = !isHUDVisible;
+                hudSystem.setActive(isHUDVisible);
+                log(`HUD ${isHUDVisible ? 'shown' : 'hidden'}`, 'info');
+            }
+        };
+        
+        window.disposeSystem = function() {
+            if (hudSystem) {
+                hudSystem.dispose();
+                hudSystem = null;
+                mockWorld = null;
+                log('HUD System disposed', 'warning');
+            }
+        };
+        
+        window.runIntegrationTest = function() {
+            log('Running integration test...', 'info');
+            
+            // Test sequence
+            setTimeout(() => {
+                log('Testing health system...', 'info');
+                window.simulateDamage();
+            }, 500);
+            
+            setTimeout(() => {
+                log('Testing kill feed...', 'info');
+                window.simulateKill();
+            }, 1000);
+            
+            setTimeout(() => {
+                log('Testing notifications...', 'info');
+                window.showNotification();
+            }, 1500);
+            
+            setTimeout(() => {
+                log('Testing achievement system...', 'info');
+                window.simulateAchievement();
+            }, 2000);
+            
+            setTimeout(() => {
+                log('Integration test complete!', 'success');
+            }, 2500);
+        };
+        
+        window.clearLogs = function() {
+            const statusLog = document.getElementById('statusLog');
+            statusLog.innerHTML = '<div class="log-entry info">Logs cleared...</div>';
+        };
+        
+        // Auto-initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, ready for testing', 'info');
+            window.initializeSystem();
+        });
+        
+    </script>
+</body>
+</html>
+``` 

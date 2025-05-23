@@ -12,6 +12,7 @@
 @import './hud/_minimap.css';
 @import './hud/_stamina.css';
 @import './hud/_compass.css';
+@import './notifications.css';
 
 /* General HUD styles that apply across components */
 .rift-hud {
