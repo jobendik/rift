@@ -828,7 +828,22 @@ const UIConfig = {
     
     // Debug
     debug: {
-        showFps: true
+        showFps: true,
+        debugEvents: false,
+        trackEventPerformance: true,
+        highFrequencyThreshold: 60, // Events per second considered high frequency
+        performanceReportInterval: 5000, // How often to report performance metrics in debug mode (ms)
+        performanceMonitoring: {
+            enableElementPooling: false, // When true, enables element pooling for high-frequency UI elements
+            poolSize: {
+                damageNumbers: 30,
+                hitMarkers: 10,
+                notifications: 10
+            },
+            profileComponents: true, // Profile individual component performance
+            memoryMonitoring: false, // Track memory usage patterns
+            batchDOMOperations: true // Batch DOM operations for performance
+        }
     }
 };
 

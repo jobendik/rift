@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT Event Performance Monitor</title>
+    <link rel="icon" type="image/x-icon" href="rift_logo.ico">
+    <style>
+        :root {
+            --rift-primary: #e63946;
+            --rift-secondary: #33a8ff;
+            --rift-success: #4caf50;
+            --rift-warning: #ff9800;
+            --rift-danger: #f44336;
+            --rift-text-color: #ffffff;
+            --rift-background: #121212;
+            --rift-card-bg: #1e1e1e;
+            --rift-border: rgba(255, 255, 255, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Exo 2', 'Roboto', sans-serif;
+        }
+        
+        body {
+            background-color: var(--rift-background);
+            color: var(--rift-text-color);
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--rift-border);
+        }
+        
+        h1 {
+            color: var(--rift-primary);
+            font-family: 'Orbitron', 'Rajdhani', sans-serif;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: var(--rift-card-bg);
+            color: var(--rift-text-color);
+            border: 1px solid var(--rift-border);
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--rift-primary);
+            border-color: var(--rift-primary);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background-color: var(--rift-card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: var(--rift-secondary);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--rift-border);
+        }
+        
+        .data-table th {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--rift-secondary);
+        }
+        
+        .data-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .data-table .critical {
+            color: var(--rift-danger);
+        }
+        
+        .data-table .warning {
+            color: var(--rift-warning);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--rift-secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .high-frequency {
+            background-color: var(--rift-warning);
+        }
+        
+        .very-high-frequency {
+            background-color: var(--rift-danger);
+        }
+        
+        .slow {
+            background-color: var(--rift-warning);
+        }
+        
+        .very-slow {
+            background-color: var(--rift-danger);
+        }
+        
+        /* Tabs */
+        .tabs {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .tab-button {
+            padding: 8px 15px;
+            background-color: var(--rift-card-bg);
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab-button.active {
+            border-bottom: 2px solid var(--rift-primary);
+            color: var(--rift-primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Charts */
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--rift-card-bg);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--rift-secondary);
+        }
+        
+        .filter-input {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--rift-text-color);
+            border: 1px solid var(--rift-border);
+            padding: 6px 10px;
+            border-radius: 4px;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--rift-card-bg);
+            color: var(--rift-text-color);
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            border: 1px solid var(--rift-border);
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>RIFT Event Performance Monitor</h1>
+        <div class="controls">
+            <button id="startTracking">Start Tracking</button>
+            <button id="stopTracking">Stop Tracking</button>
+            <button id="resetMetrics">Reset Metrics</button>
+        </div>
+    </header>
+    
+    <div class="tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="events">Event Frequency</button>
+            <button class="tab-button" data-tab="performance">Execution Time</button>
+            <button class="tab-button" data-tab="recommendations">Recommendations</button>
+        </div>
+        
+        <div class="tab-content active" id="overview">
+            <div class="dashboard">
+                <div class="card">
+                    <h2>Tracking Status</h2>
+                    <div id="trackingStatus" class="metric-value">Inactive</div>
+                    <p>Time Elapsed: <span id="trackingTime">0s</span></p>
+                </div>
+                
+                <div class="card">
+                    <h2>Total Events</h2>
+                    <div id="totalEvents" class="metric-value">0</div>
+                    <p>Average: <span id="eventsPerSecond">0</span> events/sec</p>
+                </div>
+                
+                <div class="card">
+                    <h2>High Frequency Events</h2>
+                    <div id="highFreqEvents" class="metric-value">0</div>
+                    <p>Threshold: <span id="freqThreshold">60</span> events/sec</p>
+                </div>
+                
+                <div class="card">
+                    <h2>Slowest Event Handlers</h2>
+                    <div id="slowEvents" class="metric-value">0</div>
+                    <p>Showing top 5 slowest handlers</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Summary</h2>
+                <p>This dashboard provides real-time monitoring of the RIFT event system performance. Use it to identify high-frequency events and slow event handlers that might be impacting game performance.</p>
+                <div id="perfSummary"></div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="events">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="eventFilter">Filter Events</label>
+                    <input type="text" id="eventFilter" class="filter-input" placeholder="Filter by name...">
+                </div>
+                <div class="filter-group">
+                    <label for="eventSort">Sort By</label>
+                    <select id="eventSort" class="filter-input">
+                        <option value="frequency-desc">Frequency (High to Low)</option>
+                        <option value="frequency-asc">Frequency (Low to High)</option>
+                        <option value="name-asc">Name (A to Z)</option>
+                        <option value="name-desc">Name (Z to A)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="eventNamespace">Namespace</label>
+                    <select id="eventNamespace" class="filter-input">
+                        <option value="all">All Namespaces</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Event Frequency Analysis</h2>
+                <div class="chart-container" id="eventFrequencyChart"></div>
+            </div>
+            
+            <table class="data-table" id="eventTable">
+                <thead>
+                    <tr>
+                        <th>Event Type</th>
+                        <th>Count</th>
+                        <th>Frequency (events/sec)</th>
+                        <th>Distribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Event data rows will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tab-content" id="performance">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="perfFilter">Filter Events</label>
+                    <input type="text" id="perfFilter" class="filter-input" placeholder="Filter by name...">
+                </div>
+                <div class="filter-group">
+                    <label for="perfSort">Sort By</label>
+                    <select id="perfSort" class="filter-input">
+                        <option value="avgTime-desc">Avg Time (High to Low)</option>
+                        <option value="avgTime-asc">Avg Time (Low to High)</option>
+                        <option value="maxTime-desc">Max Time (High to Low)</option>
+                        <option value="totalTime-desc">Total Time (High to Low)</option>
+                        <option value="name-asc">Name (A to Z)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="perfThreshold">Min Execution Time (ms)</label>
+                    <input type="number" id="perfThreshold" class="filter-input" value="0" min="0" step="0.1">
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Handler Execution Time</h2>
+                <div class="chart-container" id="handlerTimeChart"></div>
+            </div>
+            
+            <table class="data-table" id="perfTable">
+                <thead>
+                    <tr>
+                        <th>Event Type</th>
+                        <th>Avg Time (ms)</th>
+                        <th>Max Time (ms)</th>
+                        <th>Total Time (ms)</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Performance data rows will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tab-content" id="recommendations">
+            <div class="card">
+                <h2>Performance Optimization Recommendations</h2>
+                <div id="recommendationList">
+                    <!-- Recommendations will be inserted here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import EventManager - adjust the path as needed
+        import { EventManager } from '../src/core/EventManager.js';
+        
+        // DOM Elements
+        const startTrackingBtn = document.getElementById('startTracking');
+        const stopTrackingBtn = document.getElementById('stopTracking');
+        const resetMetricsBtn = document.getElementById('resetMetrics');
+        const trackingStatus = document.getElementById('trackingStatus');
+        const trackingTime = document.getElementById('trackingTime');
+        const totalEvents = document.getElementById('totalEvents');
+        const eventsPerSecond = document.getElementById('eventsPerSecond');
+        const highFreqEvents = document.getElementById('highFreqEvents');
+        const freqThreshold = document.getElementById('freqThreshold');
+        const slowEvents = document.getElementById('slowEvents');
+        const perfSummary = document.getElementById('perfSummary');
+        const eventTable = document.getElementById('eventTable').querySelector('tbody');
+        const perfTable = document.getElementById('perfTable').querySelector('tbody');
+        const recommendationList = document.getElementById('recommendationList');
+        const eventFilter = document.getElementById('eventFilter');
+        const eventSort = document.getElementById('eventSort');
+        const eventNamespace = document.getElementById('eventNamespace');
+        const perfFilter = document.getElementById('perfFilter');
+        const perfSort = document.getElementById('perfSort');
+        const perfThreshold = document.getElementById('perfThreshold');
+        
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.dataset.tab;
+                
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) content.classList.add('active');
+                });
+            });
+        });
+        
+        // Performance monitoring state
+        let isTracking = false;
+        let updateInterval;
+        let lastUpdateTime = 0;
+        
+        // Event & Performance Data
+        let eventData = [];
+        let performanceData = [];
+        
+        // Default high frequency threshold (from UIConfig)
+        const HIGH_FREQ_THRESHOLD = 60;
+        freqThreshold.textContent = HIGH_FREQ_THRESHOLD;
+        
+        // Start tracking button
+        startTrackingBtn.addEventListener('click', () => {
+            if (!isTracking) {
+                startTracking();
+            }
+        });
+        
+        // Stop tracking button
+        stopTrackingBtn.addEventListener('click', () => {
+            if (isTracking) {
+                stopTracking();
+            }
+        });
+        
+        // Reset metrics button
+        resetMetricsBtn.addEventListener('click', () => {
+            resetMetrics();
+        });
+        
+        // Event filter
+        eventFilter.addEventListener('input', () => {
+            updateEventTable();
+        });
+        
+        // Event sort
+        eventSort.addEventListener('change', () => {
+            updateEventTable();
+        });
+        
+        // Event namespace filter
+        eventNamespace.addEventListener('change', () => {
+            updateEventTable();
+        });
+        
+        // Performance filter
+        perfFilter.addEventListener('input', () => {
+            updatePerformanceTable();
+        });
+        
+        // Performance sort
+        perfSort.addEventListener('change', () => {
+            updatePerformanceTable();
+        });
+        
+        // Performance threshold
+        perfThreshold.addEventListener('input', () => {
+            updatePerformanceTable();
+        });
+        
+        // Start tracking performance
+        function startTracking() {
+            try {
+                // Check if EventManager is available
+                if (!EventManager) {
+                    showError('EventManager not found. Make sure the path is correct and it is properly exported.');
+                    return;
+                }
+                
+                // Set debug mode to true to get more detailed information
+                EventManager.setDebugMode(true);
+                
+                // Enable performance tracking
+                EventManager.enablePerformanceTracking(HIGH_FREQ_THRESHOLD, 5000);
+                
+                // Update UI
+                trackingStatus.textContent = 'Active';
+                trackingStatus.style.color = 'var(--rift-success)';
+                isTracking = true;
+                
+                // Start update interval
+                updateInterval = setInterval(updateMetrics, 1000);
+                lastUpdateTime = performance.now();
+                
+                // Initial update
+                updateMetrics();
+                
+            } catch (error) {
+                showError(`Failed to start tracking: ${error.message}`);
+            }
+        }
+        
+        // Stop tracking performance
+        function stopTracking() {
+            try {
+                // Disable performance tracking
+                if (EventManager) {
+                    EventManager.disablePerformanceTracking();
+                }
+                
+                // Update UI
+                trackingStatus.textContent = 'Paused';
+                trackingStatus.style.color = 'var(--rift-warning)';
+                isTracking = false;
+                
+                // Clear update interval
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                    updateInterval = null;
+                }
+                
+            } catch (error) {
+                showError(`Failed to stop tracking: ${error.message}`);
+            }
+        }
+        
+        // Reset metrics
+        function resetMetrics() {
+            try {
+                // Reset performance metrics
+                if (EventManager) {
+                    EventManager.resetPerformanceMetrics();
+                }
+                
+                // Clear data
+                eventData = [];
+                performanceData = [];
+                
+                // Reset UI
+                updateMetrics();
+                updateEventTable();
+                updatePerformanceTable();
+                updateRecommendations();
+                
+            } catch (error) {
+                showError(`Failed to reset metrics: ${error.message}`);
+            }
+        }
+        
+        // Update metrics
+        function updateMetrics() {
+            try {
+                if (!EventManager) return;
+                
+                // Get performance metrics
+                const metrics = EventManager.getPerformanceMetrics();
+                
+                // Update tracking time
+                trackingTime.textContent = `${metrics.trackingTimeSeconds.toFixed(1)}s`;
+                
+                // Count total events
+                let totalEventCount = 0;
+                let totalEventsPerSecond = 0;
+                
+                // Process event counts and frequencies
+                eventData = [];
+                Object.keys(metrics.eventCounts).forEach(eventType => {
+                    const count = metrics.eventCounts[eventType];
+                    const frequency = metrics.eventsPerSecond[eventType];
+                    const avgTime = metrics.averageHandlerTime[eventType] || 0;
+                    const maxTime = metrics.maxExecutionTime[eventType] || 0;
+                    const totalTime = metrics.totalExecutionTime[eventType] || 0;
+                    
+                    totalEventCount += count;
+                    totalEventsPerSecond += frequency;
+                    
+                    // Extract namespace from event type
+                    const namespaceParts = eventType.split(':');
+                    const namespace = namespaceParts[0];
+                    
+                    eventData.push({
+                        eventType,
+                        namespace,
+                        count,
+                        frequency,
+                        avgTime,
+                        maxTime,
+                        totalTime
+                    });
+                });
+                
+                // Update UI
+                totalEvents.textContent = totalEventCount;
+                eventsPerSecond.textContent = totalEventsPerSecond.toFixed(1);
+                
+                // Update high frequency events count
+                const highFrequencyEventCount = metrics.highFrequencyEvents.length;
+                highFreqEvents.textContent = highFrequencyEventCount;
+                
+                // Update slow events count
+                const slowEventCount = metrics.slowestEvents.length;
+                slowEvents.textContent = slowEventCount;
+                
+                // Update performance data
+                performanceData = metrics.slowestEvents.map(item => ({
+                    eventType: item.eventType,
+                    avgTime: item.avgTime,
+                    maxTime: item.maxTime,
+                    totalTime: item.totalTime,
+                    count: item.count
+                }));
+                
+                // Update tables and recommendations
+                updateEventTable();
+                updatePerformanceTable();
+                updateRecommendations();
+                
+                // Extract namespaces for the namespace filter
+                updateNamespaceFilter();
+                
+            } catch (error) {
+                showError(`Failed to update metrics: ${error.message}`);
+            }
+        }
+        
+        // Update event table
+        function updateEventTable() {
+            try {
+                // Clear existing rows
+                eventTable.innerHTML = '';
+                
+                // Get filter values
+                const filterText = eventFilter.value.toLowerCase();
+                const sortBy = eventSort.value;
+                const namespaceFilter = eventNamespace.value;
+                
+                // Filter and sort data
+                let filteredData = eventData.filter(item => {
+                    // Filter by text
+                    if (filterText && !item.eventType.toLowerCase().includes(filterText)) {
+                        return false;
+                    }
+                    
+                    // Filter by namespace
+                    if (namespaceFilter !== 'all' && item.namespace !== namespaceFilter) {
+                        return false;
+                    }
+                    
+                    return true;
+                });
+                
+                // Sort data
+                filteredData.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'frequency-desc':
+                            return b.frequency - a.frequency;
+                        case 'frequency-asc':
+                            return a.frequency - b.frequency;
+                        case 'name-asc':
+                            return a.eventType.localeCompare(b.eventType);
+                        case 'name-desc':
+                            return b.eventType.localeCompare(a.eventType);
+                        default:
+                            return b.frequency - a.frequency;
+                    }
+                });
+                
+                // Get max frequency for progress bars
+                const maxFrequency = Math.max(...filteredData.map(item => item.frequency), 1);
+                
+                // Create table rows
+                filteredData.forEach(item => {
+                    // Calculate bar width percentage
+                    const barWidthPercent = (item.frequency / maxFrequency) * 100;
+                    
+                    // Determine bar class based on frequency
+                    let barClass = '';
+                    if (item.frequency >= HIGH_FREQ_THRESHOLD * 2) {
+                        barClass = 'very-high-frequency';
+                    } else if (item.frequency >= HIGH_FREQ_THRESHOLD) {
+                        barClass = 'high-frequency';
+                    }
+                    
+                    // Create row
+                    const row = document.createElement('tr');
+                    
+                    // Add event type column
+                    const eventTypeCell = document.createElement('td');
+                    eventTypeCell.textContent = item.eventType;
+                    row.appendChild(eventTypeCell);
+                    
+                    // Add count column
+                    const countCell = document.createElement('td');
+                    countCell.textContent = item.count;
+                    row.appendChild(countCell);
+                    
+                    // Add frequency column
+                    const frequencyCell = document.createElement('td');
+                    frequencyCell.textContent = item.frequency.toFixed(1);
+                    if (item.frequency >= HIGH_FREQ_THRESHOLD * 2) {
+                        frequencyCell.classList.add('critical');
+                    } else if (item.frequency >= HIGH_FREQ_THRESHOLD) {
+                        frequencyCell.classList.add('warning');
+                    }
+                    row.appendChild(frequencyCell);
+                    
+                    // Add distribution column
+                    const distributionCell = document.createElement('td');
+                    
+                    // Create progress bar
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'progress-bar';
+                    
+                    const progressBarFill = document.createElement('div');
+                    progressBarFill.className = `progress-bar-fill ${barClass}`;
+                    progressBarFill.style.width = `${barWidthPercent}%`;
+                    
+                    progressBar.appendChild(progressBarFill);
+                    distributionCell.appendChild(progressBar);
+                    
+                    row.appendChild(distributionCell);
+                    
+                    // Add row to table
+                    eventTable.appendChild(row);
+                });
+                
+                // Show empty state if no data
+                if (filteredData.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    const emptyCell = document.createElement('td');
+                    emptyCell.colSpan = 4;
+                    emptyCell.textContent = 'No event data available';
+                    emptyCell.style.textAlign = 'center';
+                    emptyCell.style.padding = '20px';
+                    emptyRow.appendChild(emptyCell);
+                    eventTable.appendChild(emptyRow);
+                }
+                
+            } catch (error) {
+                showError(`Failed to update event table: ${error.message}`);
+            }
+        }
+        
+        // Update performance table
+        function updatePerformanceTable() {
+            try {
+                // Clear existing rows
+                perfTable.innerHTML = '';
+                
+                // Get filter values
+                const filterText = perfFilter.value.toLowerCase();
+                const sortBy = perfSort.value;
+                const thresholdValue = parseFloat(perfThreshold.value) || 0;
+                
+                // Filter and sort data
+                let filteredData = performanceData.filter(item => {
+                    // Filter by text
+                    if (filterText && !item.eventType.toLowerCase().includes(filterText)) {
+                        return false;
+                    }
+                    
+                    // Filter by threshold
+                    if (thresholdValue > 0 && item.avgTime < thresholdValue) {
+                        return false;
+                    }
+                    
+                    return true;
+                });
+                
+                // Sort data
+                filteredData.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'avgTime-desc':
+                            return b.avgTime - a.avgTime;
+                        case 'avgTime-asc':
+                            return a.avgTime - b.avgTime;
+                        case 'maxTime-desc':
+                            return b.maxTime - a.maxTime;
+                        case 'totalTime-desc':
+                            return b.totalTime - a.totalTime;
+                        case 'name-asc':
+                            return a.eventType.localeCompare(b.eventType);
+                        default:
+                            return b.avgTime - a.avgTime;
+                    }
+                });
+                
+                // Create table rows
+                filteredData.forEach(item => {
+                    // Create row
+                    const row = document.createElement('tr');
+                    
+                    // Add event type column
+                    const eventTypeCell = document.createElement('td');
+                    eventTypeCell.textContent = item.eventType;
+                    row.appendChild(eventTypeCell);
+                    
+                    // Add avg time column
+                    const avgTimeCell = document.createElement('td');
+                    avgTimeCell.textContent = item.avgTime.toFixed(2);
+                    
+                    // Add styling based on execution time
+                    if (item.avgTime >= 5) {
+                        avgTimeCell.classList.add('critical');
+                    } else if (item.avgTime >= 1) {
+                        avgTimeCell.classList.add('warning');
+                    }
+                    
+                    row.appendChild(avgTimeCell);
+                    
+                    // Add max time column
+                    const maxTimeCell = document.createElement('td');
+                    maxTimeCell.textContent = item.maxTime.toFixed(2);
+                    row.appendChild(maxTimeCell);
+                    
+                    // Add total time column
+                    const totalTimeCell = document.createElement('td');
+                    totalTimeCell.textContent = item.totalTime.toFixed(2);
+                    row.appendChild(totalTimeCell);
+                    
+                    // Add count column
+                    const countCell = document.createElement('td');
+                    countCell.textContent = item.count;
+                    row.appendChild(countCell);
+                    
+                    // Add row to table
+                    perfTable.appendChild(row);
+                });
+                
+                // Show empty state if no data
+                if (filteredData.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    const emptyCell = document.createElement('td');
+                    emptyCell.colSpan = 5;
+                    emptyCell.textContent = 'No performance data available';
+                    emptyCell.style.textAlign = 'center';
+                    emptyCell.style.padding = '20px';
+                    emptyRow.appendChild(emptyCell);
+                    perfTable.appendChild(emptyRow);
+                }
+                
+            } catch (error) {
+                showError(`Failed to update performance table: ${error.message}`);
+            }
+        }
+        
+        // Update namespace filter
+        function updateNamespaceFilter() {
+            try {
+                // Get current selection
+                const currentValue = eventNamespace.value;
+                
+                // Get unique namespaces
+                const namespaces = [...new Set(eventData.map(item => item.namespace))].sort();
+                
+                // Clear existing options (except 'all')
+                const options = eventNamespace.querySelectorAll('option');
+                for (let i = options.length - 1; i > 0; i--) {
+                    eventNamespace.removeChild(options[i]);
+                }
+                
+                // Add namespace options
+                namespaces.forEach(namespace => {
+                    const option = document.createElement('option');
+                    option.value = namespace;
+                    option.textContent = namespace;
+                    eventNamespace.appendChild(option);
+                });
+                
+                // Restore selection if still available
+                if (currentValue !== 'all' && namespaces.includes(currentValue)) {
+                    eventNamespace.value = currentValue;
+                }
+                
+            } catch (error) {
+                showError(`Failed to update namespace filter: ${error.message}`);
+            }
+        }
+        
+        // Update recommendations
+        function updateRecommendations() {
+            try {
+                // Clear existing recommendations
+                recommendationList.innerHTML = '';
+                
+                // Check if we have data
+                if (eventData.length === 0 && performanceData.length === 0) {
+                    recommendationList.innerHTML = '<p>Start tracking to generate recommendations</p>';
+                    return;
+                }
+                
+                // Create recommendations
+                const recommendations = [];
+                
+                // High frequency events
+                const highFreqList = eventData.filter(item => item.frequency >= HIGH_FREQ_THRESHOLD);
+                if (highFreqList.length > 0) {
+                    recommendations.push({
+                        title: 'High Frequency Events',
+                        description: `Found ${highFreqList.length} events occurring more than ${HIGH_FREQ_THRESHOLD} times per second`,
+                        items: highFreqList.slice(0, 5).map(item => ({
+                            name: item.eventType,
+                            details: `${item.frequency.toFixed(1)} events/sec`
+                        })),
+                        recommendation: 'Consider reducing event emission frequency or batching events. Look for ways to debounce or throttle these events.'
+                    });
+                }
+                
+                // Slow event handlers
+                const slowHandlers = performanceData.filter(item => item.avgTime >= 1);
+                if (slowHandlers.length > 0) {
+                    recommendations.push({
+                        title: 'Slow Event Handlers',
+                        description: `Found ${slowHandlers.length} event handlers taking more than 1ms to execute`,
+                        items: slowHandlers.slice(0, 5).map(item => ({
+                            name: item.eventType,
+                            details: `${item.avgTime.toFixed(2)}ms avg (${item.maxTime.toFixed(2)}ms max)`
+                        })),
+                        recommendation: 'Optimize these event handlers by reducing DOM operations, simplifying logic, or using requestAnimationFrame for visual updates.'
+                    });
+                }
+                
+                // High impact events (high frequency + slow)
+                const highImpactEvents = eventData.filter(item => 
+                    item.frequency >= HIGH_FREQ_THRESHOLD / 2 && item.avgTime >= 0.5
+                );
+                
+                if (highImpactEvents.length > 0) {
+                    recommendations.push({
+                        title: 'High Impact Events',
+                        description: `Found ${highImpactEvents.length} events that are both frequent and slow`,
+                        items: highImpactEvents.slice(0, 5).map(item => ({
+                            name: item.eventType,
+                            details: `${item.frequency.toFixed(1)} events/sec, ${item.avgTime.toFixed(2)}ms avg`
+                        })),
+                        recommendation: 'These events are the most critical to optimize. Consider implementing element pooling, batch processing, or throttling techniques.'
+                    });
+                }
+                
+                // If we have no specific recommendations
+                if (recommendations.length === 0) {
+                    // Check if we have any data
+                    if (eventData.length > 0 || performanceData.length > 0) {
+                        recommendations.push({
+                            title: 'No Performance Issues Detected',
+                            description: 'Current event metrics are within acceptable ranges',
+                            items: [],
+                            recommendation: 'Continue monitoring during intensive gameplay to ensure performance remains stable.'
+                        });
+                    }
+                }
+                
+                // Add recommendations to the UI
+                recommendations.forEach(rec => {
+                    const recCard = document.createElement('div');
+                    recCard.className = 'card';
+                    recCard.style.marginBottom = '15px';
+                    
+                    // Add title
+                    const title = document.createElement('h3');
+                    title.textContent = rec.title;
+                    title.style.color = 'var(--rift-warning)';
+                    title.style.marginBottom = '10px';
+                    recCard.appendChild(title);
+                    
+                    // Add description
+                    const description = document.createElement('p');
+                    description.textContent = rec.description;
+                    description.style.marginBottom = '10px';
+                    recCard.appendChild(description);
+                    
+                    // Add items if any
+                    if (rec.items.length > 0) {
+                        const list = document.createElement('ul');
+                        list.style.marginBottom = '15px';
+                        list.style.paddingLeft = '20px';
+                        
+                        rec.items.forEach(item => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<strong>${item.name}</strong>: ${item.details}`;
+                            li.style.marginBottom = '5px';
+                            list.appendChild(li);
+                        });
+                        
+                        recCard.appendChild(list);
+                    }
+                    
+                    // Add recommendation
+                    const recText = document.createElement('div');
+                    recText.innerHTML = `<strong>Recommendation:</strong> ${rec.recommendation}`;
+                    recText.style.paddingTop = '10px';
+                    recText.style.borderTop = '1px solid var(--rift-border)';
+                    recCard.appendChild(recText);
+                    
+                    // Add to the recommendations list
+                    recommendationList.appendChild(recCard);
+                });
+                
+            } catch (error) {
+                showError(`Failed to update recommendations: ${error.message}`);
+            }
+        }
+        
+        // Show error message
+        function showError(message) {
+            console.error(message);
+            
+            // Create error notification
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'card';
+            errorDiv.style.backgroundColor = 'var(--rift-danger)';
+            errorDiv.style.color = 'white';
+            errorDiv.style.padding = '10px 15px';
+            errorDiv.style.marginBottom = '15px';
+            errorDiv.style.borderRadius = '4px';
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.bottom = '20px';
+            errorDiv.style.right = '20px';
+            errorDiv.style.zIndex = '9999';
+            errorDiv.style.maxWidth = '300px';
+            errorDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+            
+            // Add error message
+            errorDiv.textContent = message;
+            
+            // Add to document
+            document.body.appendChild(errorDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.opacity = '0';
+                errorDiv.style.transition = 'opacity 0.5s';
+                
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.parentNode.removeChild(errorDiv);
+                    }
+                }, 500);
+            }, 5000);
+        }
+        
+        // Initialize the application
+        function init() {
+            try {
+                // Update UI
+                trackingStatus.textContent = 'Inactive';
+                trackingStatus.style.color = 'var(--rift-danger)';
+                
+                // Initialize recommendations
+                updateRecommendations();
+                
+                // Setup instructions
+                perfSummary.innerHTML = `
+                    <p style="margin-top: 10px;">
+                        <strong>How to use:</strong> Click "Start Tracking" to begin monitoring event performance.
+                        The dashboard will automatically update with real-time metrics about event frequency and handler execution time.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <strong>High Frequency Events:</strong> Events occurring more than ${HIGH_FREQ_THRESHOLD} times per second
+                        may cause performance issues and should be optimized.
+                    </p>
+                    <p style="margin-top: 10px;">
+                        <strong>Slow Event Handlers:</strong> Event handlers taking more than 1ms to execute
+                        may impact rendering performance and cause jank.
+                    </p>
+                `;
+                
+            } catch (error) {
+                showError(`Initialization failed: ${error.message}`);
+            }
+        }
+        
+        // Initialize the application
+        init();
+    </script>
+</body>
+</html>

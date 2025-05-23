@@ -313,3 +313,32 @@ if (window.world && typeof window.world.init === 'function') {
 
 // Export the world for debugging
 window.gameWorld = world;
+
+// Add developer tools toggle functionality
+document.addEventListener('keydown', (event) => {
+  // Check for Ctrl+Shift+D shortcut
+  if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+    const devTools = document.getElementById('devTools');
+    if (devTools) {
+      // Toggle visibility
+      if (devTools.style.display === 'none' || !devTools.style.display) {
+        devTools.style.display = 'block';
+        log('Developer tools panel opened', 'info');
+      } else {
+        devTools.style.display = 'none';
+        log('Developer tools panel closed', 'info');
+      }
+      // Prevent default browser behavior
+      event.preventDefault();
+    }
+  }
+});
+
+// Make developer tools detectable in config-based debug mode
+if (window.Config && window.Config.debug && window.Config.debug.showDevTools) {
+  const devTools = document.getElementById('devTools');
+  if (devTools) {
+    devTools.style.display = 'block';
+    log('Developer tools automatically shown based on Config.debug.showDevTools', 'info');
+  }
+}

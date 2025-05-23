@@ -48,9 +48,18 @@ export class UIManager {
             element: null
         };
         
-        // Set up debug mode from config
+        // Set up debug mode and performance tracking from config
         if (EventManager) {
+            // Enable debug mode if configured
             EventManager.setDebugMode(this.config.debug?.debugEvents || false);
+            
+            // Enable performance tracking if configured
+            if (this.config.debug?.trackEventPerformance) {
+                EventManager.enablePerformanceTracking(
+                    this.config.debug?.highFrequencyThreshold || 60,
+                    this.config.debug?.performanceReportInterval || 5000
+                );
+            }
         }
         
         // Bind methods to ensure correct 'this' context
@@ -863,6 +872,3 @@ export class UIManager {
         return this;
     }
 }
-
-
-

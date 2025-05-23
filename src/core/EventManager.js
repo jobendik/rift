@@ -5,6 +5,7 @@
  * - Standard events: 'namespace:action' (e.g., 'health:changed')
  * - Component-specific events: 'namespace:id:action' (e.g., 'ui:health-display:visible')
  * Implements Event Standardization guidelines with validation and helper methods.
+ * Includes performance tracking for high-frequency events.
  * 
  * @author Cline
  */
@@ -24,6 +25,17 @@ class EventManager {
             'notification', 'achievement', 'xp', 'environment',
             'powerup', 'input', 'game', 'round', 'system'
         ];
+        
+        // Performance tracking properties
+        this._performanceTracking = false;
+        this._eventFrequency = new Map();
+        this._eventExecutionTime = new Map();
+        this._eventMaxExecutionTime = new Map();
+        this._eventAverageTime = new Map();
+        this._highFrequencyThreshold = 60; // Events per second considered high frequency
+        this._trackingStartTime = 0;
+        this._lastReportTime = 0;
+        this._reportIntervalMs = 5000; // Report performance data every 5 seconds in debug mode
     }
     
     /**
@@ -97,6 +109,11 @@ class EventManager {
             this._validatePayload(eventType, data);
         }
         
+        // Track event frequency if performance tracking is enabled
+        if (this._performanceTracking) {
+            this._trackEventFrequency(eventType);
+        }
+        
         const eventHandlers = this._events.get(eventType);
         
         if (!eventHandlers) {
@@ -117,13 +134,38 @@ class EventManager {
             ...data  // Spread the event data
         };
         
-        eventHandlers.forEach((handler, id) => {
-            try {
-                handler(eventObject);
-            } catch (error) {
-                console.error(`[EventManager] Error in handler #${id} for '${eventType}':`, error);
-            }
-        });
+        // Track execution time if performance tracking is enabled
+        if (this._performanceTracking) {
+            const startTime = performance.now();
+            
+            eventHandlers.forEach((handler, id) => {
+                try {
+                    const handlerStartTime = performance.now();
+                    handler(eventObject);
+                    const handlerExecutionTime = performance.now() - handlerStartTime;
+                    
+                    // Track execution time for this specific handler
+                    this._trackHandlerExecutionTime(eventType, handlerExecutionTime);
+                } catch (error) {
+                    console.error(`[EventManager] Error in handler #${id} for '${eventType}':`, error);
+                }
+            });
+            
+            const totalExecutionTime = performance.now() - startTime;
+            this._trackTotalExecutionTime(eventType, totalExecutionTime, eventHandlers.size);
+            
+            // Periodically report performance data in debug mode
+            this._checkPerformanceReport();
+        } else {
+            // Standard execution without performance tracking
+            eventHandlers.forEach((handler, id) => {
+                try {
+                    handler(eventObject);
+                } catch (error) {
+                    console.error(`[EventManager] Error in handler #${id} for '${eventType}':`, error);
+                }
+            });
+        }
     }
     
     /**
@@ -424,6 +466,224 @@ class EventManager {
         });
         
         return stats;
+    }
+    
+    /**
+     * Enable performance tracking
+     * @param {Number} [highFrequencyThreshold=60] - Events per second considered high frequency
+     * @param {Number} [reportInterval=5000] - How often to report performance in debug mode (ms)
+     */
+    enablePerformanceTracking(highFrequencyThreshold = 60, reportInterval = 5000) {
+        this._performanceTracking = true;
+        this._trackingStartTime = performance.now();
+        this._lastReportTime = this._trackingStartTime;
+        this._highFrequencyThreshold = highFrequencyThreshold;
+        this._reportIntervalMs = reportInterval;
+        this._resetPerformanceMetrics();
+        
+        if (this._debugMode) {
+            console.log('[EventManager] Performance tracking enabled');
+        }
+    }
+    
+    /**
+     * Disable performance tracking
+     */
+    disablePerformanceTracking() {
+        this._performanceTracking = false;
+        
+        if (this._debugMode) {
+            console.log('[EventManager] Performance tracking disabled');
+        }
+    }
+    
+    /**
+     * Reset all performance metrics
+     * @private
+     */
+    _resetPerformanceMetrics() {
+        this._eventFrequency.clear();
+        this._eventExecutionTime.clear();
+        this._eventMaxExecutionTime.clear();
+        this._eventAverageTime.clear();
+        this._trackingStartTime = performance.now();
+    }
+    
+    /**
+     * Track event frequency
+     * @param {String} eventType - Event type
+     * @private
+     */
+    _trackEventFrequency(eventType) {
+        const currentCount = this._eventFrequency.get(eventType) || 0;
+        this._eventFrequency.set(eventType, currentCount + 1);
+    }
+    
+    /**
+     * Track handler execution time
+     * @param {String} eventType - Event type
+     * @param {Number} executionTime - Execution time in ms
+     * @private
+     */
+    _trackHandlerExecutionTime(eventType, executionTime) {
+        // Track maximum execution time
+        const maxTime = this._eventMaxExecutionTime.get(eventType) || 0;
+        if (executionTime > maxTime) {
+            this._eventMaxExecutionTime.set(eventType, executionTime);
+        }
+    }
+    
+    /**
+     * Track total execution time for all handlers of an event
+     * @param {String} eventType - Event type
+     * @param {Number} totalTime - Total execution time in ms
+     * @param {Number} handlerCount - Number of handlers
+     * @private
+     */
+    _trackTotalExecutionTime(eventType, totalTime, handlerCount) {
+        // Track cumulative execution time
+        const currentTotal = this._eventExecutionTime.get(eventType) || 0;
+        this._eventExecutionTime.set(eventType, currentTotal + totalTime);
+        
+        // Update rolling average
+        const currentAvg = this._eventAverageTime.get(eventType) || 0;
+        const callCount = this._eventFrequency.get(eventType) || 1;
+        const newAvg = ((currentAvg * (callCount - 1)) + (totalTime / handlerCount)) / callCount;
+        this._eventAverageTime.set(eventType, newAvg);
+    }
+    
+    /**
+     * Check if it's time to report performance metrics
+     * @private
+     */
+    _checkPerformanceReport() {
+        if (!this._debugMode) return;
+        
+        const now = performance.now();
+        if (now - this._lastReportTime > this._reportIntervalMs) {
+            this._reportPerformanceMetrics();
+            this._lastReportTime = now;
+        }
+    }
+    
+    /**
+     * Report performance metrics to console in debug mode
+     * @private
+     */
+    _reportPerformanceMetrics() {
+        const highFrequencyEvents = this.getHighFrequencyEvents();
+        const slowEvents = this.getSlowestEvents(5);
+        
+        if (highFrequencyEvents.length > 0) {
+            console.log('[EventManager] High frequency events detected:', highFrequencyEvents);
+        }
+        
+        if (slowEvents.length > 0) {
+            console.log('[EventManager] Slowest events (avg handler time):', slowEvents);
+        }
+    }
+    
+    /**
+     * Get all performance metrics
+     * @return {Object} Performance metrics
+     */
+    getPerformanceMetrics() {
+        const elapsedSeconds = (performance.now() - this._trackingStartTime) / 1000;
+        const metrics = {
+            trackingTimeSeconds: elapsedSeconds,
+            eventCounts: {},
+            eventsPerSecond: {},
+            totalExecutionTime: {},
+            maxExecutionTime: {},
+            averageHandlerTime: {},
+            highFrequencyEvents: this.getHighFrequencyEvents(),
+            slowestEvents: this.getSlowestEvents(10)
+        };
+        
+        // Process event frequency
+        this._eventFrequency.forEach((count, eventType) => {
+            metrics.eventCounts[eventType] = count;
+            metrics.eventsPerSecond[eventType] = count / elapsedSeconds;
+        });
+        
+        // Process execution times
+        this._eventExecutionTime.forEach((time, eventType) => {
+            metrics.totalExecutionTime[eventType] = time;
+        });
+        
+        // Process max execution times
+        this._eventMaxExecutionTime.forEach((time, eventType) => {
+            metrics.maxExecutionTime[eventType] = time;
+        });
+        
+        // Process average handler times
+        this._eventAverageTime.forEach((time, eventType) => {
+            metrics.averageHandlerTime[eventType] = time;
+        });
+        
+        return metrics;
+    }
+    
+    /**
+     * Get high frequency events that might need optimization
+     * @return {Array} Array of {eventType, frequency, avgTime} objects
+     */
+    getHighFrequencyEvents() {
+        const result = [];
+        const elapsedSeconds = (performance.now() - this._trackingStartTime) / 1000;
+        
+        this._eventFrequency.forEach((count, eventType) => {
+            const frequency = count / elapsedSeconds;
+            if (frequency >= this._highFrequencyThreshold) {
+                result.push({
+                    eventType,
+                    frequency,
+                    count,
+                    avgTime: this._eventAverageTime.get(eventType) || 0,
+                    totalTime: this._eventExecutionTime.get(eventType) || 0,
+                    maxTime: this._eventMaxExecutionTime.get(eventType) || 0
+                });
+            }
+        });
+        
+        // Sort by frequency (highest first)
+        return result.sort((a, b) => b.frequency - a.frequency);
+    }
+    
+    /**
+     * Get the slowest events by average handler execution time
+     * @param {Number} [limit=5] - Maximum number of events to return
+     * @return {Array} Array of {eventType, avgTime, frequency} objects
+     */
+    getSlowestEvents(limit = 5) {
+        const result = [];
+        const elapsedSeconds = (performance.now() - this._trackingStartTime) / 1000;
+        
+        this._eventAverageTime.forEach((avgTime, eventType) => {
+            const count = this._eventFrequency.get(eventType) || 0;
+            result.push({
+                eventType,
+                avgTime,
+                count,
+                frequency: count / elapsedSeconds,
+                totalTime: this._eventExecutionTime.get(eventType) || 0,
+                maxTime: this._eventMaxExecutionTime.get(eventType) || 0
+            });
+        });
+        
+        // Sort by average time (highest first) and limit results
+        return result.sort((a, b) => b.avgTime - a.avgTime).slice(0, limit);
+    }
+    
+    /**
+     * Reset performance metrics and start fresh tracking
+     */
+    resetPerformanceMetrics() {
+        this._resetPerformanceMetrics();
+        
+        if (this._debugMode) {
+            console.log('[EventManager] Performance metrics reset');
+        }
     }
 }
 
