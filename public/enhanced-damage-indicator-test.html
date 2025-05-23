@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Damage Indicator Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components/combat.css">
+    <link rel="stylesheet" href="styles/components/combat/_enhanced-damage-indicator.css">
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e63946;
+            margin-bottom: 30px;
+        }
+        
+        .button-panel {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #222;
+            color: white;
+            border: 1px solid #e63946;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #444;
+        }
+        
+        button:active {
+            background-color: #e63946;
+        }
+        
+        .test-area {
+            position: relative;
+            height: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        
+        .player-position {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background-color: #4ECDC4;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 4px;
+            width: 220px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats div {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stats label {
+            display: inline-block;
+            width: 140px;
+        }
+        
+        .stats span {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            font-family: monospace;
+        }
+        
+        .damage-configuration {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .config-group {
+            margin-bottom: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .config-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .config-group input, .config-group select {
+            width: 100%;
+            padding: 5px;
+            background-color: #222;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Damage Indicator Test</h1>
+        
+        <div class="damage-configuration">
+            <div class="config-group">
+                <label for="damage-amount">Damage Amount:</label>
+                <input type="range" id="damage-amount" min="1" max="60" value="15" step="1">
+                <span id="damage-amount-value">15</span>
+            </div>
+            
+            <div class="config-group">
+                <label for="damage-type">Damage Type:</label>
+                <select id="damage-type">
+                    <option value="bullet">Bullet</option>
+                    <option value="explosive">Explosive</option>
+                    <option value="fire">Fire</option>
+                    <option value="energy">Energy</option>
+                </select>
+            </div>
+            
+            <div class="config-group">
+                <label for="indicator-duration">Duration (ms):</label>
+                <input type="range" id="indicator-duration" min="500" max="3000" value="1200" step="100">
+                <span id="indicator-duration-value">1200</span>
+            </div>
+        </div>
+        
+        <div class="button-panel">
+            <button id="damage-front">Damage Front</button>
+            <button id="damage-right">Damage Right</button>
+            <button id="damage-back">Damage Back</button>
+            <button id="damage-left">Damage Left</button>
+            <button id="damage-angle">Damage Angle</button>
+            <button id="random-damage">Random Direction</button>
+            <button id="multi-damage">Multi-Hit Damage</button>
+            <button id="stress-test">Stress Test</button>
+            <button id="clear">Clear All</button>
+        </div>
+        
+        <div id="test-area" class="test-area">
+            <div class="player-position"></div>
+            <!-- Damage indicators will be added here -->
+        </div>
+        
+        <div class="stats" id="stats">
+            <div><label>Active Indicators:</label> <span id="active-indicators">0</span></div>
+            <div><label>Total Created:</label> <span id="total-created">0</span></div>
+            <div><label>Available in Pool:</label> <span id="total-pooled">0</span></div>
+            <div><label>Current Angle:</label> <span id="current-angle">0°</span></div>
+            <div><label>Current Damage:</label> <span id="current-damage">0</span></div>
+            <div><label>Current Intensity:</label> <span id="current-intensity">0</span></div>
+        </div>
+        
+        <div class="footer">
+            Test page for the EnhancedDamageIndicator component using ElementPool
+        </div>
+    </div>
+
+    <script type="module">
+        import { EnhancedDamageIndicator } from '../src/components/ui/combat/EnhancedDamageIndicator.js';
+        
+        // Initialize the enhanced damage indicator
+        const damageIndicator = new EnhancedDamageIndicator({
+            container: document.getElementById('test-area'),
+            maxIndicators: 12,
+            baseDuration: 1200,
+            minOpacity: 0.3,
+            maxOpacity: 0.9,
+            indicatorWidth: 120
+        });
+        
+        // Stats elements
+        const activeIndicatorsEl = document.getElementById('active-indicators');
+        const totalCreatedEl = document.getElementById('total-created');
+        const totalPooledEl = document.getElementById('total-pooled');
+        const currentAngleEl = document.getElementById('current-angle');
+        const currentDamageEl = document.getElementById('current-damage');
+        const currentIntensityEl = document.getElementById('current-intensity');
+        
+        // Configuration elements
+        const damageAmountInput = document.getElementById('damage-amount');
+        const damageAmountValue = document.getElementById('damage-amount-value');
+        const damageTypeSelect = document.getElementById('damage-type');
+        const indicatorDurationInput = document.getElementById('indicator-duration');
+        const indicatorDurationValue = document.getElementById('indicator-duration-value');
+        
+        // Update displayed values when inputs change
+        damageAmountInput.addEventListener('input', () => {
+            damageAmountValue.textContent = damageAmountInput.value;
+        });
+        
+        indicatorDurationInput.addEventListener('input', () => {
+            indicatorDurationValue.textContent = indicatorDurationInput.value;
+        });
+        
+        // Helper functions
+        function getDamageAmount() {
+            return parseInt(damageAmountInput.value, 10);
+        }
+        
+        function getDamageType() {
+            return damageTypeSelect.value;
+        }
+        
+        function getDuration() {
+            return parseInt(indicatorDurationInput.value, 10);
+        }
+        
+        function getDamageIntensity(damage) {
+            return Math.min(Math.max(damage / 40, 0.2), 1);
+        }
+        
+        function showDamageFromAngle(angle, damage, damageType) {
+            const duration = getDuration();
+            damageIndicator.showDamageFrom({
+                angle: angle,
+                damage: damage,
+                duration: duration,
+                damageType: damageType
+            });
+            
+            // Update stats
+            currentAngleEl.textContent = `${angle}°`;
+            currentDamageEl.textContent = damage;
+            currentIntensityEl.textContent = getDamageIntensity(damage).toFixed(2);
+            
+            updateStats();
+        }
+        
+        // Set up button event listeners
+        document.getElementById('damage-front').addEventListener('click', () => {
+            showDamageFromAngle(0, getDamageAmount(), getDamageType());
+        });
+        
+        document.getElementById('damage-right').addEventListener('click', () => {
+            showDamageFromAngle(90, getDamageAmount(), getDamageType());
+        });
+        
+        document.getElementById('damage-back').addEventListener('click', () => {
+            showDamageFromAngle(180, getDamageAmount(), getDamageType());
+        });
+        
+        document.getElementById('damage-left').addEventListener('click', () => {
+            showDamageFromAngle(270, getDamageAmount(), getDamageType());
+        });
+        
+        document.getElementById('damage-angle').addEventListener('click', () => {
+            // Prompt for an angle
+            const angle = prompt('Enter an angle (0-359):', '45');
+            if (angle !== null) {
+                const angleValue = parseInt(angle, 10);
+                if (!isNaN(angleValue) && angleValue >= 0 && angleValue < 360) {
+                    showDamageFromAngle(angleValue, getDamageAmount(), getDamageType());
+                }
+            }
+        });
+        
+        document.getElementById('random-damage').addEventListener('click', () => {
+            const randomAngle = Math.floor(Math.random() * 360);
+            showDamageFromAngle(randomAngle, getDamageAmount(), getDamageType());
+        });
+        
+        document.getElementById('multi-damage').addEventListener('click', () => {
+            // Create multiple damage sources
+            const count = Math.floor(Math.random() * 3) + 2; // 2-4 sources
+            const sources = [];
+            
+            for (let i = 0; i < count; i++) {
+                sources.push({
+                    angle: Math.floor(Math.random() * 360),
+                    damage: getDamageAmount() * (Math.random() * 0.5 + 0.75) // Vary damage slightly
+                });
+            }
+            
+            damageIndicator.showMultipleDamage(sources);
+            updateStats();
+        });
+        
+        document.getElementById('stress-test').addEventListener('click', () => {
+            // Run a stress test - generate lots of indicators in quick succession
+            const count = 50;
+            const interval = 100; // ms
+            
+            damageIndicator.testRandomDamage(count, 30);
+            updateStats();
+        });
+        
+        document.getElementById('clear').addEventListener('click', () => {
+            damageIndicator.clearAllIndicators();
+            updateStats();
+        });
+        
+        // Set up animation loop
+        let lastTime = 0;
+        function animate(time) {
+            if (lastTime === 0) lastTime = time;
+            const delta = time - lastTime;
+            lastTime = time;
+            
+            damageIndicator.update(delta);
+            updateStats();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation loop
+        requestAnimationFrame(animate);
+        
+        // Add click event to test area to show damage from clicked position
+        document.getElementById('test-area').addEventListener('click', (e) => {
+            const testArea = document.getElementById('test-area');
+            const rect = testArea.getBoundingClientRect();
+            
+            // Calculate angle based on click position relative to center
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Calculate angle in degrees (0 at top, clockwise)
+            const dx = clickX - centerX;
+            const dy = clickY - centerY;
+            let angle = Math.atan2(dx, -dy) * (180 / Math.PI);
+            if (angle < 0) angle += 360;
+            
+            showDamageFromAngle(angle, getDamageAmount(), getDamageType());
+        });
+        
+        // Update stats display
+        function updateStats() {
+            if (!damageIndicator) return;
+            
+            activeIndicatorsEl.textContent = damageIndicator.activeIndicators.length;
+            
+            // Get pool stats if available
+            if (damageIndicator.indicatorPool) {
+                const stats = damageIndicator.indicatorPool.getStats ? 
+                    damageIndicator.indicatorPool.getStats() : 
+                    { created: 0, available: 0 };
+                
+                totalCreatedEl.textContent = stats.created || stats.total || 0;
+                totalPooledEl.textContent = stats.available || 0;
+            }
+        }
+        
+        // Initial stats update
+        updateStats();
+    </script>
+</body>
+</html>

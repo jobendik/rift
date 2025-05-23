@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Hit Indicator Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components/combat.css">
+    <link rel="stylesheet" href="styles/components/combat/_enhanced-hit-indicator.css">
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e63946;
+            margin-bottom: 30px;
+        }
+        
+        .button-panel {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #222;
+            color: white;
+            border: 1px solid #e63946;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #444;
+        }
+        
+        button:active {
+            background-color: #e63946;
+        }
+        
+        .test-area {
+            position: relative;
+            height: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 4px;
+            width: 220px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats div {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stats label {
+            display: inline-block;
+            width: 140px;
+        }
+        
+        .stats span {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Hit Indicator Test</h1>
+        
+        <div class="button-panel">
+            <button id="hit-marker">Hit Marker</button>
+            <button id="critical-hit">Critical Hit</button>
+            <button id="headshot">Headshot</button>
+            <button id="kill">Kill Confirmation</button>
+            <button id="multi-kill">Multi-Kill</button>
+            <button id="kill-sequence">Kill Sequence</button>
+            <button id="damage-front">Damage Front</button>
+            <button id="damage-right">Damage Right</button>
+            <button id="damage-back">Damage Back</button>
+            <button id="damage-left">Damage Left</button>
+            <button id="damage-random">Random Damage</button>
+            <button id="stress-test">Stress Test</button>
+            <button id="clear">Clear All</button>
+        </div>
+        
+        <div id="test-area" class="test-area">
+            <!-- Hit indicators will be added here -->
+        </div>
+        
+        <div class="stats" id="stats">
+            <div><label>Active Hit Markers:</label> <span id="active-hit-markers">0</span></div>
+            <div><label>Active Direction Indicators:</label> <span id="active-direction-indicators">0</span></div>
+            <div><label>Active Kill Confirmations:</label> <span id="active-kill-confirmations">0</span></div>
+            <div><label>Total Created:</label> <span id="total-created">0</span></div>
+            <div><label>Total Pooled:</label> <span id="total-pooled">0</span></div>
+            <div><label>Elements in Use:</label> <span id="elements-in-use">0</span></div>
+        </div>
+        
+        <div class="footer">
+            Test page for the EnhancedHitIndicator component using ElementPool
+        </div>
+    </div>
+
+    <script type="module">
+        import { EnhancedHitIndicator } from '../src/components/ui/combat/EnhancedHitIndicator.js';
+        
+        // Initialize the enhanced hit indicator
+        const hitIndicator = new EnhancedHitIndicator({
+            container: document.getElementById('test-area'),
+            hitDuration: 500,
+            directionDuration: 800,
+            killDuration: 1000,
+            maxHitMarkers: 15,
+            maxDirectionIndicators: 10
+        });
+        
+        // Stats elements
+        const activeHitMarkersEl = document.getElementById('active-hit-markers');
+        const activeDirectionIndicatorsEl = document.getElementById('active-direction-indicators');
+        const activeKillConfirmationsEl = document.getElementById('active-kill-confirmations');
+        const totalCreatedEl = document.getElementById('total-created');
+        const totalPooledEl = document.getElementById('total-pooled');
+        const elementsInUseEl = document.getElementById('elements-in-use');
+        
+        // Set up button event listeners
+        document.getElementById('hit-marker').addEventListener('click', () => {
+            hitIndicator.testHitMarker('normal');
+            updateStats();
+        });
+        
+        document.getElementById('critical-hit').addEventListener('click', () => {
+            hitIndicator.testHitMarker('critical');
+            updateStats();
+        });
+        
+        document.getElementById('headshot').addEventListener('click', () => {
+            hitIndicator.testHitMarker('headshot');
+            updateStats();
+        });
+        
+        document.getElementById('kill').addEventListener('click', () => {
+            hitIndicator.testKillConfirmation(Math.random() > 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('multi-kill').addEventListener('click', () => {
+            const killCount = Math.floor(Math.random() * 4) + 2; // 2-5 kills
+            hitIndicator.testMultiKill(killCount);
+            updateStats();
+        });
+        
+        document.getElementById('kill-sequence').addEventListener('click', () => {
+            const killCount = Math.floor(Math.random() * 4) + 2; // 2-5 kills
+            const interval = Math.floor(Math.random() * 300) + 300; // 300-600ms
+            hitIndicator.testKillSequence(killCount, interval);
+            updateStats();
+        });
+        
+        document.getElementById('damage-front').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('top', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-right').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('right', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-back').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('bottom', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-left').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('left', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-random').addEventListener('click', () => {
+            const directions = ['top', 'right', 'bottom', 'left'];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            hitIndicator.testDirectionIndicator(randomDirection, Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('stress-test').addEventListener('click', () => {
+            // Run a stress test - generate lots of indicators in quick succession
+            const count = 100;
+            const interval = 50; // ms
+            let i = 0;
+            
+            const runTest = () => {
+                if (i >= count) return;
+                
+                const rand = Math.random();
+                
+                if (rand < 0.4) {
+                    // Hit marker
+                    const type = Math.random() > 0.7 ? 'critical' : Math.random() > 0.5 ? 'headshot' : 'normal';
+                    hitIndicator.testHitMarker(type);
+                } else if (rand < 0.8) {
+                    // Direction indicator
+                    const directions = ['top', 'right', 'bottom', 'left'];
+                    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                    hitIndicator.testDirectionIndicator(randomDirection, Math.random() * 0.5 + 0.5);
+                } else {
+                    // Kill confirmation
+                    hitIndicator.testKillConfirmation(Math.random() > 0.5);
+                }
+                
+                updateStats();
+                i++;
+                setTimeout(runTest, interval);
+            };
+            
+            runTest();
+        });
+        
+        document.getElementById('clear').addEventListener('click', () => {
+            hitIndicator.clearAllIndicators();
+            updateStats();
+        });
+        
+        // Set up animation loop
+        let lastTime = 0;
+        function animate(time) {
+            if (lastTime === 0) lastTime = time;
+            const delta = time - lastTime;
+            lastTime = time;
+            
+            hitIndicator.update(delta);
+            updateStats();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation loop
+        requestAnimationFrame(animate);
+        
+        // Update stats display
+        function updateStats() {
+            if (!hitIndicator) return;
+            
+            activeHitMarkersEl.textContent = hitIndicator.activeHitMarkers.length;
+            activeDirectionIndicatorsEl.textContent = hitIndicator.activeDirectionIndicators.length;
+            activeKillConfirmationsEl.textContent = hitIndicator.activeKillConfirmations.length;
+            
+            // Get pool stats if available
+            if (hitIndicator.hitMarkerPool) {
+                totalCreatedEl.textContent = 
+                    (hitIndicator.hitMarkerPool._created || 0) + 
+                    (hitIndicator.directionPool._created || 0) + 
+                    (hitIndicator.killConfirmationPool._created || 0);
+                    
+                totalPooledEl.textContent = 
+                    (hitIndicator.hitMarkerPool._available ? hitIndicator.hitMarkerPool._available.length : 0) + 
+                    (hitIndicator.directionPool._available ? hitIndicator.directionPool._available.length : 0) + 
+                    (hitIndicator.killConfirmationPool._available ? hitIndicator.killConfirmationPool._available.length : 0);
+                    
+                elementsInUseEl.textContent = 
+                    hitIndicator.activeHitMarkers.length + 
+                    hitIndicator.activeDirectionIndicators.length + 
+                    hitIndicator.activeKillConfirmations.length;
+            }
+        }
+    </script>
+</body>
+</html>

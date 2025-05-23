@@ -24,6 +24,7 @@ import { DamageNumbers } from './DamageNumbers.js';
 import { ScreenEffects } from './ScreenEffects.js';
 import { AdvancedScreenEffects } from './AdvancedScreenEffects.js';
 import FootstepIndicator from './FootstepIndicator.js';
+import EnhancedFootstepIndicator from './EnhancedFootstepIndicator.js';
 
 class CombatSystem extends UIComponent {
     /**
@@ -58,6 +59,7 @@ class CombatSystem extends UIComponent {
         
         // Footstep indicator for situational awareness
         this.footstepIndicator = null;
+        this.enhancedFootstepIndicator = null;
     }
 
     /**
@@ -107,7 +109,11 @@ class CombatSystem extends UIComponent {
         }
         
         // Update footstep indicator
-        if (this.footstepIndicator) this.footstepIndicator.update(delta);
+        if (this.enhancedFootstepIndicator) {
+            this.enhancedFootstepIndicator.update(delta);
+        } else if (this.footstepIndicator) {
+            this.footstepIndicator.update(delta);
+        }
         
         return this;
     }
@@ -142,6 +148,7 @@ class CombatSystem extends UIComponent {
         if (this.advancedScreenEffects) this.advancedScreenEffects.dispose();
         
         // Dispose footstep indicator
+        if (this.enhancedFootstepIndicator) this.enhancedFootstepIndicator.dispose();
         if (this.footstepIndicator) this.footstepIndicator.dispose();
         
         // Call parent dispose method to handle unsubscribing events and DOM removal
@@ -155,19 +162,25 @@ class CombatSystem extends UIComponent {
      * @private
      */
     _initComponents() {
-        // Check if enhanced hit indicator is enabled in UIConfig
-        const useEnhancedHit = this.config.enhancedCombat && this.config.enhancedCombat.hitIndicator;
+        // Use enhancedHitIndicator by default for better performance with element pooling
+        // Only fall back to legacy HitIndicator if explicitly disabled in config
+        const useEnhancedHit = this.config.enhancedCombat?.hitIndicator !== false;
         
         if (useEnhancedHit) {
-            // Initialize enhanced hit indicator
+            // Initialize enhanced hit indicator with element pooling
             this.enhancedHitIndicator = new EnhancedHitIndicator({
-                container: this.element
-                // Config is loaded from this.config.enhancedCombat.hitIndicator in the component itself
+                container: this.element,
+                hitDuration: this.config.hitDuration || 500,
+                directionDuration: this.config.directionDuration || 800,
+                killDuration: this.config.killDuration || 1000,
+                maxHitMarkers: this.config.enhancedCombat?.hitIndicator?.maxHitMarkers || 10,
+                maxDirectionIndicators: this.config.enhancedCombat?.hitIndicator?.maxDirectionIndicators || 8
             });
             this.enhancedHitIndicator.init();
             this.addChild(this.enhancedHitIndicator);
         } else {
-            // Initialize legacy hit indicator
+            // Initialize legacy hit indicator (only if enhanced version is explicitly disabled)
+            console.warn('Using legacy HitIndicator. Consider enabling EnhancedHitIndicator for better performance.');
             this.hitIndicator = new HitIndicator({
                 container: this.element,
                 hitDuration: this.config.hitDuration || 500,
@@ -178,19 +191,21 @@ class CombatSystem extends UIComponent {
             this.addChild(this.hitIndicator);
         }
         
-        // Check if enhanced combat feedback is enabled in UIConfig
-        const useEnhancedDamage = this.config.enhancedCombat && this.config.enhancedCombat.damageIndicator;
+        // Use enhancedDamageIndicator by default for better performance with element pooling
+        // Only fall back to legacy DamageIndicator if explicitly disabled in config
+        const useEnhancedDamage = this.config.enhancedCombat?.damageIndicator !== false;
         
         if (useEnhancedDamage) {
-            // Initialize enhanced damage indicator
+            // Initialize enhanced damage indicator with element pooling
             this.enhancedDamageIndicator = new EnhancedDamageIndicator({
                 container: this.element
-                // Config is loaded from this.config.enhancedCombat.damageIndicator in the component itself
+                // Config is loaded from UIConfig in the component itself
             });
             this.enhancedDamageIndicator.init();
             this.addChild(this.enhancedDamageIndicator);
         } else {
-            // Initialize legacy damage indicator
+            // Initialize legacy damage indicator (only if enhanced version is explicitly disabled)
+            console.warn('Using legacy DamageIndicator. Consider enabling EnhancedDamageIndicator for better performance.');
             const damageConfig = this.config.damageIndicator || {};
             this.damageIndicator = new DamageIndicator({
                 container: this.element,
@@ -255,20 +270,42 @@ class CombatSystem extends UIComponent {
             this.addChild(this.screenEffects);
         }
         
-        // Initialize footstep indicator
-        const footstepConfig = this.config.footstepIndicator || {};
-        this.footstepIndicator = new FootstepIndicator({
-            container: this.element,
-            maxIndicators: footstepConfig.maxIndicators || 8,
-            baseDuration: footstepConfig.baseDuration ? footstepConfig.baseDuration * 1000 : 800,
-            minOpacity: footstepConfig.minOpacity || 0.2,
-            maxOpacity: footstepConfig.maxOpacity || 0.7,
-            indicatorWidth: footstepConfig.indicatorWidth || 40,
-            maxDistance: footstepConfig.maxDistance || 20,
-            minDistance: footstepConfig.minDistance || 2
-        });
-        this.footstepIndicator.init();
-        this.addChild(this.footstepIndicator);
+        // Use enhancedFootstepIndicator by default for better performance with element pooling
+        // Only fall back to legacy FootstepIndicator if explicitly disabled in config
+        const useEnhancedFootstep = this.config.enhancedCombat?.footstepIndicator !== false;
+        
+        if (useEnhancedFootstep) {
+            // Initialize enhanced footstep indicator with element pooling
+            const footstepConfig = this.config.footstepIndicator || {};
+            this.enhancedFootstepIndicator = new EnhancedFootstepIndicator({
+                container: this.element,
+                maxIndicators: footstepConfig.maxIndicators || 8,
+                baseDuration: footstepConfig.baseDuration ? footstepConfig.baseDuration * 1000 : 800,
+                minOpacity: footstepConfig.minOpacity || 0.2,
+                maxOpacity: footstepConfig.maxOpacity || 0.7,
+                indicatorWidth: footstepConfig.indicatorWidth || 40,
+                maxDistance: footstepConfig.maxDistance || 20,
+                minDistance: footstepConfig.minDistance || 2
+            });
+            this.enhancedFootstepIndicator.init();
+            this.addChild(this.enhancedFootstepIndicator);
+        } else {
+            // Initialize legacy footstep indicator (only if enhanced version is explicitly disabled)
+            console.warn('Using legacy FootstepIndicator. Consider enabling EnhancedFootstepIndicator for better performance.');
+            const footstepConfig = this.config.footstepIndicator || {};
+            this.footstepIndicator = new FootstepIndicator({
+                container: this.element,
+                maxIndicators: footstepConfig.maxIndicators || 8,
+                baseDuration: footstepConfig.baseDuration ? footstepConfig.baseDuration * 1000 : 800,
+                minOpacity: footstepConfig.minOpacity || 0.2,
+                maxOpacity: footstepConfig.maxOpacity || 0.7,
+                indicatorWidth: footstepConfig.indicatorWidth || 40,
+                maxDistance: footstepConfig.maxDistance || 20,
+                minDistance: footstepConfig.minDistance || 2
+            });
+            this.footstepIndicator.init();
+            this.addChild(this.footstepIndicator);
+        }
     }
 
     /**
@@ -301,7 +338,11 @@ class CombatSystem extends UIComponent {
         }
         
         // Clear footstep indicators
-        if (this.footstepIndicator) this.footstepIndicator.clearAllIndicators();
+        if (this.enhancedFootstepIndicator) {
+            this.enhancedFootstepIndicator.clearAllIndicators();
+        } else if (this.footstepIndicator) {
+            this.footstepIndicator.clearAllIndicators();
+        }
     }
 
     /**
@@ -655,39 +696,81 @@ class CombatSystem extends UIComponent {
      * @param {number} count - Number of footsteps in sequence (for continuous tracking)
      */
     testFootstepIndicator(intensity = 'medium', angle = null, isEnemy = true, count = 1) {
-        if (!this.footstepIndicator) return;
-        
-        // Generate a random angle if not provided (0-360 degrees)
-        const footstepAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
-        
-        // Map intensity string to distance values (close is more intense)
-        let distance;
-        switch (intensity) {
-            case 'low':
-                distance = Math.floor(Math.random() * 5) + 15; // 15-19 units (far)
-                break;
-            case 'medium':
-                distance = Math.floor(Math.random() * 5) + 8; // 8-12 units (medium)
-                break;
-            case 'high':
-                distance = Math.floor(Math.random() * 3) + 2; // 2-4 units (close)
-                break;
-            default:
-                distance = Math.floor(Math.random() * 10) + 5; // 5-14 units
+        // Check if we're using enhanced or regular footstep indicators
+        if (this.enhancedFootstepIndicator) {
+            // Generate a random angle if not provided (0-360 degrees)
+            const footstepAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
+            
+            // Map intensity string to distance values (close is more intense)
+            let distance;
+            switch (intensity) {
+                case 'low':
+                    distance = Math.floor(Math.random() * 5) + 15; // 15-19 units (far)
+                    break;
+                case 'medium':
+                    distance = Math.floor(Math.random() * 5) + 8; // 8-12 units (medium)
+                    break;
+                case 'high':
+                    distance = Math.floor(Math.random() * 3) + 2; // 2-4 units (close)
+                    break;
+                default:
+                    distance = Math.floor(Math.random() * 10) + 5; // 5-14 units
+            }
+            
+            // Check if we should show a sequence of footsteps
+            if (count > 1) {
+                this.enhancedFootstepIndicator.showFootstepSequence({
+                    angle: footstepAngle,
+                    distance: distance,
+                    isFriendly: !isEnemy,
+                    steps: count,
+                    interval: 200
+                });
+            } else {
+                // Show a single footstep
+                this.enhancedFootstepIndicator.showFootstepsFrom({
+                    angle: footstepAngle,
+                    distance: distance,
+                    isFriendly: !isEnemy
+                });
+            }
+            
+            console.log(`Enhanced footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}° at distance ${distance}, count: ${count}`);
+        } else if (this.footstepIndicator) {
+            // Use legacy footstep indicator
+            
+            // Generate a random angle if not provided (0-360 degrees)
+            const footstepAngle = angle !== null ? angle : Math.floor(Math.random() * 360);
+            
+            // Map intensity string to distance values (close is more intense)
+            let distance;
+            switch (intensity) {
+                case 'low':
+                    distance = Math.floor(Math.random() * 5) + 15; // 15-19 units (far)
+                    break;
+                case 'medium':
+                    distance = Math.floor(Math.random() * 5) + 8; // 8-12 units (medium)
+                    break;
+                case 'high':
+                    distance = Math.floor(Math.random() * 3) + 2; // 2-4 units (close)
+                    break;
+                default:
+                    distance = Math.floor(Math.random() * 10) + 5; // 5-14 units
+            }
+            
+            // Create footstep data
+            const footstepData = {
+                angle: footstepAngle,
+                distance: distance,
+                isFriendly: !isEnemy,
+                count: count
+            };
+            
+            // Show the footstep indicator
+            this.footstepIndicator.showFootstepsFrom(footstepData);
+            
+            console.log(`Footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}° at distance ${distance}, count: ${count}`);
         }
-        
-        // Create footstep data
-        const footstepData = {
-            angle: footstepAngle,
-            distance: distance,
-            isFriendly: !isEnemy,
-            count: count
-        };
-        
-        // Show the footstep indicator
-        this.footstepIndicator.showFootstepsFrom(footstepData);
-        
-        console.log(`Footstep indicator test: ${isEnemy ? 'Enemy' : 'Friendly'} footstep from ${footstepAngle}Â° at distance ${distance}, count: ${count}`);
     }
 }
 

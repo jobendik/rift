@@ -62,14 +62,21 @@ The project uses a centralized event system for communication between components
    - Validation capabilities for event names and payloads
    - Migration utilities for updating legacy event usage
 
-3. **Event Types**
+3. **Event Performance Monitoring System**
+   - Real-time metrics collection for event frequency and execution time
+   - Configuration options for thresholds and tracking parameters
+   - Dashboard for visualizing performance data
+   - Automatic recommendations for optimization
+   - Integration with developer tools panel (Ctrl+Shift+D)
+
+4. **Event Types**
    - State Change Events: For value changes (health, ammo, etc.)
    - Combat Events: For combat interactions (hits, damage, kills)
    - Notification Events: For user notifications
    - Progress Events: For progression updates (XP, levels, achievements)
    - Movement Events: For entity movement (footsteps, position changes)
 
-4. **Standard Event Structure**
+5. **Standard Event Structure**
    - Common metadata (type, timestamp)
    - Type-specific required fields
    - Optional fields based on context
@@ -94,6 +101,7 @@ The UI creates and manages DOM elements with the following approaches:
    - Use of requestAnimationFrame for rendering
    - CSS animations for performance
    - Hardware acceleration via transform/opacity
+   - Element pooling via ElementPool utility for frequently created/destroyed elements
 
 ### CSS Architecture
 
@@ -303,7 +311,7 @@ Detects and visualizes entity movement for enhanced spatial awareness.
    - Progression System
    - Environmental Systems
    - Refinement (Enhanced Combat Feedback, Event System Standardization, Movement System, etc.)
-   - Performance Optimization
+   - Performance Optimization (Event Performance Monitoring System)
    - Audio Integration
 
 2. **Testing Strategy**
@@ -375,7 +383,8 @@ Detects and visualizes entity movement for enhanced spatial awareness.
    │   └── main.js
    ├── docs/
    │   ├── EnhancedCombatFeedback.md
-   │   └── EventStandardization.md
+   │   ├── EventStandardization.md
+   │   └── EventPerformanceMonitoring.md
    ├── memory-bank/
    │   ├── activeContext.md
    │   ├── productContext.md
@@ -387,6 +396,78 @@ Detects and visualizes entity movement for enhanced spatial awareness.
    ```
 
 ## Technical Implementations
+
+### Event Performance Monitoring Implementation
+
+The Event Performance Monitoring system provides comprehensive performance tracking for events:
+
+1. **Core EventManager Enhancements**
+   - Added performance metrics tracking capabilities to EventManager:
+     ```javascript
+     // Tracking metrics in EventManager
+     _trackEventPerformance(eventType, startTime) {
+       const executionTime = performance.now() - startTime;
+       
+       // Update event metrics
+       if (!this._eventMetrics.has(eventType)) {
+         this._eventMetrics.set(eventType, {
+           count: 0,
+           totalExecutionTime: 0,
+           avgExecutionTime: 0,
+           minExecutionTime: Infinity,
+           maxExecutionTime: 0,
+           lastTimestamp: performance.now()
+         });
+       }
+       
+       const metrics = this._eventMetrics.get(eventType);
+       metrics.count++;
+       metrics.totalExecutionTime += executionTime;
+       metrics.avgExecutionTime = metrics.totalExecutionTime / metrics.count;
+       metrics.minExecutionTime = Math.min(metrics.minExecutionTime, executionTime);
+       metrics.maxExecutionTime = Math.max(metrics.maxExecutionTime, executionTime);
+       metrics.lastTimestamp = performance.now();
+     }
+     ```
+
+2. **Configuration and Control**
+   - Added configuration options in UIConfig.js:
+     ```javascript
+     // Event performance monitoring settings
+     eventPerformance: {
+       enabled: true,                  // Enable monitoring in development
+       highFrequencyThreshold: 60,     // Events/sec considered high frequency
+       slowHandlerThreshold: 1.0,      // Average ms considered slow
+       trackingInterval: 5000,         // Update interval in ms
+       maxEventsTracked: 1000          // Maximum number of events to track
+     }
+     ```
+   - Provided API for enabling, disabling, and resetting performance tracking:
+     ```javascript
+     // Enable performance tracking
+     EventManager.enablePerformanceTracking(highFrequencyThreshold, slowHandlerThreshold);
+     
+     // Disable tracking
+     EventManager.disablePerformanceTracking();
+     
+     // Get current metrics
+     const metrics = EventManager.getPerformanceMetrics();
+     
+     // Reset metrics
+     EventManager.resetPerformanceMetrics();
+     ```
+
+3. **Performance Dashboard**
+   - Created event-performance-monitor.html dashboard:
+     - Tabbed interface with Overview, Event Frequency, Execution Time, and Recommendations
+     - Real-time graphs and visualizations of event performance
+     - Sortable and filterable tables of event metrics
+     - Automatic optimization recommendations based on metrics
+
+4. **Developer Tools Integration**
+   - Added keyboard shortcut (Ctrl+Shift+D) for accessing developer tools
+   - Integrated performance monitor with other development tools
+   - Implemented toolbar for common actions (start/stop tracking, reset metrics, etc.)
 
 ### Event Standardization Implementation
 
@@ -538,6 +619,7 @@ The Movement System provides spatial awareness of entity movement with standardi
    - Minimize event payload size for frequent events
    - Batch event emissions when appropriate
    - Clean up event listeners to prevent memory leaks
+   - Use event performance monitoring to identify bottlenecks
 
 4. **Rendering Efficiency**
    - Optimize CSS selectors for performance
@@ -568,9 +650,9 @@ The Movement System provides spatial awareness of entity movement with standardi
 
 1. **Performance Optimization**
    - Further optimization of high-frequency update components
-   - Implementation of element pooling system
-   - Addition of performance monitoring and metrics
+   - Complete migration of remaining UI components to ElementPool
    - Memory leak detection and prevention
+   - Advanced performance monitoring and metrics
 
 2. **Audio System Integration**
    - Development of UI sound system

@@ -384,6 +384,40 @@ The event system has been enhanced with standardization support, implementing th
    - Validation for event payloads (required fields)
    - Debug mode for logging validation issues
 
+### Event Performance Monitoring
+
+The event system now includes comprehensive performance monitoring:
+
+1. **Performance Metrics Collection**
+   - Event frequency tracking
+   - Handler execution time measurement
+   - Event throughput calculation
+   - Memory usage estimation
+
+2. **Configuration Options**
+   ```javascript
+   // UIConfig.js
+   eventPerformance: {
+     enabled: true,                  // Enable monitoring in development
+     highFrequencyThreshold: 60,     // Events/sec considered high frequency
+     slowHandlerThreshold: 1.0,      // Average ms considered slow
+     trackingInterval: 5000,         // Update interval in ms
+     maxEventsTracked: 1000          // Maximum events to track
+   }
+   ```
+
+3. **Performance Dashboard**
+   - Real-time event frequency visualization
+   - Handler execution time analysis
+   - High-impact event identification
+   - Automatic optimization recommendations
+
+4. **Developer Tools Integration**
+   - Accessible via keyboard shortcut (Ctrl+Shift+D)
+   - Integrated with other development tools
+   - Filtering and sorting capabilities
+   - Export functionality for sharing/analysis
+
 ### Event Usage Pattern in Components
 
 Components follow a consistent pattern for event usage:
@@ -542,6 +576,320 @@ function updateMultipleElements() {
   });
 }
 ```
+
+### Element Pooling
+
+For frequently created and destroyed elements, use element pooling to minimize DOM operations and reduce garbage collection. The enhanced ElementPool utility significantly improves UI performance:
+
+```javascript
+class ElementPool {
+  /**
+   * Create an element pool
+   * @param {Object} options - Pool configuration
+   * @param {string} options.elementType - Type of element to create ('div', 'span', etc.)
+   * @param {HTMLElement} options.container - Parent container for elements
+   * @param {string} [options.className] - Class to apply to all elements
+   * @param {number} [options.initialSize=10] - Initial pool size
+   * @param {number} [options.maxSize=100] - Maximum pool size
+   * @param {Function} [options.createFn] - Custom element creation function
+   * @param {Function} [options.resetFn] - Custom element reset function
+   * @param {boolean} [options.useBlocks=true] - Use block containers for better performance
+   * @param {number} [options.blockSize=10] - Elements per block container
+   */
+  constructor(options = {}) {
+    // Configuration
+    this.elementType = options.elementType || 'div';
+    this.container = options.container || document.body;
+    this.className = options.className || '';
+    this.initialSize = options.initialSize || 10;
+    this.maxSize = options.maxSize || 100;
+    this.createFn = options.createFn || null;
+    this.resetFn = options.resetFn || null;
+    this.useBlocks = options.useBlocks !== false;
+    this.blockSize = options.blockSize || 10;
+    
+    // State
+    this.pool = [];
+    this.inUse = new Set();
+    this.totalCreated = 0;
+    this.blocks = [];
+    this.stats = {
+      created: 0,
+      acquired: 0,
+      released: 0,
+      peak: 0
+    };
+    
+    // Initialize pool
+    this._initializePool();
+  }
+  
+  /**
+   * Acquire an element from the pool
+   * @returns {Object} Object containing element and release function
+   */
+  acquire() {
+    // Track stats
+    this.stats.acquired++;
+    this.stats.peak = Math.max(this.stats.peak, this.inUse.size + 1);
+    
+    // Get element from pool or create new one
+    let element;
+    if (this.pool.length === 0) {
+      // Grow pool if below max size
+      if (this.totalCreated < this.maxSize) {
+        this._growPool(Math.min(10, this.maxSize - this.totalCreated));
+        element = this.pool.pop();
+      } else {
+        console.warn(`ElementPool: Maximum size of ${this.maxSize} reached.`);
+        return { element: null, release: () => {} };
+      }
+    } else {
+      element = this.pool.pop();
+    }
+    
+    // Track usage
+    this.inUse.add(element);
+    
+    // Create release function bound to this element
+    const release = () => this.release(element);
+    
+    return { element, release };
+  }
+  
+  /**
+   * Release an element back to the pool
+   * @param {HTMLElement} element - Element to release
+   */
+  release(element) {
+    if (!element || !this.inUse.has(element)) return;
+    
+    // Reset element state
+    if (this.resetFn) {
+      this.resetFn(element);
+    } else {
+      this._resetElement(element);
+    }
+    
+    // Return to pool
+    this.inUse.delete(element);
+    this.pool.push(element);
+    this.stats.released++;
+  }
+  
+  /**
+   * Get usage statistics
+   * @returns {Object} Pool statistics
+   */
+  getStats() {
+    return {
+      ...this.stats,
+      available: this.pool.length,
+      inUse: this.inUse.size,
+      total: this.totalCreated
+    };
+  }
+  
+  /**
+   * Clean up resources
+   */
+  dispose() {
+    // Release all elements
+    this.inUse.forEach(element => this.release(element));
+    
+    // Remove all blocks from the DOM
+    if (this.useBlocks) {
+      this.blocks.forEach(block => {
+        if (block.parentNode) {
+          block.parentNode.removeChild(block);
+        }
+      });
+      this.blocks = [];
+    } else {
+      // Remove all individual elements
+      this.pool.forEach(element => {
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      });
+    }
+    
+    // Clear arrays
+    this.pool = [];
+    this.inUse.clear();
+  }
+  
+  // Private methods
+  
+  /**
+   * Initialize the element pool
+   * @private
+   */
+  _initializePool() {
+    this._growPool(this.initialSize);
+  }
+  
+  /**
+   * Grow the pool by creating new elements
+   * @param {number} size - Number of elements to add
+   * @private
+   */
+  _growPool(size) {
+    let block = null;
+    let blockCount = 0;
+    
+    for (let i = 0; i < size; i++) {
+      // Create a block container if using blocks
+      if (this.useBlocks && (!block || blockCount >= this.blockSize)) {
+        block = document.createElement('div');
+        block.className = 'rift-element-pool-block';
+        this.container.appendChild(block);
+        this.blocks.push(block);
+        blockCount = 0;
+      }
+      
+      // Create element
+      let element;
+      if (this.createFn) {
+        element = this.createFn();
+      } else {
+        element = document.createElement(this.elementType);
+        if (this.className) {
+          element.className = this.className;
+        }
+      }
+      
+      // Add to appropriate container
+      if (this.useBlocks && block) {
+        block.appendChild(element);
+      } else {
+        this.container.appendChild(element);
+      }
+      
+      this.pool.push(element);
+      this.totalCreated++;
+      this.stats.created++;
+      blockCount++;
+    }
+  }
+  
+  /**
+   * Reset an element to its initial state
+   * @param {HTMLElement} element - Element to reset
+   * @private
+   */
+  _resetElement(element) {
+    // Reset standard properties
+    element.textContent = '';
+    element.className = this.className || '';
+    
+    // Clear inline styles except display
+    const displayStyle = element.style.display;
+    element.removeAttribute('style');
+    if (displayStyle === 'none') {
+      element.style.display = 'none';
+    }
+    
+    // Clear data attributes
+    Array.from(element.attributes)
+      .filter(attr => attr.name.startsWith('data-'))
+      .forEach(attr => element.removeAttribute(attr.name));
+    
+    // Remove all child elements
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
+  }
+}
+```
+
+### ElementPool Usage Pattern
+
+The most effective way to use ElementPool is to integrate it with UIComponents:
+
+```javascript
+class OptimizedUIComponent extends UIComponent {
+  constructor(options = {}) {
+    super(options);
+    this.activeElements = [];
+    this.pool = null;
+  }
+  
+  init() {
+    super.init();
+    
+    // Initialize element pool
+    this.pool = new ElementPool({
+      elementType: 'div',
+      container: this.element,
+      className: 'rift-component-element',
+      initialSize: 20
+    });
+  }
+  
+  createDynamicElement() {
+    // Get element from pool
+    const { element, release } = this.pool.acquire();
+    if (!element) return null;
+    
+    // Configure element
+    element.style.display = 'block';
+    element.classList.add('rift-component-element--active');
+    
+    // Store reference with release function
+    this.activeElements.push({ element, release });
+    
+    return element;
+  }
+  
+  removeDynamicElement(index) {
+    if (index < 0 || index >= this.activeElements.length) return;
+    
+    // Get element and release function
+    const { element, release } = this.activeElements[index];
+    
+    // Release back to pool
+    release();
+    
+    // Remove from active elements
+    this.activeElements.splice(index, 1);
+  }
+  
+  update(deltaTime) {
+    super.update(deltaTime);
+    
+    // Update active elements
+    // Mark elements for removal when no longer needed
+    const toRemove = [];
+    this.activeElements.forEach((item, index) => {
+      // Logic to determine if element should be removed
+      if (/* condition */) {
+        toRemove.push(index);
+      }
+    });
+    
+    // Remove elements in reverse order to avoid index shifting
+    for (let i = toRemove.length - 1; i >= 0; i--) {
+      this.removeDynamicElement(toRemove[i]);
+    }
+  }
+  
+  dispose() {
+    // Dispose the element pool to clean up resources
+    if (this.pool) {
+      this.pool.dispose();
+      this.pool = null;
+    }
+    
+    // Clear active elements array
+    this.activeElements = [];
+    
+    super.dispose();
+  }
+}
+```
+
+This pattern is implemented in components like EnhancedDamageNumbers, which handle frequent visual indicators with minimal DOM operations.
 
 ### Hardware-Accelerated Animations
 
@@ -937,302 +1285,4 @@ class ModernComponent extends UIComponent {
    * @param {number} event.value - Current health value
    * @param {number} event.previous - Previous health value
    * @param {number} event.delta - Change amount
-   * @param {number} event.max - Maximum possible health
-   * @param {string} event.source - What caused the health change
-   * @param {number} event.timestamp - When the event occurred
-   * @private
-   */
-  _onHealthChanged(event) {
-    // Implementation using standardized payload structure
-    const percentHealth = (event.value / event.max) * 100;
-    this._updateHealthBar(percentHealth);
-    
-    // Access additional standardized fields
-    if (event.delta < 0) {
-      this._showDamageEffect(Math.abs(event.delta), event.source);
-    } else if (event.delta > 0) {
-      this._showHealEffect(event.delta, event.source);
-    }
-  }
-  
-  /**
-   * Handle ui:health-display:visibility-changed event
-   * @param {Object} event - Component-specific event
-   * @param {boolean} event.visible - Whether the component is visible
-   * @param {string} event.reason - Reason for visibility change
-   * @param {number} event.timestamp - When the event occurred
-   * @private
-   */
-  _onHealthDisplayVisibilityChanged(event) {
-    // Implementation using standardized component-specific event
-    if (event.visible) {
-      this._show(event.reason);
-    } else {
-      this._hide(event.reason);
-    }
-  }
-  
-  /**
-   * Handle enemy:killed event
-   * @param {Object} event - Standardized combat event
-   * @param {Object} event.source - Source entity information
-   * @param {Object} event.target - Target entity information
-   * @param {Object} event.weapon - Weapon information
-   * @param {boolean} event.isHeadshot - Whether kill was headshot
-   * @param {boolean} event.isCritical - Whether kill was critical hit
-   * @param {number} event.timestamp - When the event occurred
-   * @private
-   */
-  _onEnemyKilled(event) {
-    // Implementation using standardized combat event payload
-    const killMessage = this._buildKillMessage(
-      event.source.name,
-      event.target.name,
-      event.weapon.name,
-      event.isHeadshot
-    );
-    
-    this._displayKillNotification(killMessage, {
-      isHeadshot: event.isHeadshot,
-      isCritical: event.isCritical,
-      timestamp: event.timestamp
-    });
-  }
-}
-```
-
-### MovementSystem Event Integration
-
-The MovementSystem component demonstrates the standardized event pattern when emitting events:
-
-```javascript
-_emitEntityFootstep(entityId, entityData, distanceToPlayer) {
-  // Get entity data
-  const entity = entityData.entity;
-  const entityPos = entityData.position;
-  
-  // Create standardized movement:footstep event
-  const footstepEvent = {
-    // Source entity information (standard format)
-    source: {
-      id: entityId,
-      type: entity.type || 'enemy',
-      name: entity.name || `${entity.type}-${entityId}`,
-      position: { x: entityPos.x, y: entityPos.y, z: entityPos.z }
-    },
-    // Position data
-    position: { x: entityPos.x, y: entityPos.y, z: entityPos.z },
-    playerPosition: {
-      x: this.playerData.position.x,
-      y: this.playerData.position.y,
-      z: this.playerData.position.z
-    },
-    playerRotation: this.playerData.rotation,
-    
-    // Additional metadata
-    isFriendly: entity.isFriendly === true,
-    isContinuous: entity.isMoving === true,
-    distance: distanceToPlayer,
-    direction: this._calculateAngle(
-      this.playerData.position,
-      this.playerData.rotation,
-      entityPos
-    ),
-    timestamp: performance.now()
-  };
-  
-  // Emit the standardized event
-  EventManager.emit('movement:footstep', footstepEvent);
-}
-```
-
-## Integration Patterns
-
-### Three.js Integration with DOM UI
-
-```javascript
-// Example: ObjectiveMarkerSystem integrating 3D positions with DOM UI
-class ObjectiveMarkerSystem extends UIComponent {
-  updateMarkers(worldObjects, camera, screenSize) {
-    worldObjects.forEach(object => {
-      // Get screen position from 3D world position
-      const screenPosition = this._worldToScreen(object.position, camera, screenSize);
-      
-      // Update DOM marker position
-      const marker = this.markers.get(object.id);
-      if (marker) {
-        // Is object in view?
-        if (this._isInView(screenPosition)) {
-          // Position on-screen marker
-          marker.style.left = `${screenPosition.x}px`;
-          marker.style.top = `${screenPosition.y}px`;
-          marker.classList.remove('rift-objective-marker--off-screen');
-        } else {
-          // Position off-screen indicator at screen edge
-          const edgePosition = this._getScreenEdgePosition(screenPosition, screenSize);
-          marker.style.left = `${edgePosition.x}px`;
-          marker.style.top = `${edgePosition.y}px`;
-          
-          // Rotate to point toward off-screen object
-          const angle = this._calculateAngleToPosition(screenPosition, screenSize);
-          marker.style.transform = `rotate(${angle}deg)`;
-          
-          marker.classList.add('rift-objective-marker--off-screen');
-        }
-        
-        // Update distance
-        const distance = this._calculateDistance(object.position, camera.position);
-        marker.querySelector('.rift-objective-marker__distance').textContent = 
-          `${Math.round(distance)}m`;
-      }
-    });
-  }
-  
-  // Helper methods...
-}
-```
-
-### System Registration Pattern
-
-```javascript
-// UIManager orchestrates all systems
-class UIManager {
-  constructor() {
-    this.systems = {};
-    this.fpsCounter = null;
-    this.lastTime = 0;
-    this.isRunning = false;
-  }
-  
-  init() {
-    this._createSystems();
-    this._setupEventListeners();
-    this.start();
-  }
-  
-  _createSystems() {
-    // Register all systems
-    this.systems.hud = new HUDSystem(this);
-    this.systems.combat = new CombatSystem(this);
-    this.systems.notifications = new NotificationSystem(this);
-    this.systems.menus = new MenuSystem(this);
-    this.systems.progression = new ProgressionSystem(this);
-    this.systems.environment = new EnvironmentSystem(this);
-    
-    // Initialize all systems
-    Object.values(this.systems).forEach(system => system.init());
-  }
-  
-  registerSystem(name, system) {
-    if (this.systems[name]) {
-      console.warn(`System ${name} already registered. Overwriting.`);
-    }
-    
-    this.systems[name] = system;
-    if (this.isRunning) {
-      system.init();
-    }
-    
-    return system;
-  }
-  
-  update(timestamp) {
-    const deltaTime = timestamp - this.lastTime;
-    this.lastTime = timestamp;
-    
-    // Update all systems
-    Object.values(this.systems).forEach(system => system.update(deltaTime));
-    
-    // Continue animation loop
-    if (this.isRunning) {
-      this.animationFrame = requestAnimationFrame(this.update.bind(this));
-    }
-  }
-  
-  // Other methods...
-}
-```
-
-## Responsive Design Patterns
-
-### Screen Size Management
-
-```javascript
-class UIManager {
-  // ...
-  
-  _setupEventListeners() {
-    // Handle window resize
-    window.addEventListener('resize', this._onResize.bind(this));
-    this._onResize(); // Initial size
-  }
-  
-  _onResize() {
-    // Get current screen size
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    
-    // Set size on root element
-    document.documentElement.style.setProperty('--rift-viewport-width', `${width}px`);
-    document.documentElement.style.setProperty('--rift-viewport-height', `${height}px`);
-    
-    // Determine size class
-    let sizeClass = 'desktop';
-    if (width <= 768) {
-      sizeClass = 'mobile';
-    } else if (width <= 1200) {
-      sizeClass = 'tablet';
-    }
-    
-    // Update size class on body
-    document.body.dataset.sizeClass = sizeClass;
-    
-    // Notify systems of resize
-    Object.values(this.systems).forEach(system => {
-      if (system.onResize) {
-        system.onResize(width, height, sizeClass);
-      }
-    });
-  }
-}
-```
-
-### Responsive CSS Pattern
-
-```css
-/* Base styles */
-.rift-component {
-  /* Default styles for all sizes */
-}
-
-/* Size-specific styles */
-[data-size-class="mobile"] .rift-component {
-  /* Mobile styles */
-}
-
-[data-size-class="tablet"] .rift-component {
-  /* Tablet styles */
-}
-
-[data-size-class="desktop"] .rift-component {
-  /* Desktop styles */
-}
-```
-
-## Input Handling Patterns
-
-### Input Abstraction
-
-```javascript
-class InputHandler {
-  constructor() {
-    this._setupMouseEvents();
-    this._setupKeyboardEvents();
-    this._setupTouchEvents();
-    
-    this.mousePosition = { x: 0, y: 0 };
-    this.normalizedMousePosition = { x: 0, y: 0 }; // -1 to 1
-    this.keys = new Set();
-  }
-  
-  _
+   * @param {number

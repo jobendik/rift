@@ -15,7 +15,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { NotificationManager } from './NotificationManager.js';
-import { KillFeed } from './KillFeed.js';
+import { EnhancedKillFeed } from './EnhancedKillFeed.js';
 import { EventBanner } from './EventBanner.js';
 import { AchievementDisplay } from './AchievementDisplay.js';
 import { EventManager } from '../../../core/EventManager.js';
@@ -153,8 +153,8 @@ class NotificationSystem extends UIComponent {
         this.notificationManager.init();
         this.addChild(this.notificationManager);
         
-        // Create Kill Feed
-        this.killFeed = new KillFeed({
+        // Create Enhanced Kill Feed with element pooling for better performance
+        this.killFeed = new EnhancedKillFeed({
             container: this.element,
             displayDuration: this.config.killFeedDuration || 5000,
             fadeDuration: this.config.fadeDuration || 500,

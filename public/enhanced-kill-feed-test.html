@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - Enhanced Kill Feed Test</title>
+    <link rel="icon" href="rift_logo.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #00a8ff;
+            --secondary-color: #0097e6;
+            --accent-color: #ff9f43;
+            --dark-bg: #1e272e;
+            --darker-bg: #151c21;
+            --light-text: #f5f6fa;
+            --header-height: 60px;
+            --section-gap: 20px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background-color: var(--darker-bg);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        header h1 {
+            font-size: 1.5rem;
+            margin-left: 10px;
+        }
+        
+        .logo {
+            height: 40px;
+        }
+        
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--section-gap);
+            margin-bottom: var(--section-gap);
+        }
+        
+        .test-container {
+            background-color: var(--darker-bg);
+            border-radius: 5px;
+            padding: 20px;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .test-container h2 {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .performance-label {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            background-color: var(--primary-color);
+            border-radius: 15px;
+        }
+        
+        .controls {
+            background-color: var(--darker-bg);
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: var(--section-gap);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        h3 {
+            grid-column: 1 / -1;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary {
+            background-color: #576574;
+        }
+        
+        button.secondary:hover {
+            background-color: #485460;
+        }
+        
+        button.accent {
+            background-color: var(--accent-color);
+        }
+        
+        button.accent:hover {
+            background-color: #e67e22;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        label {
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+        }
+        
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #576574;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+        }
+        
+        .info-section {
+            background-color: var(--darker-bg);
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: var(--section-gap);
+        }
+        
+        .info-section h2 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .metric-card {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .metric-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        pre {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            overflow: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Kill Feed Styles */
+        .rift-kill-feed {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .rift-kill-message {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            max-width: 100%;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .rift-kill-message--enter {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .rift-kill-message--exit {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        
+        .rift-kill-message--double {
+            background-color: rgba(52, 152, 219, 0.7);
+        }
+        
+        .rift-kill-message--triple {
+            background-color: rgba(46, 204, 113, 0.7);
+        }
+        
+        .rift-kill-message--quad {
+            background-color: rgba(241, 196, 15, 0.7);
+        }
+        
+        .rift-kill-message--monster {
+            background-color: rgba(231, 76, 60, 0.7);
+            animation: pulse 1s infinite alternate;
+        }
+        
+        .rift-kill-message__player {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        
+        .rift-kill-message__killer {
+            color: #2ecc71;
+        }
+        
+        .rift-kill-message__victim {
+            color: #e74c3c;
+        }
+        
+        .rift-kill-message__weapon {
+            margin: 0 8px;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        
+        .rift-kill-message__special {
+            font-size: 0.7rem;
+            color: #f39c12;
+            margin-left: 8px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .rift-kill-message__special--headshot {
+            color: #f1c40f;
+        }
+        
+        .rift-kill-streak {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #f39c12;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .rift-kill-streak--enter {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .rift-kill-streak--exit {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .rift-kill-streak--killing-spree {
+            background-color: rgba(52, 152, 219, 0.7);
+        }
+        
+        .rift-kill-streak--rampage {
+            background-color: rgba(155, 89, 182, 0.7);
+        }
+        
+        .rift-kill-streak--dominating {
+            background-color: rgba(241, 196, 15, 0.7);
+        }
+        
+        .rift-kill-streak--unstoppable {
+            background-color: rgba(231, 76, 60, 0.7);
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 5px rgba(231, 76, 60, 0.7);
+            }
+            to {
+                box-shadow: 0 0 15px rgba(231, 76, 60, 0.9);
+            }
+        }
+        
+        .icon-ar::after { content: "AR"; }
+        .icon-shotgun::after { content: "SG"; }
+        .icon-blaster::after { content: "BL"; }
+        .icon-pistol::after { content: "PS"; }
+        .icon-sniper::after { content: "SR"; }
+        .icon-melee::after { content: "🗡️"; }
+        .icon-grenade::after { content: "💣"; }
+        .icon-explosive::after { content: "💥"; }
+        .icon-headshot::after { content: "🎯"; }
+        .icon-weapon::after { content: "🔫"; }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="rift_logo.png" alt="RIFT Logo" class="logo">
+        <h1>Enhanced Kill Feed Test</h1>
+    </header>
+    
+    <main>
+        <div class="info-section">
+            <h2>About This Test</h2>
+            <p>This page tests and demonstrates the performance improvements in the EnhancedKillFeed component (which uses ElementPool) compared to the original KillFeed component. You can generate various types of kill messages and streaks to see how each implementation handles them.</p>
+            
+            <div class="performance-metrics">
+                <div class="metric-card">
+                    <h3>Original KillFeed - DOM Operations</h3>
+                    <div class="metric-value" id="original-dom-ops">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Enhanced KillFeed - DOM Operations</h3>
+                    <div class="metric-value" id="enhanced-dom-ops">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Original KillFeed - Memory Usage</h3>
+                    <div class="metric-value" id="original-memory">0 MB</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Enhanced KillFeed - Memory Usage</h3>
+                    <div class="metric-value" id="enhanced-memory">0 MB</div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 20px;">Pool Statistics</h3>
+            <pre id="pool-stats">No data available</pre>
+        </div>
+        
+        <div class="controls">
+            <h3>Test Controls</h3>
+            
+            <button id="add-single-kill">Add Single Kill</button>
+            <button id="add-headshot-kill" class="accent">Add Headshot Kill</button>
+            <button id="add-special-kill">Add Special Kill</button>
+            <button id="clear-all" class="secondary">Clear All Messages</button>
+            
+            <div class="control-row">
+                <label for="kill-count">Kills:</label>
+                <input type="number" id="kill-count" min="1" max="20" value="5">
+                <button id="add-multi-kill">Add Multiple Kills</button>
+            </div>
+            
+            <div class="control-row">
+                <label for="streak-count">Streak:</label>
+                <input type="number" id="streak-count" min="3" max="20" value="5">
+                <button id="add-kill-streak">Simulate Kill Streak</button>
+            </div>
+            
+            <div class="control-row">
+                <label for="kill-delay">Delay (ms):</label>
+                <input type="range" id="kill-delay" min="50" max="1000" value="300">
+                <span id="delay-value">300ms</span>
+            </div>
+            
+            <h3>Stress Tests</h3>
+            
+            <button id="rapid-kills-test">Rapid Kills Test (50 kills)</button>
+            <button id="memory-test" class="accent">Memory Usage Test</button>
+            <button id="reset-stats" class="secondary">Reset Statistics</button>
+        </div>
+        
+        <div class="test-panel">
+            <div class="test-container">
+                <h2>
+                    Original KillFeed
+                    <span class="performance-label" id="original-perf">0ms</span>
+                </h2>
+                <div id="original-feed" class="rift-kill-feed"></div>
+            </div>
+            
+            <div class="test-container">
+                <h2>
+                    Enhanced KillFeed
+                    <span class="performance-label" id="enhanced-perf">0ms</span>
+                </h2>
+                <div id="enhanced-feed" class="rift-kill-feed"></div>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module">
+        import { KillFeed } from '../src/components/ui/notifications/KillFeed.js';
+        import { EnhancedKillFeed } from '../src/components/ui/notifications/EnhancedKillFeed.js';
+        
+        // Performance tracking
+        let originalDomOps = 0;
+        let enhancedDomOps = 0;
+        let originalPerf = 0;
+        let enhancedPerf = 0;
+        
+        // Set up feeds
+        const originalFeed = new KillFeed({
+            container: document.getElementById('original-feed'),
+            id: 'original-kill-feed',
+            displayDuration: 5000,
+            maxMessages: 10
+        });
+        originalFeed.init();
+        
+        const enhancedFeed = new EnhancedKillFeed({
+            container: document.getElementById('enhanced-feed'),
+            id: 'enhanced-kill-feed',
+            displayDuration: 5000,
+            maxMessages: 10
+        });
+        enhancedFeed.init();
+        
+        // Helper function to generate random kill data
+        function generateKillData(options = {}) {
+            const killers = ['Player', 'SharpShooter', 'Ghost', 'Maverick', 'Shadow', 'Viper'];
+            const victims = ['Enemy', 'Grunt', 'Scout', 'Heavy', 'Sniper', 'Elite'];
+            const weapons = ['assault_rifle', 'shotgun', 'blaster', 'pistol', 'sniper', 'melee'];
+            const specialTypes = ['REVENGE', 'COLLATERAL', 'THROUGH WALL', 'LAST BULLET', 'LONG SHOT'];
+            
+            return {
+                killer: options.killer || killers[Math.floor(Math.random() * killers.length)],
+                victim: options.victim || victims[Math.floor(Math.random() * victims.length)] + '-' + Math.floor(Math.random() * 100),
+                weapon: options.weapon || weapons[Math.floor(Math.random() * weapons.length)],
+                isHeadshot: options.isHeadshot || false,
+                specialType: options.specialType || null
+            };
+        }
+        
+        // Add a single kill message
+        document.getElementById('add-single-kill').addEventListener('click', () => {
+            const data = generateKillData();
+            
+            // Measure original implementation
+            const originalStart = performance.now();
+            const originalMutations = trackDomOperations(() => {
+                originalFeed.addKillMessage(data);
+            });
+            const originalEnd = performance.now();
+            
+            // Measure enhanced implementation
+            const enhancedStart = performance.now();
+            const enhancedMutations = trackDomOperations(() => {
+                enhancedFeed.addKillMessage(data);
+            });
+            const enhancedEnd = performance.now();
+            
+            // Update stats
+            originalDomOps += originalMutations;
+            enhancedDomOps += enhancedMutations;
+            originalPerf = originalEnd - originalStart;
+            enhancedPerf = enhancedEnd - enhancedStart;
+            
+            updateStats();
+        });
+        
+        // Add a headshot kill
+        document.getElementById('add-headshot-kill').addEventListener('click', () => {
+            const data = generateKillData({ isHeadshot: true });
+            
+            // Measure original implementation
+            const originalStart = performance.now();
+            const originalMutations = trackDomOperations(() => {
+                originalFeed.addKillMessage(data);
+            });
+            const originalEnd = performance.now();
+            
+            // Measure enhanced implementation
+            const enhancedStart = performance.now();
+            const enhancedMutations = trackDomOperations(() => {
+                enhancedFeed.addKillMessage(data);
+            });
+            const enhancedEnd = performance.now();
+            
+            // Update stats
+            originalDomOps += originalMutations;
+            enhancedDomOps += enhancedMutations;
+            originalPerf = originalEnd - originalStart;
+            enhancedPerf = enhancedEnd - enhancedStart;
+            
+            updateStats();
+        });
+        
+        // Add a special kill
+        document.getElementById('add-special-kill').addEventListener('click', () => {
+            const specialTypes = ['REVENGE', 'COLLATERAL', 'THROUGH WALL', 'LAST BULLET', 'LONG SHOT'];
+            const data = generateKillData({ 
+                specialType: specialTypes[Math.floor(Math.random() * specialTypes.length)]
+            });
+            
+            // Measure original implementation
+            const originalStart = performance.now();
+            const originalMutations = trackDomOperations(() => {
+                originalFeed.addKillMessage(data);
+            });
+            const originalEnd = performance.now();
+            
+            // Measure enhanced implementation
+            const enhancedStart = performance.now();
+            const enhancedMutations = trackDomOperations(() => {
+                enhancedFeed.addKillMessage(data);
+            });
+            const enhancedEnd = performance.now();
+            
+            // Update stats
+            originalDomOps += originalMutations;
+            enhancedDomOps += enhancedMutations;
+            originalPerf = originalEnd - originalStart;
+            enhancedPerf = enhancedEnd - enhancedStart;
+            
+            updateStats();
+        });
+        
+        // Clear all messages
+        document.getElementById('clear-all').addEventListener('click', () => {
+            originalFeed.clearAll();
+            enhancedFeed.clearAll();
+        });
+        
+        // Add multiple kills
+        document.getElementById('add-multi-kill').addEventListener('click', () => {
+            const count = parseInt(document.getElementById('kill-count').value);
+            const delay = parseInt(document.getElementById('kill-delay').value);
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const data = generateKillData({
+                        isHeadshot: Math.random() > 0.7
+                    });
+                    
+                    const originalStart = performance.now();
+                    const originalMutations = trackDomOperations(() => {
+                        originalFeed.addKillMessage(data);
+                    });
+                    const originalEnd = performance.now();
+                    
+                    const enhancedStart = performance.now();
+                    const enhancedMutations = trackDomOperations(() => {
+                        enhancedFeed.addKillMessage(data);
+                    });
+                    const enhancedEnd = performance.now();
+                    
+                    originalDomOps += originalMutations;
+                    enhancedDomOps += enhancedMutations;
+                    originalPerf = originalEnd - originalStart;
+                    enhancedPerf = enhancedEnd - enhancedStart;
+                    
+                    updateStats();
+                }, i * delay);
+            }
+        });
+        
+        // Add kill streak
+        document.getElementById('add-kill-streak').addEventListener('click', () => {
+            const count = parseInt(document.getElementById('streak-count').value);
+            const delay = parseInt(document.getElementById('kill-delay').value);
+            
+            const playerName = 'Player' + Math.floor(Math.random() * 100);
+            
+            originalFeed.testKillStreak(count, playerName, delay);
+            enhancedFeed.testKillStreak(count, playerName, delay);
+        });
+        
+        // Update delay value display
+        document.getElementById('kill-delay').addEventListener('input', (e) => {
+            document.getElementById('delay-value').textContent = e.target.value + 'ms';
+        });
+        
+        // Rapid kills test
+        document.getElementById('rapid-kills-test').addEventListener('click', () => {
+            const count = 50;
+            const delay = 50;
+            
+            // Reset stats for clear test
+            originalDomOps = 0;
+            enhancedDomOps = 0;
+            
+            document.getElementById('original-dom-ops').textContent = "0";
+            document.getElementById('enhanced-dom-ops').textContent = "0";
+            
+            // Clear existing messages
+            originalFeed.clearAll();
+            enhancedFeed.clearAll();
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const data = generateKillData({
+                        isHeadshot: Math.random() > 0.7,
+                        specialType: Math.random() > 0.8 ? 'COLLATERAL' : null
+                    });
+                    
+                    const originalStart = performance.now();
+                    const originalMutations = trackDomOperations(() => {
+                        originalFeed.addKillMessage(data);
+                    });
+                    const originalEnd = performance.now();
+                    
+                    const enhancedStart = performance.now();
+                    const enhancedMutations = trackDomOperations(() => {
+                        enhancedFeed.addKillMessage(data);
+                    });
+                    const enhancedEnd = performance.now();
+                    
+                    originalDomOps += originalMutations;
+                    enhancedDomOps += enhancedMutations;
+                    originalPerf += (originalEnd - originalStart);
+                    enhancedPerf += (enhancedEnd - enhancedStart);
+                    
+                    // Only update stats every 5 messages to reduce overhead
+                    if (i % 5 === 0 || i === count - 1) {
+                        updateStats();
+                    }
+                }, i * delay);
+            }
+        });
+        
+        // Memory usage test
+        document.getElementById('memory-test').addEventListener('click', () => {
+            // Create and destroy many messages in a row
+            const cycles = 5;
+            const messagesPerCycle = 20;
+            
+            // Clear existing messages
+            originalFeed.clearAll();
+            enhancedFeed.clearAll();
+            
+            for (let cycle = 0; cycle < cycles; cycle++) {
+                setTimeout(() => {
+                    console.log(`Memory test cycle ${cycle + 1}/${cycles}`);
+                    
+                    // Add a batch of messages
+                    for (let i = 0; i < messagesPerCycle; i++) {
+                        setTimeout(() => {
+                            const data = generateKillData({
+                                isHeadshot: Math.random() > 0.7
+                            });
+                            
+                            originalFeed.addKillMessage(data);
+                            enhancedFeed.addKillMessage(data);
+                            
+                            // Update memory stats at the end
+                            if (cycle === cycles - 1 && i === messagesPerCycle - 1) {
+                                setTimeout(() => {
+                                    updateMemoryStats();
+                                }, 500);
+                            }
+                        }, i * 100);
+                    }
+                    
+                    // Clear after each cycle
+                    setTimeout(() => {
+                        originalFeed.clearAll();
+                        enhancedFeed.clearAll();
+                    }, messagesPerCycle * 100 + 2000);
+                    
+                }, cycle * (messagesPerCycle * 100 + 3000));
+            }
+        });
+        
+        // Reset statistics
+        document.getElementById('reset-stats').addEventListener('click', () => {
+            originalDomOps = 0;
+            enhancedDomOps = 0;
+            originalPerf = 0;
+            enhancedPerf = 0;
+            
+            updateStats();
+            updateMemoryStats();
+            
+            // Clear any visible pool stats
+            document.getElementById('pool-stats').textContent = "No data available";
+        });
+        
+        // Track DOM operations
+        function trackDomOperations(fn) {
+            let mutationCount = 0;
+            
+            // Create a mutation observer to count DOM changes
+            const observer = new MutationObserver((mutations) => {
+                mutationCount += mutations.length;
+            });
+            
+            // Start observing the entire document
+            observer.observe(document.body, {
+                childList: true,
+                attributes: true,
+                characterData: true,
+                subtree: true
+            });
+            
+            // Execute the function
+            fn();
+            
+            // Stop observing
+            observer.disconnect();
+            
+            return mutationCount;
+        }
+        
+        // Update stats display
+        function updateStats() {
+            document.getElementById('original-dom-ops').textContent = originalDomOps;
+            document.getElementById('enhanced-dom-ops').textContent = enhancedDomOps;
+            document.getElementById('original-perf').textContent = originalPerf.toFixed(2) + 'ms';
+            document.getElementById('enhanced-perf').textContent = enhancedPerf.toFixed(2) + 'ms';
+            
+            // Update pool stats if available
+            if (enhancedFeed && enhancedFeed.messagePool && enhancedFeed.messagePool.getStats) {
+                const messagePoolStats = enhancedFeed.messagePool.getStats();
+                const streakPoolStats = enhancedFeed.streakPool.getStats();
+                
+                const statsText = `Message Pool Stats:
+${JSON.stringify(messagePoolStats, null, 2)}
+
+Streak Pool Stats:
+${JSON.stringify(streakPoolStats, null, 2)}`;
+                
+                document.getElementById('pool-stats').textContent = statsText;
+            }
+        }
+        
+        // Update memory stats
+        function updateMemoryStats() {
+            if (window.performance && window.performance.memory) {
+                const memory = window.performance.memory;
+                const originalMemoryElement = document.getElementById('original-memory');
+                const enhancedMemoryElement = document.getElementById('enhanced-memory');
+                
+                // This is a rough approximation, not accurate
+                setTimeout(() => {
+                    originalMemoryElement.textContent = (memory.usedJSHeapSize / (1024 * 1024)).toFixed(2) + ' MB';
+                    
+                    // Force garbage collection if possible (not reliable, just for demonstration)
+                    if (window.gc) window.gc();
+                    
+                    setTimeout(() => {
+                        enhancedMemoryElement.textContent = (memory.usedJSHeapSize / (1024 * 1024)).toFixed(2) + ' MB';
+                    }, 500);
+                }, 500);
+            } else {
+                document.getElementById('original-memory').textContent = 'Not available';
+                document.getElementById('enhanced-memory').textContent = 'Not available';
+            }
+        }
+        
+        // Initial update
+        updateStats();
+        updateMemoryStats();
+    </script>

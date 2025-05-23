@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Hit Indicator Test</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components/combat.css">
+    <link rel="stylesheet" href="/styles/components/combat/_enhanced-hit-indicator.css">
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e63946;
+            margin-bottom: 30px;
+        }
+        
+        .button-panel {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #222;
+            color: white;
+            border: 1px solid #e63946;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #444;
+        }
+        
+        button:active {
+            background-color: #e63946;
+        }
+        
+        .test-area {
+            position: relative;
+            height: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 4px;
+            width: 220px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats div {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stats label {
+            display: inline-block;
+            width: 140px;
+        }
+        
+        .stats span {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Hit Indicator Test</h1>
+        
+        <div class="button-panel">
+            <button id="hit-marker">Hit Marker</button>
+            <button id="critical-hit">Critical Hit</button>
+            <button id="headshot">Headshot</button>
+            <button id="kill">Kill Confirmation</button>
+            <button id="multi-kill">Multi-Kill</button>
+            <button id="kill-sequence">Kill Sequence</button>
+            <button id="damage-front">Damage Front</button>
+            <button id="damage-right">Damage Right</button>
+            <button id="damage-back">Damage Back</button>
+            <button id="damage-left">Damage Left</button>
+            <button id="damage-random">Random Damage</button>
+            <button id="stress-test">Stress Test</button>
+            <button id="clear">Clear All</button>
+        </div>
+        
+        <div id="test-area" class="test-area">
+            <!-- Hit indicators will be added here -->
+        </div>
+        
+        <div class="stats" id="stats">
+            <div><label>Active Hit Markers:</label> <span id="active-hit-markers">0</span></div>
+            <div><label>Active Direction Indicators:</label> <span id="active-direction-indicators">0</span></div>
+            <div><label>Active Kill Confirmations:</label> <span id="active-kill-confirmations">0</span></div>
+            <div><label>Total Created:</label> <span id="total-created">0</span></div>
+            <div><label>Total Pooled:</label> <span id="total-pooled">0</span></div>
+            <div><label>Elements in Use:</label> <span id="elements-in-use">0</span></div>
+        </div>
+        
+        <div class="footer">
+            Test page for the EnhancedHitIndicator component using ElementPool
+        </div>
+    </div>
+
+    <script type="module">
+        // Create a mock EnhancedHitIndicator for testing purposes
+        // This avoids CORS issues when trying to import from src directories
+        class ElementPool {
+            constructor(options = {}) {
+                this._tag = options.tag || 'div';
+                this._className = options.className || '';
+                this._parent = options.parent || document.body;
+                this._initialSize = options.initialSize || 0;
+                this._onCreateElement = options.onCreateElement || null;
+                this._onGetElement = options.onGetElement || null;
+                this._onReleaseElement = options.onReleaseElement || null;
+                this._blockSize = options.blockSize || 10;
+                
+                this._available = [];
+                this._created = 0;
+                
+                // Pre-create elements if initialSize > 0
+                if (this._initialSize > 0) {
+                    this._createElementBlock(this._initialSize);
+                }
+            }
+            
+            get() {
+                if (this._available.length === 0) {
+                    this._createElementBlock(this._blockSize);
+                }
+                
+                const element = this._available.pop();
+                
+                if (this._onGetElement) {
+                    this._onGetElement(element);
+                }
+                
+                return element;
+            }
+            
+            release(element) {
+                if (element) {
+                    if (this._onReleaseElement) {
+                        this._onReleaseElement(element);
+                    }
+                    
+                    // Clear element content and reset state
+                    element.className = this._className;
+                    element.style.cssText = '';
+                    element.innerHTML = '';
+                    
+                    // Return to pool
+                    this._available.push(element);
+                }
+            }
+            
+            _createElementBlock(count) {
+                for (let i = 0; i < count; i++) {
+                    const element = document.createElement(this._tag);
+                    
+                    if (this._className) {
+                        element.className = this._className;
+                    }
+                    
+                    if (this._onCreateElement) {
+                        this._onCreateElement(element);
+                    }
+                    
+                    this._available.push(element);
+                    this._created++;
+                }
+            }
+        }
+        
+        class EnhancedHitIndicator {
+            constructor(options = {}) {
+                this.container = options.container || document.body;
+                this.hitDuration = options.hitDuration || 500;
+                this.directionDuration = options.directionDuration || 800;
+                this.killDuration = options.killDuration || 1000;
+                this.maxHitMarkers = options.maxHitMarkers || 10;
+                this.maxDirectionIndicators = options.maxDirectionIndicators || 5;
+                
+                this.activeHitMarkers = [];
+                this.activeDirectionIndicators = [];
+                this.activeKillConfirmations = [];
+                
+                // Initialize element pools
+                this.hitMarkerPool = new ElementPool({
+                    tag: 'div',
+                    className: 'rift-hit-marker',
+                    parent: this.container,
+                    initialSize: 5,
+                    blockSize: 5,
+                    onCreateElement: (el) => {
+                        this.container.appendChild(el);
+                        el.style.display = 'none';
+                    }
+                });
+                
+                this.directionPool = new ElementPool({
+                    tag: 'div',
+                    className: 'rift-direction-indicator',
+                    parent: this.container,
+                    initialSize: 4,
+                    blockSize: 2,
+                    onCreateElement: (el) => {
+                        this.container.appendChild(el);
+                        el.style.display = 'none';
+                    }
+                });
+                
+                this.killConfirmationPool = new ElementPool({
+                    tag: 'div',
+                    className: 'rift-kill-confirmation',
+                    parent: this.container,
+                    initialSize: 2,
+                    blockSize: 2,
+                    onCreateElement: (el) => {
+                        this.container.appendChild(el);
+                        el.style.display = 'none';
+                    }
+                });
+            }
+            
+            update(deltaTime) {
+                // Update active hit markers
+                for (let i = this.activeHitMarkers.length - 1; i >= 0; i--) {
+                    const marker = this.activeHitMarkers[i];
+                    marker.timeLeft -= deltaTime;
+                    
+                    if (marker.timeLeft <= 0) {
+                        this.hitMarkerPool.release(marker.element);
+                        this.activeHitMarkers.splice(i, 1);
+                    } else {
+                        const opacity = Math.min(1, marker.timeLeft / (marker.duration * 0.5));
+                        marker.element.style.opacity = opacity;
+                    }
+                }
+                
+                // Update active direction indicators
+                for (let i = this.activeDirectionIndicators.length - 1; i >= 0; i--) {
+                    const indicator = this.activeDirectionIndicators[i];
+                    indicator.timeLeft -= deltaTime;
+                    
+                    if (indicator.timeLeft <= 0) {
+                        this.directionPool.release(indicator.element);
+                        this.activeDirectionIndicators.splice(i, 1);
+                    } else {
+                        const opacity = Math.min(1, indicator.timeLeft / (indicator.duration * 0.5));
+                        indicator.element.style.opacity = opacity;
+                    }
+                }
+                
+                // Update active kill confirmations
+                for (let i = this.activeKillConfirmations.length - 1; i >= 0; i--) {
+                    const confirmation = this.activeKillConfirmations[i];
+                    confirmation.timeLeft -= deltaTime;
+                    
+                    if (confirmation.timeLeft <= 0) {
+                        this.killConfirmationPool.release(confirmation.element);
+                        this.activeKillConfirmations.splice(i, 1);
+                    } else {
+                        const progress = 1 - (confirmation.timeLeft / confirmation.duration);
+                        confirmation.element.style.opacity = progress < 0.5 ? progress * 2 : 2 - progress * 2;
+                    }
+                }
+            }
+            
+            testHitMarker(type = 'normal') {
+                const element = this.hitMarkerPool.get();
+                
+                element.className = `rift-hit-marker rift-hit-marker--${type}`;
+                element.style.display = 'block';
+                element.style.opacity = '1';
+                element.style.position = 'absolute';
+                element.style.width = '40px';
+                element.style.height = '40px';
+                element.style.left = 'calc(50% - 20px)';
+                element.style.top = 'calc(50% - 20px)';
+                element.style.pointerEvents = 'none';
+                
+                // Add visual representation for test page
+                element.innerHTML = `<div style="width:100%; height:100%; border:2px solid ${type === 'critical' ? '#ff0000' : type === 'headshot' ? '#ffff00' : '#ffffff'}; border-radius:50%; display:flex; align-items:center; justify-content:center;"><span style="color:${type === 'critical' ? '#ff0000' : type === 'headshot' ? '#ffff00' : '#ffffff'}; font-size:0.8em;">${type}</span></div>`;
+                
+                this.activeHitMarkers.push({
+                    element,
+                    timeLeft: this.hitDuration,
+                    duration: this.hitDuration,
+                    type
+                });
+                
+                // Limit the number of hit markers
+                if (this.activeHitMarkers.length > this.maxHitMarkers) {
+                    const oldestMarker = this.activeHitMarkers.shift();
+                    this.hitMarkerPool.release(oldestMarker.element);
+                }
+            }
+            
+            testDirectionIndicator(direction, intensity = 1.0) {
+                const element = this.directionPool.get();
+                
+                element.className = `rift-direction-indicator rift-direction-indicator--${direction}`;
+                element.style.display = 'block';
+                element.style.opacity = '1';
+                element.style.position = 'absolute';
+                element.style.width = '100%';
+                element.style.height = '100%';
+                element.style.pointerEvents = 'none';
+                
+                // Calculate position and size based on direction
+                let positionStyle = '';
+                let borderStyle = '';
+                
+                switch(direction) {
+                    case 'top':
+                        positionStyle = 'top: 0; left: 0; right: 0; height: 80px;';
+                        borderStyle = 'border-bottom: 3px solid rgba(255, 0, 0, ' + (0.5 + intensity * 0.5) + ');';
+                        break;
+                    case 'right':
+                        positionStyle = 'top: 0; bottom: 0; right: 0; width: 80px;';
+                        borderStyle = 'border-left: 3px solid rgba(255, 0, 0, ' + (0.5 + intensity * 0.5) + ');';
+                        break;
+                    case 'bottom':
+                        positionStyle = 'bottom: 0; left: 0; right: 0; height: 80px;';
+                        borderStyle = 'border-top: 3px solid rgba(255, 0, 0, ' + (0.5 + intensity * 0.5) + ');';
+                        break;
+                    case 'left':
+                        positionStyle = 'top: 0; bottom: 0; left: 0; width: 80px;';
+                        borderStyle = 'border-right: 3px solid rgba(255, 0, 0, ' + (0.5 + intensity * 0.5) + ');';
+                        break;
+                }
+                
+                element.style.cssText += positionStyle;
+                
+                // Add visual representation for test page
+                element.innerHTML = `<div style="width:100%; height:100%; ${borderStyle} display:flex; align-items:center; justify-content:center; background-color: rgba(255, 0, 0, ${0.1 * intensity});"><span style="color:#ffffff; opacity:0.7;">${direction}</span></div>`;
+                
+                this.activeDirectionIndicators.push({
+                    element,
+                    timeLeft: this.directionDuration,
+                    duration: this.directionDuration,
+                    direction,
+                    intensity
+                });
+                
+                // Limit the number of direction indicators
+                if (this.activeDirectionIndicators.length > this.maxDirectionIndicators) {
+                    const oldestIndicator = this.activeDirectionIndicators.shift();
+                    this.directionPool.release(oldestIndicator.element);
+                }
+            }
+            
+            testKillConfirmation(headshot = false) {
+                const element = this.killConfirmationPool.get();
+                
+                element.className = `rift-kill-confirmation ${headshot ? 'rift-kill-confirmation--headshot' : ''}`;
+                element.style.display = 'block';
+                element.style.opacity = '0';
+                element.style.position = 'absolute';
+                element.style.width = '120px';
+                element.style.height = '40px';
+                element.style.left = 'calc(50% - 60px)';
+                element.style.top = 'calc(50% - 20px)';
+                element.style.pointerEvents = 'none';
+                element.style.fontWeight = 'bold';
+                element.style.fontSize = '18px';
+                
+                // Add visual representation for test page
+                element.innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:${headshot ? '#ff9900' : '#ff3333'}; text-shadow: 0 0 5px rgba(0,0,0,0.7);"><span>${headshot ? 'HEADSHOT KILL' : 'KILL'}</span></div>`;
+                
+                this.activeKillConfirmations.push({
+                    element,
+                    timeLeft: this.killDuration,
+                    duration: this.killDuration,
+                    headshot
+                });
+            }
+            
+            testMultiKill(killCount) {
+                const element = this.killConfirmationPool.get();
+                
+                element.className = `rift-kill-confirmation rift-kill-confirmation--multi`;
+                element.style.display = 'block';
+                element.style.opacity = '0';
+                element.style.position = 'absolute';
+                element.style.width = '180px';
+                element.style.height = '60px';
+                element.style.left = 'calc(50% - 90px)';
+                element.style.top = 'calc(50% - 30px)';
+                element.style.pointerEvents = 'none';
+                element.style.fontWeight = 'bold';
+                element.style.fontSize = '24px';
+                
+                // Determine multi-kill type
+                let multiKillText = 'DOUBLE KILL';
+                let color = '#ff5e3a';
+                
+                if (killCount >= 5) {
+                    multiKillText = 'MEGA KILL';
+                    color = '#ff0000';
+                } else if (killCount >= 4) {
+                    multiKillText = 'ULTRA KILL';
+                    color = '#ff2a2a';
+                } else if (killCount >= 3) {
+                    multiKillText = 'TRIPLE KILL';
+                    color = '#ff3a2a';
+                }
+                
+                // Add visual representation for test page
+                element.innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:${color}; text-shadow: 0 0 8px rgba(0,0,0,0.8);"><span>${multiKillText}</span></div>`;
+                
+                this.activeKillConfirmations.push({
+                    element,
+                    timeLeft: this.killDuration * 1.5,
+                    duration: this.killDuration * 1.5
+                });
+            }
+            
+            testKillSequence(killCount, interval) {
+                let killed = 0;
+                const sequence = () => {
+                    if (killed < killCount) {
+                        this.testKillConfirmation(Math.random() > 0.7);
+                        killed++;
+                        setTimeout(sequence, interval);
+                    } else {
+                        this.testMultiKill(killCount);
+                    }
+                };
+                
+                sequence();
+            }
+            
+            clearAllIndicators() {
+                // Clear hit markers
+                for (const marker of this.activeHitMarkers) {
+                    this.hitMarkerPool.release(marker.element);
+                }
+                this.activeHitMarkers = [];
+                
+                // Clear direction indicators
+                for (const indicator of this.activeDirectionIndicators) {
+                    this.directionPool.release(indicator.element);
+                }
+                this.activeDirectionIndicators = [];
+                
+                // Clear kill confirmations
+                for (const confirmation of this.activeKillConfirmations) {
+                    this.killConfirmationPool.release(confirmation.element);
+                }
+                this.activeKillConfirmations = [];
+            }
+        }
+        
+        // Initialize the enhanced hit indicator
+        const hitIndicator = new EnhancedHitIndicator({
+            container: document.getElementById('test-area'),
+            hitDuration: 500,
+            directionDuration: 800,
+            killDuration: 1000,
+            maxHitMarkers: 15,
+            maxDirectionIndicators: 10
+        });
+        
+        // Stats elements
+        const activeHitMarkersEl = document.getElementById('active-hit-markers');
+        const activeDirectionIndicatorsEl = document.getElementById('active-direction-indicators');
+        const activeKillConfirmationsEl = document.getElementById('active-kill-confirmations');
+        const totalCreatedEl = document.getElementById('total-created');
+        const totalPooledEl = document.getElementById('total-pooled');
+        const elementsInUseEl = document.getElementById('elements-in-use');
+        
+        // Set up button event listeners
+        document.getElementById('hit-marker').addEventListener('click', () => {
+            hitIndicator.testHitMarker('normal');
+            updateStats();
+        });
+        
+        document.getElementById('critical-hit').addEventListener('click', () => {
+            hitIndicator.testHitMarker('critical');
+            updateStats();
+        });
+        
+        document.getElementById('headshot').addEventListener('click', () => {
+            hitIndicator.testHitMarker('headshot');
+            updateStats();
+        });
+        
+        document.getElementById('kill').addEventListener('click', () => {
+            hitIndicator.testKillConfirmation(Math.random() > 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('multi-kill').addEventListener('click', () => {
+            const killCount = Math.floor(Math.random() * 4) + 2; // 2-5 kills
+            hitIndicator.testMultiKill(killCount);
+            updateStats();
+        });
+        
+        document.getElementById('kill-sequence').addEventListener('click', () => {
+            const killCount = Math.floor(Math.random() * 4) + 2; // 2-5 kills
+            const interval = Math.floor(Math.random() * 300) + 300; // 300-600ms
+            hitIndicator.testKillSequence(killCount, interval);
+            updateStats();
+        });
+        
+        document.getElementById('damage-front').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('top', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-right').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('right', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-back').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('bottom', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-left').addEventListener('click', () => {
+            hitIndicator.testDirectionIndicator('left', Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('damage-random').addEventListener('click', () => {
+            const directions = ['top', 'right', 'bottom', 'left'];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            hitIndicator.testDirectionIndicator(randomDirection, Math.random() * 0.5 + 0.5);
+            updateStats();
+        });
+        
+        document.getElementById('stress-test').addEventListener('click', () => {
+            // Run a stress test - generate lots of indicators in quick succession
+            const count = 100;
+            const interval = 50; // ms
+            let i = 0;
+            
+            const runTest = () => {
+                if (i >= count) return;
+                
+                const rand = Math.random();
+                
+                if (rand < 0.4) {
+                    // Hit marker
+                    const type = Math.random() > 0.7 ? 'critical' : Math.random() > 0.5 ? 'headshot' : 'normal';
+                    hitIndicator.testHitMarker(type);
+                } else if (rand < 0.8) {
+                    // Direction indicator
+                    const directions = ['top', 'right', 'bottom', 'left'];
+                    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                    hitIndicator.testDirectionIndicator(randomDirection, Math.random() * 0.5 + 0.5);
+                } else {
+                    // Kill confirmation
+                    hitIndicator.testKillConfirmation(Math.random() > 0.5);
+                }
+                
+                updateStats();
+                i++;
+                setTimeout(runTest, interval);
+            };
+            
+            runTest();
+        });
+        
+        document.getElementById('clear').addEventListener('click', () => {
+            hitIndicator.clearAllIndicators();
+            updateStats();
+        });
+        
+        // Set up animation loop
+        let lastTime = 0;
+        function animate(time) {
+            if (lastTime === 0) lastTime = time;
+            const delta = time - lastTime;
+            lastTime = time;
+            
+            hitIndicator.update(delta);
+            updateStats();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation loop
+        requestAnimationFrame(animate);
+        
+        // Update stats display
+        function updateStats() {
+            if (!hitIndicator) return;
+            
+            activeHitMarkersEl.textContent = hitIndicator.activeHitMarkers.length;
+            activeDirectionIndicatorsEl.textContent = hitIndicator.activeDirectionIndicators.length;
+            activeKillConfirmationsEl.textContent = hitIndicator.activeKillConfirmations.length;
+            
+            // Get pool stats if available
+            if (hitIndicator.hitMarkerPool) {
+                totalCreatedEl.textContent = 
+                    (hitIndicator.hitMarkerPool._created || 0) + 
+                    (hitIndicator.directionPool._created || 0) + 
+                    (hitIndicator.killConfirmationPool._created || 0);
+                    
+                totalPooledEl.textContent = 
+                    (hitIndicator.hitMarkerPool._available ? hitIndicator.hitMarkerPool._available.length : 0) + 
+                    (hitIndicator.directionPool._available ? hitIndicator.directionPool._available.length : 0) + 
+                    (hitIndicator.killConfirmationPool._available ? hitIndicator.killConfirmationPool._available.length : 0);
+                    
+                elementsInUseEl.textContent = 
+                    hitIndicator.activeHitMarkers.length + 
+                    hitIndicator.activeDirectionIndicators.length + 
+                    hitIndicator.activeKillConfirmations.length;
+            }
+        }
+    </script>
+</body>
+</html>

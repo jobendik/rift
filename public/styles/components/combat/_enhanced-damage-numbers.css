@@ -1,0 +1,132 @@
+/* 
+ * Enhanced Damage Numbers
+ * Styles for the optimized damage numbers component that uses element pooling
+ */
+
+.rift-damage-numbers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--rift-z-index-damage-numbers, 150);
+}
+
+.rift-element-pool-block {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.rift-damage-number {
+  position: absolute;
+  color: var(--rift-color-damage-normal, #ffffff);
+  font-family: var(--rift-font-family);
+  font-size: var(--rift-font-size-md);
+  font-weight: bold;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8), 0 0 2px rgba(0, 0, 0, 1);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+/* Active damage number animation */
+.rift-damage-number--active {
+  animation: damage-number-rise var(--rift-damage-number-duration, 1500ms) forwards;
+}
+
+/* Normal damage */
+.rift-damage-number--normal {
+  color: var(--rift-color-damage-normal, #ffffff);
+}
+
+/* Critical damage */
+.rift-damage-number--critical {
+  color: var(--rift-color-damage-critical, #ff7e00);
+  font-size: calc(var(--rift-font-size-md) * 1.2);
+  text-shadow: 0 0 4px rgba(255, 126, 0, 0.4), 0 0 3px rgba(0, 0, 0, 1);
+}
+
+/* Headshot damage */
+.rift-damage-number--headshot {
+  color: var(--rift-color-damage-headshot, #ff2d2d);
+  font-size: calc(var(--rift-font-size-md) * 1.2);
+  text-shadow: 0 0 4px rgba(255, 45, 45, 0.4), 0 0 3px rgba(0, 0, 0, 1);
+}
+
+/* Kill confirmation */
+.rift-damage-number--kill {
+  color: var(--rift-color-damage-kill, #9eff2d);
+  font-size: calc(var(--rift-font-size-md) * 1.3);
+  text-shadow: 0 0 6px rgba(158, 255, 45, 0.5), 0 0 3px rgba(0, 0, 0, 1);
+}
+
+/* Large damage */
+.rift-damage-number--large {
+  font-size: calc(var(--rift-font-size-md) * 1.5);
+}
+
+/* Stacked damage */
+.rift-damage-number__stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rift-damage-number__stacked > div {
+  line-height: 1.2;
+}
+
+.rift-damage-number__total {
+  margin-top: 2px;
+  position: relative;
+  font-size: 1.2em;
+}
+
+.rift-damage-number__total::before,
+.rift-damage-number__total::after {
+  content: "";
+  position: absolute;
+  top: 55%;
+  width: 20px;
+  height: 1px;
+  background-color: currentColor;
+}
+
+.rift-damage-number__total::before {
+  right: calc(100% + 4px);
+}
+
+.rift-damage-number__total::after {
+  left: calc(100% + 4px);
+}
+
+/* Animations */
+@keyframes damage-number-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% - var(--rift-damage-number-rise, 30px) * 0.7)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - var(--rift-damage-number-rise, 30px))) scale(0.9);
+  }
+}

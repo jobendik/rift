@@ -2,11 +2,13 @@
  * Enhanced Damage Indicator Styles
  * 
  * Provides styling for the enhanced directional damage indicators
+ * Uses the same base class names as the original damage indicator for compatibility
+ * but with enhanced visual effects and performance optimizations.
  */
 
-.rift-enhanced-damage-indicators {
-    /* Full-screen positioning */
-    position: fixed;
+/* Container styling */
+.rift-damage-indicator {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -16,7 +18,17 @@
     overflow: hidden;
 }
 
-.rift-enhanced-damage-indicator {
+.rift-damage-indicator__container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Indicator base styling */
+.rift-damage-indicator__indicator {
     /* Base properties */
     --indicator-intensity: 1;
     --indicator-distance: 1;
@@ -28,85 +40,142 @@
     height: 100%;
     transform-origin: center center;
     opacity: 0;
-    transition: opacity 0.1s var(--rift-easing-out);
+    transition: opacity 0.1s var(--rift-easing-out, ease-out);
     pointer-events: none;
 }
 
 /* Indicator visibility classes */
-.rift-enhanced-damage-indicator--visible {
+.rift-damage-indicator__indicator--active {
     opacity: calc(var(--indicator-intensity) * var(--indicator-distance) * var(--indicator-base-opacity, 0.85));
 }
 
-.rift-enhanced-damage-indicator--fadeout {
-    opacity: 0;
-    transition: opacity 0.3s var(--rift-easing-out);
+/* Multi-layer indicator elements */
+.rift-damage-indicator__outer {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 60%;
+    height: 80%;
+    background-color: var(--rift-color-damage, rgba(255, 0, 0, 0.4));
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    transform: translateX(-50%) translateY(-100%);
+    transform-origin: bottom center;
+    filter: blur(2px);
 }
 
-/* Common indicator appearance */
-.rift-enhanced-damage-indicator::before {
-    content: '';
+.rift-damage-indicator__inner {
     position: absolute;
     top: 0;
     left: 50%;
     width: 40%;
-    height: 50%;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
+    height: 70%;
+    background-color: var(--rift-color-damage, rgba(255, 0, 0, 0.6));
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
     transform: translateX(-50%) translateY(-100%);
     transform-origin: bottom center;
-}
-
-/* Damage type specific indicators */
-.rift-damage-indicator--bullet::before {
-    background-color: var(--rift-damage-indicator-bullet-color);
-    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-    height: 50vh;
-}
-
-.rift-damage-indicator--explosive::before {
-    background-color: var(--rift-damage-indicator-explosive-color);
-    clip-path: polygon(50% 0%, 85% 50%, 100% 100%, 0% 100%, 15% 50%);
-    height: 60vh;
-}
-
-.rift-damage-indicator--melee::before {
-    background-color: var(--rift-damage-indicator-melee-color);
-    clip-path: polygon(50% 0%, 70% 30%, 100% 30%, 80% 60%, 90% 100%, 50% 80%, 10% 100%, 20% 60%, 0% 30%, 30% 30%);
-    height: 45vh;
-}
-
-.rift-damage-indicator--fire::before {
-    background-color: var(--rift-damage-indicator-fire-color);
-    clip-path: polygon(50% 0%, 65% 15%, 85% 15%, 70% 35%, 80% 60%, 50% 45%, 20% 60%, 30% 35%, 15% 15%, 35% 15%);
-    height: 55vh;
-    animation: rift-fire-flicker 0.6s ease-in-out infinite alternate;
-}
-
-.rift-damage-indicator--energy::before {
-    background-color: var(--rift-damage-indicator-energy-color);
-    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
-    height: 50vh;
-    animation: rift-energy-pulse 1s ease-in-out infinite;
-}
-
-/* Distance representations */
-.rift-enhanced-damage-indicator[data-distance="close"]::before {
-    opacity: 1.2;
-    filter: blur(0px);
-}
-
-.rift-enhanced-damage-indicator[data-distance="medium"]::before {
-    opacity: 1;
     filter: blur(1px);
 }
 
-.rift-enhanced-damage-indicator[data-distance="far"]::before {
-    opacity: 0.8;
-    filter: blur(2px);
+.rift-damage-indicator__pulse {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 20%;
+    height: 60%;
+    background-color: var(--rift-color-damage, rgba(255, 0, 0, 0.8));
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    transform: translateX(-50%) translateY(-100%);
+    transform-origin: bottom center;
+    filter: blur(0px);
 }
 
-/* Animations for damage types */
+/* Intensity variations */
+.rift-damage-indicator__indicator--low .rift-damage-indicator__outer {
+    opacity: 0.3;
+    background-color: var(--rift-color-damage-low, rgba(255, 100, 100, 0.3));
+    height: 60%;
+}
+
+.rift-damage-indicator__indicator--low .rift-damage-indicator__inner {
+    opacity: 0.4;
+    background-color: var(--rift-color-damage-low, rgba(255, 100, 100, 0.5));
+    height: 50%;
+}
+
+.rift-damage-indicator__indicator--low .rift-damage-indicator__pulse {
+    opacity: 0.5;
+    background-color: var(--rift-color-damage-low, rgba(255, 100, 100, 0.7));
+    height: 40%;
+}
+
+.rift-damage-indicator__indicator--medium .rift-damage-indicator__outer {
+    opacity: 0.5;
+    background-color: var(--rift-color-damage-medium, rgba(255, 50, 50, 0.4));
+    height: 70%;
+}
+
+.rift-damage-indicator__indicator--medium .rift-damage-indicator__inner {
+    opacity: 0.6;
+    background-color: var(--rift-color-damage-medium, rgba(255, 50, 50, 0.6));
+    height: 60%;
+}
+
+.rift-damage-indicator__indicator--medium .rift-damage-indicator__pulse {
+    opacity: 0.7;
+    background-color: var(--rift-color-damage-medium, rgba(255, 50, 50, 0.8));
+    height: 50%;
+}
+
+.rift-damage-indicator__indicator--high .rift-damage-indicator__outer {
+    opacity: 0.7;
+    background-color: var(--rift-color-damage-high, rgba(255, 0, 0, 0.5));
+    height: 80%;
+}
+
+.rift-damage-indicator__indicator--high .rift-damage-indicator__inner {
+    opacity: 0.8;
+    background-color: var(--rift-color-damage-high, rgba(255, 0, 0, 0.7));
+    height: 70%;
+}
+
+.rift-damage-indicator__indicator--high .rift-damage-indicator__pulse {
+    opacity: 0.9;
+    background-color: var(--rift-color-damage-high, rgba(255, 0, 0, 0.9));
+    height: 60%;
+    animation: rift-damage-pulse 0.5s ease-in-out infinite alternate;
+}
+
+/* Element Pooling Block styling */
+.rift-element-pool-block {
+    display: none; /* Hide the block containers visually */
+}
+
+/* Damage type variations (for future implementation) */
+.rift-damage-indicator__indicator[data-damage-type="bullet"] .rift-damage-indicator__pulse {
+    background-color: var(--rift-color-damage-bullet, rgba(255, 0, 0, 0.9));
+}
+
+.rift-damage-indicator__indicator[data-damage-type="explosive"] .rift-damage-indicator__pulse {
+    background-color: var(--rift-color-damage-explosive, rgba(255, 120, 0, 0.9));
+    width: 25%;
+}
+
+.rift-damage-indicator__indicator[data-damage-type="fire"] .rift-damage-indicator__pulse {
+    background-color: var(--rift-color-damage-fire, rgba(255, 80, 0, 0.9));
+    animation: rift-fire-flicker 0.6s ease-in-out infinite alternate;
+}
+
+.rift-damage-indicator__indicator[data-damage-type="energy"] .rift-damage-indicator__pulse {
+    background-color: var(--rift-color-damage-energy, rgba(0, 120, 255, 0.9));
+    animation: rift-energy-pulse 1s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes rift-damage-pulse {
+    0% { opacity: 0.7; transform: translateX(-50%) translateY(-100%) scaleY(0.95); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(-100%) scaleY(1.05); }
+}
+
 @keyframes rift-fire-flicker {
     0% { opacity: 0.8; transform: translateX(-50%) translateY(-100%) scaleY(0.95); }
     100% { opacity: 1; transform: translateX(-50%) translateY(-100%) scaleY(1.05); }
@@ -116,15 +185,4 @@
     0% { opacity: 0.8; transform: translateX(-50%) translateY(-100%) scale(0.95); }
     50% { opacity: 1; transform: translateX(-50%) translateY(-100%) scale(1.05); }
     100% { opacity: 0.8; transform: translateX(-50%) translateY(-100%) scale(0.95); }
-}
-
-/* High intensity pulse */
-.rift-enhanced-damage-indicator[data-intensity="high"]::before {
-    animation: rift-high-damage-pulse var(--rift-damage-indicator-pulse-duration, 0.8s) ease-in-out infinite;
-}
-
-@keyframes rift-high-damage-pulse {
-    0% { opacity: 0.8; }
-    50% { opacity: 1; }
-    100% { opacity: 0.8; }
 }
