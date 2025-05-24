@@ -61,9 +61,8 @@ export class AdvancedScreenEffects extends UIComponent {
      * Initialize the advanced screen effects component
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        // Always create the root element first
+        this._createRootElement();
         
         // Create layers for different effect types
         this._createEffectLayers();
@@ -74,6 +73,19 @@ export class AdvancedScreenEffects extends UIComponent {
         this.isInitialized = true;
         this.isActive = true;
         return this;
+    }
+    
+    /**
+     * Create the root container element
+     * @private
+     */
+    _createRootElement() {
+        this.element = DOMFactory.createElement('div', {
+            id: this.id,
+            className: this.className
+        });
+        
+        this.container.appendChild(this.element);
     }
     
     /**
@@ -98,10 +110,11 @@ export class AdvancedScreenEffects extends UIComponent {
      * @returns {HTMLElement} The created layer element
      */
     _createLayer(type) {
-        return DOMFactory.createElement('div', {
-            className: `rift-advanced-screen-effects__layer rift-advanced-screen-effects__layer--${type}`,
-            parent: this.element
+        const layer = DOMFactory.createElement('div', {
+            className: `rift-advanced-screen-effects__layer rift-advanced-screen-effects__layer--${type}`
         });
+        this.element.appendChild(layer);
+        return layer;
     }
     
     /**
@@ -1055,4 +1068,3 @@ export class AdvancedScreenEffects extends UIComponent {
         console.log(`Test powerup effect: ${powerupType}, ${duration}s duration`);
     }
 }
-

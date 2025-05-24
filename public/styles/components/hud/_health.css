@@ -8,30 +8,31 @@
 .rift-health {
   display: flex;
   align-items: center;
-  padding: var(--rift-hud-padding);
-  background-color: var(--rift-ui-background);
-  border: var(--rift-hud-border-width) solid var(--rift-health);
-  border-radius: var(--rift-border-radius);
-  box-shadow: var(--rift-hud-box-shadow);
+  padding: var(--hud-padding);
+  background-color: var(--rift-color-ui-background);
+  border: 2px solid var(--rift-color-success);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
+  min-width: 120px;
 }
 
 /* Health value display */
 .rift-health__value {
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-3xl);
-  font-weight: var(--rift-font-weight-bold);
-  color: var(--rift-health);
-  text-shadow: var(--rift-text-shadow);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+  color: var(--rift-color-success);
+  text-shadow: var(--rift-color-text-shadow);
   line-height: 1;
-  margin-right: var(--rift-space-sm);
+  margin-right: 8px;
 }
 
 /* Health bar container */
 .rift-health__bar-container {
   flex-grow: 1;
   background-color: rgba(0, 0, 0, 0.5);
-  height: 10px;
-  border-radius: 5px;
+  height: 8px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
@@ -39,32 +40,32 @@
 /* Health bar fill */
 .rift-health__bar {
   height: 100%;
-  background-color: var(--rift-health);
-  transition: width var(--rift-duration-fast) var(--rift-ease-out);
-  border-radius: 5px;
+  background-color: var(--rift-color-success);
+  transition: width var(--rift-animation-fast) ease-out;
+  border-radius: 4px;
 }
 
 /* Health bar low state */
 .rift-health__bar--low {
-  background-color: var(--rift-health-low);
+  background-color: var(--rift-color-warning);
 }
 
 /* Health bar critical state */
 .rift-health__bar--critical {
-  background-color: var(--rift-health-critical);
-  animation: rift-pulse var(--rift-duration-slow) infinite;
+  background-color: var(--rift-color-danger);
+  animation: rift-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Health bar healing state */
 .rift-health__bar--healing {
-  background-color: var(--rift-health-healing);
+  background-color: var(--rift-color-secondary);
 }
 
 /* Health icon */
 .rift-health__icon {
-  width: 24px;
-  height: 24px;
-  margin-right: var(--rift-space-sm);
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
   opacity: 0.9;
 }
 
@@ -85,12 +86,12 @@
     rgba(255, 0, 0, 0.4) 100%
   );
   opacity: 0;
-  transition: opacity var(--rift-duration-normal) var(--rift-ease-in-out);
+  transition: opacity var(--rift-animation-normal) ease-in-out;
 }
 
 .rift-health__critical-overlay--active {
   opacity: 1;
-  animation: rift-pulse var(--rift-duration-slow) infinite;
+  animation: rift-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Health damage flash */
@@ -102,7 +103,7 @@
   bottom: 0;
   pointer-events: none;
   z-index: var(--rift-z-index-overlay);
-  background-color: var(--rift-damage-flash-color);
+  background-color: rgba(255, 0, 0, 0.3);
   opacity: 0;
 }
 
@@ -115,7 +116,7 @@
   bottom: 0;
   pointer-events: none;
   z-index: var(--rift-z-index-overlay);
-  background-color: var(--rift-heal-flash-color);
+  background-color: rgba(0, 255, 0, 0.2);
   opacity: 0;
 }
 
@@ -132,9 +133,9 @@
 
 /* Animation classes */
 .rift-health__damage-flash--active {
-  animation: rift-health-damage 0.3s var(--rift-ease-out) forwards;
+  animation: rift-health-damage 0.3s ease-out forwards;
 }
 
 .rift-health__healing-glow--active {
-  animation: rift-health-healing 0.5s var(--rift-ease-out) forwards;
+  animation: rift-health-healing 0.5s ease-out forwards;
 }

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Integration Debug</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            margin: 0;
+        }
+        .debug-section {
+            border: 1px solid #0f0;
+            margin: 10px 0;
+            padding: 10px;
+            background: #001100;
+        }
+        .debug-title {
+            color: #ff0;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .warning { color: #fa0; }
+        .info { color: #0af; }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-left: 3px solid #0f0;
+            overflow-x: auto;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #fa0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 RIFT UI Integration Debug Tool</h1>
+    <p>This will diagnose EXACTLY what's happening with the UI integration.</p>
+    
+    <button onclick="runFullDiagnostic()">🚀 RUN FULL DIAGNOSTIC</button>
+    <button onclick="clearResults()">🧹 CLEAR RESULTS</button>
+    <button onclick="forceCreateAmmoDisplay()">💉 FORCE CREATE AMMO DISPLAY</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function section(title) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'debug-section';
+            div.innerHTML = `<div class="debug-title">${title}</div>`;
+            results.appendChild(div);
+            return div;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function runFullDiagnostic() {
+            clearResults();
+            log('🔍 Starting comprehensive UI integration diagnostic...', 'info');
+            
+            // 1. Check Basic Environment
+            const envSection = section('🌍 ENVIRONMENT CHECK');
+            try {
+                log('✓ Window object exists', 'success');
+                log(`✓ Location: ${window.location.href}`, 'info');
+                log(`✓ User Agent: ${navigator.userAgent}`, 'info');
+            } catch (e) {
+                log(`❌ Environment error: ${e.message}`, 'error');
+            }
+
+            // 2. Check Global Objects
+            const globalSection = section('🌐 GLOBAL OBJECTS');
+            const globals = ['world', 'scene', 'camera', 'player', 'EventManager'];
+            globals.forEach(global => {
+                if (window[global]) {
+                    log(`✓ window.${global} exists`, 'success');
+                    if (global === 'world' && window.world.player) {
+                        log(`✓ world.player exists`, 'success');
+                        if (window.world.player.weaponSystem) {
+                            log(`✓ world.player.weaponSystem exists`, 'success');
+                            if (window.world.player.weaponSystem.currentWeapon) {
+                                const weapon = window.world.player.weaponSystem.currentWeapon;
+                                log(`✓ Current weapon: ${weapon.type || 'unknown'}`, 'success');
+                                log(`✓ Ammo: ${weapon.roundsLeft}/${weapon.roundsPerClip}`, 'success');
+                            } else {
+                                log(`⚠️ world.player.weaponSystem.currentWeapon is null`, 'warning');
+                            }
+                        } else {
+                            log(`❌ world.player.weaponSystem missing`, 'error');
+                        }
+                    }
+                } else {
+                    log(`❌ window.${global} missing`, 'error');
+                }
+            });
+
+            // 3. Check EventManager
+            const eventSection = section('📡 EVENT MANAGER');
+            if (window.EventManager) {
+                log('✓ EventManager exists', 'success');
+                
+                // Test event system
+                let testEventReceived = false;
+                const testHandler = () => { testEventReceived = true; };
+                
+                try {
+                    window.EventManager.subscribe('debug:test', testHandler);
+                    window.EventManager.emit('debug:test', { test: true });
+                    
+                    setTimeout(() => {
+                        if (testEventReceived) {
+                            log('✓ EventManager working correctly', 'success');
+                        } else {
+                            log('❌ EventManager not working', 'error');
+                        }
+                        window.EventManager.unsubscribe('debug:test', testHandler);
+                    }, 100);
+                } catch (e) {
+                    log(`❌ EventManager error: ${e.message}`, 'error');
+                }
+            } else {
+                log('❌ EventManager missing', 'error');
+            }
+
+            // 4. Check UI Components
+            const uiSection = section('🖼️ UI COMPONENTS');
+            try {
+                // Check for UI elements in DOM
+                const hudElements = document.querySelectorAll('[class*="rift-"]');
+                log(`Found ${hudElements.length} RIFT UI elements in DOM`, hudElements.length > 0 ? 'success' : 'warning');
+                
+                hudElements.forEach((el, i) => {
+                    log(`  ${i+1}. ${el.className} (${el.tagName})`, 'info');
+                });
+
+                // Check for ammo display specifically
+                const ammoDisplay = document.querySelector('.rift-ammo, #ammo-display');
+                if (ammoDisplay) {
+                    log('✓ Ammo display element found in DOM', 'success');
+                    log(`  Content: "${ammoDisplay.textContent}"`, 'info');
+                    log(`  Classes: ${ammoDisplay.className}`, 'info');
+                } else {
+                    log('❌ Ammo display element NOT found in DOM', 'error');
+                }
+
+            } catch (e) {
+                log(`❌ UI check error: ${e.message}`, 'error');
+            }
+
+            // 5. Check Module Loading
+            const moduleSection = section('📦 MODULE LOADING');
+            try {
+                // Try to import the AmmoDisplay class
+                const ammoModule = await import('./src/components/ui/hud/AmmoDisplay.js');
+                if (ammoModule.AmmoDisplay) {
+                    log('✓ AmmoDisplay class loaded successfully', 'success');
+                } else {
+                    log('❌ AmmoDisplay class not exported', 'error');
+                }
+            } catch (e) {
+                log(`❌ AmmoDisplay import error: ${e.message}`, 'error');
+            }
+
+            // 6. Check UIManager
+            const uiManagerSection = section('🎛️ UI MANAGER');
+            if (window.world && window.world.uiManager) {
+                log('✓ UIManager exists', 'success');
+                const uiManager = window.world.uiManager;
+                
+                // Check if UIManager has components
+                if (uiManager.components) {
+                    log(`✓ UIManager has ${Object.keys(uiManager.components).length} components`, 'success');
+                    Object.keys(uiManager.components).forEach(key => {
+                        log(`  - ${key}: ${uiManager.components[key].constructor.name}`, 'info');
+                    });
+                } else {
+                    log('❌ UIManager.components missing', 'error');
+                }
+
+                // Check if UIManager has ammoDisplay
+                if (uiManager.ammoDisplay) {
+                    log('✓ UIManager.ammoDisplay exists', 'success');
+                } else {
+                    log('❌ UIManager.ammoDisplay missing', 'error');
+                }
+            } else {
+                log('❌ UIManager missing', 'error');
+            }
+
+            // 7. Network/Loading Check
+            const networkSection = section('🌐 NETWORK/LOADING');
+            const performanceEntries = performance.getEntriesByType('resource');
+            const jsFiles = performanceEntries.filter(entry => entry.name.endsWith('.js'));
+            log(`Loaded ${jsFiles.length} JavaScript files`, 'info');
+            
+            const failedFiles = jsFiles.filter(entry => entry.responseStart === 0);
+            if (failedFiles.length > 0) {
+                log(`❌ ${failedFiles.length} JavaScript files failed to load:`, 'error');
+                failedFiles.forEach(file => {
+                    log(`  - ${file.name}`, 'error');
+                });
+            } else {
+                log('✓ All JavaScript files loaded successfully', 'success');
+            }
+
+            log('🏁 Diagnostic complete!', 'info');
+        }
+
+        async function forceCreateAmmoDisplay() {
+            log('💉 Attempting to force create AmmoDisplay...', 'info');
+            
+            try {
+                // Import AmmoDisplay
+                const ammoModule = await import('./src/components/ui/hud/AmmoDisplay.js');
+                const AmmoDisplay = ammoModule.AmmoDisplay;
+                
+                // Create container
+                let container = document.querySelector('#debug-ammo-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'debug-ammo-container';
+                    container.style.cssText = `
+                        position: fixed;
+                        top: 50px;
+                        right: 50px;
+                        z-index: 10000;
+                        background: rgba(0,255,0,0.1);
+                        border: 2px solid #0f0;
+                        padding: 20px;
+                        color: #0f0;
+                        font-family: monospace;
+                    `;
+                    document.body.appendChild(container);
+                }
+
+                // Create AmmoDisplay instance
+                const ammoDisplay = new AmmoDisplay({
+                    container: container,
+                    id: 'debug-ammo-display'
+                });
+
+                log('✓ AmmoDisplay created successfully!', 'success');
+                log('✓ Check top-right corner of the screen', 'info');
+
+                // Try to trigger player ready if available
+                if (window.world && window.world.player) {
+                    setTimeout(() => {
+                        log('💉 Triggering player ready event...', 'info');
+                        ammoDisplay._onPlayerReady({ player: window.world.player });
+                    }, 1000);
+                }
+
+            } catch (e) {
+                log(`❌ Force create failed: ${e.message}`, 'error');
+                log(`Stack: ${e.stack}`, 'error');
+            }
+        }
+
+        // Auto-run diagnostic when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runFullDiagnostic, 1000);
+        });
+    </script>
+</body>
+</html>

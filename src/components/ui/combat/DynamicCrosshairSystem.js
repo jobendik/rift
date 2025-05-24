@@ -76,10 +76,9 @@ export class DynamicCrosshairSystem extends UIComponent {
      * Initialize the component
      */    init() {
         if (this.isInitialized) return this;
-        
-        console.log('[DynamicCrosshairSystem] Starting initialization...');
-        console.log('[DynamicCrosshairSystem] Config:', this.config);
-        console.log('[DynamicCrosshairSystem] Container:', this.container);
+          // console.log('[DynamicCrosshairSystem] Starting initialization...');
+        // console.log('[DynamicCrosshairSystem] Config:', this.config);
+        // console.log('[DynamicCrosshairSystem] Container:', this.container);
         
         // Call parent init
         super.init();

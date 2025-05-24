@@ -1,13 +1,11 @@
 ﻿/**
  * KillFeed Component
  * 
- * Manages and displays kill events in the game:
- * - Player kills (who killed whom)
- * - Special kill types (headshots, melee kills, etc.)
- * - Multi-kills and streaks
- * 
- * Provides visual feedback for combat events while minimizing
- * screen clutter.
+ * Displays kill notifications and kill streaks:
+ * - Shows recent eliminations with killer/victim names
+ * - Weapon icons and special kill types (headshot, multi-kill)
+ * - Kill streak announcements with visual flair
+ * - Configurable message duration and positioning
  * 
  * @extends UIComponent
  */
@@ -21,14 +19,12 @@ export class KillFeed extends UIComponent {
      * Create a new KillFeed
      * 
      * @param {Object} options - Component options
-     * @param {number} options.displayDuration - Display time in ms
-     * @param {number} options.fadeDuration - Animation duration in ms
-     * @param {number} options.maxMessages - Maximum messages to show at once
-     * @param {number} options.streakTimeout - Time window for kill streaks in ms
+     * @param {number} options.messageDuration - Time to show each message in ms
+     * @param {number} options.maxMessages - Maximum number of messages to display
+     * @param {number} options.streakMinimum - Minimum kills for streak announcement
      */
     constructor(options = {}) {
         super({
-            autoInit: false,
             id: options.id || 'kill-feed',
             className: 'rift-kill-feed',
             container: options.container || document.body,
@@ -36,57 +32,29 @@ export class KillFeed extends UIComponent {
         });
         
         // Configuration
-        this.displayDuration = options.displayDuration || 5000;
+        this.messageDuration = options.messageDuration || 6000;
+        this.maxMessages = options.maxMessages || 10;
+        this.streakMinimum = options.streakMinimum || 3;
         this.fadeDuration = options.fadeDuration || 500;
-        this.maxMessages = options.maxMessages || 5;
-        this.streakTimeout = options.streakTimeout || 10000;
         
         // Internal state
         this.messages = [];
-        this.activeTimers = [];
-        this.currentStreak = {
-            playerName: null,
-            count: 0,
-            lastKillTime: 0,
-            timerId: null
-        };
-        this.isPaused = false;
-        this.pauseStartTime = 0;
+        this.streaks = [];
+        this.eventSubscriptions = [];
         
         // Weapon icons mapping
         this.weaponIcons = {
-            'assault_rifle': 'icon-ar',
+            'assault_rifle': 'icon-rifle',
             'shotgun': 'icon-shotgun',
-            'blaster': 'icon-blaster',
-            'pistol': 'icon-pistol',
             'sniper': 'icon-sniper',
-            'melee': 'icon-melee',
+            'pistol': 'icon-pistol',
+            'knife': 'icon-knife',
             'grenade': 'icon-grenade',
             'explosive': 'icon-explosive',
-            'headshot': 'icon-headshot'
+            'environment': 'icon-environment'
         };
         
-        // Kill streak types
-        this.streakTypes = [
-            { count: 3, type: 'killing-spree' },
-            { count: 5, type: 'rampage' },
-            { count: 8, type: 'dominating' },
-            { count: 10, type: 'unstoppable' }
-        ];
-    }
-    
-    /**
-     * Initialize the kill feed
-     */
-    init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
-        
         this._setupEventListeners();
-        
-        this.isInitialized = true;
-        return this;
     }
     
     /**
@@ -95,191 +63,85 @@ export class KillFeed extends UIComponent {
      */
     _setupEventListeners() {
         this.eventSubscriptions.push(
-            EventManager.subscribe('enemy:killed', this._onEnemyKilled.bind(this))
-        );
-        
-        // Listen for player kills in case of multiplayer scenarios
-        this.eventSubscriptions.push(
-            EventManager.subscribe('player:killed', this._onPlayerKilled.bind(this))
-        );
-        
-        // Listen for game state changes to pause/resume timers
-        this.eventSubscriptions.push(
-            EventManager.subscribe('game:paused', () => this.pauseTimers())
+            EventManager.subscribe('kill:confirmed', this._onKillConfirmed.bind(this))
         );
         
         this.eventSubscriptions.push(
-            EventManager.subscribe('game:resumed', () => this.resumeTimers())
+            EventManager.subscribe('kill:streak', this._onKillStreak.bind(this))
         );
-    }
-    
-    /**
-     * Handle enemy:killed event
-     * @param {Object} event - Standardized combat event
-     * @param {Object} event.source - Source entity information
-     * @param {Object} event.target - Target entity information
-     * @param {Object} event.weapon - Weapon information
-     * @param {boolean} event.isHeadshot - Whether the hit was a headshot
-     * @param {boolean} event.isCritical - Whether the hit was a critical hit
-     * @private
-     */
-    _onEnemyKilled(event) {
-        this.addKillMessage({
-            killer: event.source.name || event.source.id,
-            victim: event.target.name || event.target.id,
-            weapon: event.weapon ? event.weapon.type : 'unknown',
-            isHeadshot: event.isHeadshot || false,
-            isTeamkill: event.isTeamkill || false,
-            killerTeam: event.source.team,
-            victimTeam: event.target.team,
-            specialType: event.specialType
-        });
-    }
-    
-    /**
-     * Handle player:killed event
-     * @param {Object} event - Standardized combat event
-     * @param {Object} event.source - Source entity information
-     * @param {Object} event.target - Target entity information
-     * @param {Object} event.weapon - Weapon information
-     * @param {boolean} event.isHeadshot - Whether the hit was a headshot
-     * @param {boolean} event.isCritical - Whether the hit was a critical hit
-     * @private
-     */
-    _onPlayerKilled(event) {
-        this.addKillMessage({
-            killer: event.source.name || event.source.id,
-            victim: event.target.name || event.target.id,
-            weapon: event.weapon ? event.weapon.type : 'unknown',
-            isHeadshot: event.isHeadshot || false,
-            isTeamkill: event.isTeamkill || false,
-            killerTeam: event.source.team,
-            victimTeam: event.target.team,
-            specialType: event.specialType
-        });
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:paused', this._onGamePaused.bind(this))
+        );
+        
+        this.eventSubscriptions.push(
+            EventManager.subscribe('game:ended', this._onGameEnded.bind(this))
+        );
     }
     
     /**
      * Add a kill message to the feed
      * 
      * @param {Object} data - Kill data
-     * @param {string} data.killer - Name of the player/entity who got the kill
-     * @param {string} data.victim - Name of the player/entity who was killed
+     * @param {string} data.killer - Name of the killer
+     * @param {string} data.victim - Name of the victim
      * @param {string} data.weapon - Weapon used for the kill
-     * @param {boolean} data.isHeadshot - Whether the kill was a headshot
-     * @param {boolean} data.isTeamkill - Whether the kill was a team kill
-     * @param {string} data.killerTeam - Team of the killer (if applicable)
-     * @param {string} data.victimTeam - Team of the victim (if applicable)
-     * @param {string} data.specialType - Special kill type (e.g., 'melee', 'revenge')
+     * @param {boolean} data.isHeadshot - Whether it was a headshot
+     * @param {string} data.specialType - Special kill type (if any)
      */
     addKillMessage(data) {
-        // Manage multi-kill streaks if same player gets multiple kills
-        if (data.killer === this.currentStreak.playerName) {
-            const now = Date.now();
-            if (now - this.currentStreak.lastKillTime < this.streakTimeout) {
-                // Continue the streak
-                this.currentStreak.count++;
-                this.currentStreak.lastKillTime = now;
-                
-                // Clear existing streak timer if any
-                if (this.currentStreak.timerId) {
-                    clearTimeout(this.currentStreak.timerId);
-                    this.activeTimers = this.activeTimers.filter(id => id !== this.currentStreak.timerId);
-                }
-                
-                // Check if we've reached a streak milestone
-                const streakType = this._getStreakType(this.currentStreak.count);
-                if (streakType) {
-                    this.showKillStreak(data.killer, streakType, this.currentStreak.count);
-                }
-                
-                // Set new timeout to reset streak
-                this.currentStreak.timerId = setTimeout(() => {
-                    this._resetStreak();
-                }, this.streakTimeout);
-                
-                this.activeTimers.push(this.currentStreak.timerId);
-            } else {
-                // Too much time passed, reset streak and start new one
-                this._resetStreak();
-                this.currentStreak.playerName = data.killer;
-                this.currentStreak.count = 1;
-                this.currentStreak.lastKillTime = now;
-            }
-        } else {
-            // Different player, reset streak and start new one
-            this._resetStreak();
-            this.currentStreak.playerName = data.killer;
-            this.currentStreak.count = 1;
-            this.currentStreak.lastKillTime = Date.now();
-        }
-        
-        // Create the kill message element
-        const message = this._createKillMessage(data);
-        
-        // Clean up old messages if we're at max
+        // Remove oldest message if at maximum
         if (this.messages.length >= this.maxMessages) {
-            const oldestMessage = this.messages.shift();
-            this._removeMessage(oldestMessage, true);
+            this._removeOldestMessage();
         }
+        
+        // Create message element
+        const message = this._createKillMessage(data);
         
         // Add to DOM and track
         this.element.appendChild(message.element);
         this.messages.push(message);
         
-        // Show with animation after a brief delay
+        // Show with animation
         setTimeout(() => {
-            message.element.classList.add('rift-kill-message--enter');
+            message.element.classList.add('rift-kill-message--show');
         }, 10);
         
         // Set up auto-remove timer
         message.timerId = setTimeout(() => {
             this._removeMessage(message);
-        }, this.displayDuration);
-        
-        this.activeTimers.push(message.timerId);
-        
-        return message;
+        }, this.messageDuration);
     }
     
     /**
-     * Show a kill streak message
+     * Add a kill streak announcement
      * 
-     * @param {string} playerName - Name of the player with the streak
-     * @param {string} streakType - Type of streak
-     * @param {number} kills - Number of kills in the streak
+     * @param {Object} data - Streak data
+     * @param {string} data.player - Player name
+     * @param {number} data.killCount - Number of kills in streak
+     * @param {string} data.streakType - Type of streak ('killing_spree', 'rampage', etc.)
      */
-    showKillStreak(playerName, streakType, kills) {
+    addKillStreak(data) {
         // Create streak element
-        const streak = this._createStreakMessage(playerName, streakType, kills);
+        const streak = this._createKillStreak(data);
         
         // Add to DOM
         this.element.appendChild(streak.element);
+        this.streaks.push(streak);
         
-        // Show with animation after a brief delay
+        // Show with animation
         setTimeout(() => {
-            streak.element.classList.add('rift-kill-streak--enter');
+            streak.element.classList.add('rift-kill-streak--show');
         }, 10);
         
-        // Set up auto-remove timer
+        // Auto-remove after longer duration
         streak.timerId = setTimeout(() => {
-            streak.element.classList.add('rift-kill-streak--exit');
-            streak.element.classList.remove('rift-kill-streak--enter');
-            
-            setTimeout(() => {
-                if (streak.element.parentNode) {
-                    streak.element.parentNode.removeChild(streak.element);
-                }
-            }, this.fadeDuration);
-        }, 3000); // Shorter duration for streak messages
-        
-        this.activeTimers.push(streak.timerId);
-        
-        return streak;
+            this._removeStreak(streak);
+        }, this.messageDuration * 1.5);
     }
     
     /**
-     * Update the kill feed
+     * Update kill feed animations
      * 
      * @param {number} delta - Time since last update in ms
      */
@@ -293,10 +155,14 @@ export class KillFeed extends UIComponent {
      */
     dispose() {
         // Clear all timers
-        this.activeTimers.forEach(timerId => clearTimeout(timerId));
-        this.activeTimers = [];
+        [...this.messages, ...this.streaks].forEach(item => {
+            if (item.timerId) {
+                clearTimeout(item.timerId);
+            }
+        });
+        
         this.messages = [];
-        this._resetStreak();
+        this.streaks = [];
         
         // Unsubscribe from events
         this.eventSubscriptions.forEach(subscription => {
@@ -311,290 +177,262 @@ export class KillFeed extends UIComponent {
     }
     
     /**
-     * Pause all kill feed timers
+     * Handle kill:confirmed event
+     * @param {Object} event - Kill event data
+     * @private
      */
-    pauseTimers() {
-        if (this.isPaused) return;
-        
-        this.isPaused = true;
-        this.pauseStartTime = Date.now();
-        
-        // Clear all active timers
-        this.activeTimers.forEach(timerId => clearTimeout(timerId));
-        this.activeTimers = [];
-        
-        // Store remaining time for all messages
-        this.messages.forEach(message => {
-            message.remainingTime = message.expireTime - this.pauseStartTime;
+    _onKillConfirmed(event) {
+        this.addKillMessage({
+            killer: event.killer || 'Unknown',
+            victim: event.victim || 'Target',
+            weapon: event.weapon || 'unknown',
+            isHeadshot: event.isHeadshot || false,
+            specialType: event.specialType || null
         });
-        
-        // Store remaining time for current streak if active
-        if (this.currentStreak.timerId) {
-            this.currentStreak.remainingTime = this.currentStreak.lastKillTime + 
-                                             this.streakTimeout - 
-                                             this.pauseStartTime;
+    }
+    
+    /**
+     * Handle kill:streak event
+     * @param {Object} event - Streak event data
+     * @private
+     */
+    _onKillStreak(event) {
+        if (event.killCount >= this.streakMinimum) {
+            this.addKillStreak({
+                player: event.player || 'Player',
+                killCount: event.killCount,
+                streakType: event.streakType || 'killing_spree'
+            });
         }
     }
     
     /**
-     * Resume kill feed timers after pause
+     * Handle game:paused event
+     * @private
      */
-    resumeTimers() {
-        if (!this.isPaused) return;
-        
-        const pauseDuration = Date.now() - this.pauseStartTime;
-        this.isPaused = false;
-        
-        // Resume timers for all messages with adjusted durations
-        this.messages.forEach(message => {
-            const adjustedTime = Math.max(100, message.remainingTime); // Ensure at least 100ms
-            
-            message.expireTime = Date.now() + adjustedTime;
-            
-            // Create new timer
-            message.timerId = setTimeout(() => {
-                this._removeMessage(message);
-            }, adjustedTime);
-            
-            this.activeTimers.push(message.timerId);
-        });
-        
-        // Resume streak timer if active
-        if (this.currentStreak.count > 0 && this.currentStreak.remainingTime) {
-            const adjustedTime = Math.max(100, this.currentStreak.remainingTime);
-            
-            this.currentStreak.lastKillTime = Date.now() - (this.streakTimeout - adjustedTime);
-            
-            this.currentStreak.timerId = setTimeout(() => {
-                this._resetStreak();
-            }, adjustedTime);
-            
-            this.activeTimers.push(this.currentStreak.timerId);
-        }
+    _onGamePaused() {
+        // Pause all animations (implementation depends on CSS)
+        this.element.classList.add('rift-kill-feed--paused');
     }
     
     /**
-     * Clear all current kill feed messages
+     * Handle game:ended event
+     * @private
      */
-    clearAll() {
-        // Clear timers
-        this.activeTimers.forEach(timerId => clearTimeout(timerId));
-        this.activeTimers = [];
-        
-        // Remove messages with exit animation
-        const currentMessages = [...this.messages];
-        currentMessages.forEach(message => {
-            message.element.classList.add('rift-kill-message--exit');
-            message.element.classList.remove('rift-kill-message--enter');
-            
-            setTimeout(() => {
-                if (message.element.parentNode) {
-                    message.element.parentNode.removeChild(message.element);
-                }
-            }, this.fadeDuration);
-        });
-        
-        this.messages = [];
-        this._resetStreak();
-        
-        return this;
+    _onGameEnded() {
+        // Clear all messages
+        this.clearAll();
     }
     
     /**
      * Create a kill message DOM element
      * 
      * @private
-     * @param {Object} data - Kill data
+     * @param {Object} data - Kill message data
      * @returns {Object} - Message object with DOM element and metadata
      */
     _createKillMessage(data) {
         const message = {};
         
-        // Determine message class based on multi-kill
-        let messageClass = 'rift-kill-message';
-        if (this.currentStreak.count === 2) {
-            messageClass += ' rift-kill-message--double';
-        } else if (this.currentStreak.count === 3) {
-            messageClass += ' rift-kill-message--triple';
-        } else if (this.currentStreak.count === 4) {
-            messageClass += ' rift-kill-message--quad';
-        } else if (this.currentStreak.count >= 5) {
-            messageClass += ' rift-kill-message--monster';
-        }
-        
-        // Create message container
-        message.element = DOMFactory.createElement({
-            type: 'div',
-            classes: messageClass.split(' ')
+        // Create main message container
+        message.element = DOMFactory.createElement('div', {
+            className: 'rift-kill-message'
         });
         
         // Add killer name
-        const killer = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__player', 'rift-kill-message__killer'],
-            text: data.killer
+        const killer = DOMFactory.createElement('span', {
+            className: 'rift-kill-message__player rift-kill-message__killer',
+            textContent: data.killer
         });
         message.element.appendChild(killer);
         
         // Add weapon icon
         const weaponClass = this.weaponIcons[data.weapon] || 'icon-weapon';
-        const weapon = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__weapon', weaponClass]
+        const weapon = DOMFactory.createElement('span', {
+            className: `rift-kill-message__weapon ${weaponClass}`
         });
         message.element.appendChild(weapon);
         
         // Add victim name
-        const victim = DOMFactory.createElement({
-            type: 'span',
-            classes: ['rift-kill-message__player', 'rift-kill-message__victim'],
-            text: data.victim
+        const victim = DOMFactory.createElement('span', {
+            className: 'rift-kill-message__player rift-kill-message__victim',
+            textContent: data.victim
         });
         message.element.appendChild(victim);
         
-        // Add special indicator (e.g., headshot)
+        // Add special indicators
         if (data.isHeadshot) {
-            const special = DOMFactory.createElement({
-                type: 'span',
-                classes: ['rift-kill-message__special', 'rift-kill-message__special--headshot'],
-                text: 'HEADSHOT'
+            const special = DOMFactory.createElement('span', {
+                className: 'rift-kill-message__special rift-kill-message__special--headshot',
+                textContent: 'HS'
             });
             message.element.appendChild(special);
         } else if (data.specialType) {
-            const special = DOMFactory.createElement({
-                type: 'span',
-                classes: ['rift-kill-message__special'],
-                text: data.specialType.toUpperCase()
+            const special = DOMFactory.createElement('span', {
+                className: 'rift-kill-message__special',
+                textContent: data.specialType.toUpperCase()
             });
             message.element.appendChild(special);
         }
         
-        // Set expiration time
-        message.expireTime = Date.now() + this.displayDuration;
         message.data = data;
-        
         return message;
     }
     
     /**
-     * Create a streak message DOM element
+     * Create a kill streak DOM element
      * 
      * @private
-     * @param {string} playerName - Player name
-     * @param {string} streakType - Type of streak
-     * @param {number} kills - Number of kills
-     * @returns {Object} - Streak message object with DOM element
+     * @param {Object} data - Streak data
+     * @returns {Object} - Streak object with DOM element and metadata
      */
-    _createStreakMessage(playerName, streakType, kills) {
+    _createKillStreak(data) {
         const streak = {};
         
         // Create streak container
-        streak.element = DOMFactory.createElement({
-            type: 'div',
-            classes: ['rift-kill-streak', `rift-kill-streak--${streakType}`]
+        streak.element = DOMFactory.createElement('div', {
+            className: `rift-kill-streak rift-kill-streak--${data.streakType}`
         });
         
-        // Format streak text based on type
-        let streakText = '';
-        switch (streakType) {
-            case 'killing-spree':
-                streakText = `${playerName} is on a killing spree! (${kills})`;
-                break;
-            case 'rampage':
-                streakText = `${playerName} is on a rampage! (${kills})`;
-                break;
-            case 'dominating':
-                streakText = `${playerName} is dominating! (${kills})`;
-                break;
-            case 'unstoppable':
-                streakText = `${playerName} is unstoppable! (${kills})`;
-                break;
-            default:
-                streakText = `${playerName} - ${kills} kills`;
-        }
+        // Add streak text
+        const streakText = this._getStreakText(data.killCount, data.streakType);
+        const text = DOMFactory.createElement('div', {
+            className: 'rift-kill-streak__text',
+            textContent: `${data.player} ${streakText}!`
+        });
+        streak.element.appendChild(text);
         
-        streak.element.textContent = streakText;
-        streak.playerName = playerName;
-        streak.kills = kills;
-        streak.type = streakType;
+        // Add kill count
+        const count = DOMFactory.createElement('div', {
+            className: 'rift-kill-streak__count',
+            textContent: `${data.killCount} kills`
+        });
+        streak.element.appendChild(count);
         
+        streak.data = data;
         return streak;
     }
     
     /**
-     * Remove a message from the kill feed
+     * Get streak text based on kill count
+     * 
+     * @private
+     * @param {number} killCount - Number of kills
+     * @param {string} streakType - Type of streak
+     * @returns {string} - Streak description text
+     */
+    _getStreakText(killCount, streakType) {
+        // Default streak names based on count
+        const streakNames = {
+            3: 'is on a killing spree',
+            5: 'is dominating',
+            7: 'is on a rampage',
+            10: 'is unstoppable',
+            15: 'is godlike'
+        };
+        
+        // Find the appropriate streak text
+        const streakKeys = Object.keys(streakNames).map(Number).sort((a, b) => b - a);
+        
+        for (const threshold of streakKeys) {
+            if (killCount >= threshold) {
+                return streakNames[threshold];
+            }
+        }
+        
+        return 'is on a killing spree';
+    }
+    
+    /**
+     * Remove the oldest message from the feed
+     * 
+     * @private
+     */
+    _removeOldestMessage() {
+        if (this.messages.length === 0) return;
+        
+        const oldest = this.messages.shift();
+        this._removeMessage(oldest, true);
+    }
+    
+    /**
+     * Remove a specific message from the feed
      * 
      * @private
      * @param {Object} message - Message to remove
-     * @param {boolean} immediate - Whether to remove immediately without animation
+     * @param {boolean} immediate - Whether to skip exit animation
      */
     _removeMessage(message, immediate = false) {
-        // If already removed from DOM, ignore
         if (!message || !message.element || !message.element.parentNode) {
             return;
         }
         
-        // Clear timer if exists
+        // Clear timer
         if (message.timerId) {
             clearTimeout(message.timerId);
-            this.activeTimers = this.activeTimers.filter(id => id !== message.timerId);
         }
         
         if (immediate) {
-            if (message.element.parentNode) {
-                message.element.parentNode.removeChild(message.element);
-            }
+            // Remove immediately
+            message.element.parentNode.removeChild(message.element);
             this.messages = this.messages.filter(m => m !== message);
         } else {
-            // Start exit animation
+            // Remove with animation
             message.element.classList.add('rift-kill-message--exit');
-            message.element.classList.remove('rift-kill-message--enter');
+            message.element.classList.remove('rift-kill-message--show');
             
-            // Remove from DOM after animation completes
             setTimeout(() => {
                 if (message.element.parentNode) {
                     message.element.parentNode.removeChild(message.element);
                 }
-                
-                // Remove from tracked messages
                 this.messages = this.messages.filter(m => m !== message);
             }, this.fadeDuration);
         }
     }
     
     /**
-     * Get streak type based on kill count
+     * Remove a specific streak from the feed
      * 
      * @private
-     * @param {number} kills - Kill count
-     * @returns {string|null} - Streak type or null if not a streak
+     * @param {Object} streak - Streak to remove
      */
-    _getStreakType(kills) {
-        // Find highest matching streak type
-        for (let i = this.streakTypes.length - 1; i >= 0; i--) {
-            if (kills === this.streakTypes[i].count) {
-                return this.streakTypes[i].type;
-            }
+    _removeStreak(streak) {
+        if (!streak || !streak.element || !streak.element.parentNode) {
+            return;
         }
-        return null;
+        
+        // Clear timer
+        if (streak.timerId) {
+            clearTimeout(streak.timerId);
+        }
+        
+        // Remove with animation
+        streak.element.classList.add('rift-kill-streak--exit');
+        streak.element.classList.remove('rift-kill-streak--show');
+        
+        setTimeout(() => {
+            if (streak.element.parentNode) {
+                streak.element.parentNode.removeChild(streak.element);
+            }
+            this.streaks = this.streaks.filter(s => s !== streak);
+        }, this.fadeDuration);
     }
     
     /**
-     * Reset the current kill streak
-     * 
-     * @private
+     * Clear all messages and streaks
      */
-    _resetStreak() {
-        if (this.currentStreak.timerId) {
-            clearTimeout(this.currentStreak.timerId);
-            this.activeTimers = this.activeTimers.filter(id => id !== this.currentStreak.timerId);
-        }
+    clearAll() {
+        // Clear all timers
+        [...this.messages, ...this.streaks].forEach(item => {
+            if (item.timerId) {
+                clearTimeout(item.timerId);
+            }
+        });
         
-        this.currentStreak = {
-            playerName: null,
-            count: 0,
-            lastKillTime: 0,
-            timerId: null
-        };
+        // Remove all messages with animation
+        this.messages.forEach(message => this._removeMessage(message));
+        this.streaks.forEach(streak => this._removeStreak(streak));
+        
+        return this;
     }
 }

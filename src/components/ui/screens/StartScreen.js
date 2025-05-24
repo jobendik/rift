@@ -151,11 +151,10 @@ function loadSoldierModel() {
         positionCameraForCloseup();
           // Start animation loop
         animate();
-    },
-    // Progress callback
+    },    // Progress callback
     (xhr) => {
-        console.log(`Model loading: ${Math.floor(xhr.loaded / xhr.total * 100)}% loaded`);
-    },    // Error callback
+        // console.log(`Model loading: ${Math.floor(xhr.loaded / xhr.total * 100)}% loaded`);
+    },// Error callback
     (error) => {
         console.error('Error loading soldier model:', error);
         

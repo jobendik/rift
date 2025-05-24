@@ -8,18 +8,19 @@
 .rift-ammo {
   display: flex;
   align-items: center;
-  padding: var(--rift-hud-padding);
-  background-color: var(--rift-ui-background);
-  border: var(--rift-hud-border-width) solid var(--rift-ammo);
-  border-radius: var(--rift-border-radius);
-  box-shadow: var(--rift-hud-box-shadow);
+  padding: var(--hud-padding);
+  background-color: var(--rift-color-ui-background);
+  border: 2px solid var(--rift-color-secondary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
+  min-width: 100px;
 }
 
 /* Ammo icon */
 .rift-ammo__icon {
-  width: 24px;
-  height: 24px;
-  margin-right: var(--rift-space-sm);
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
   opacity: 0.9;
 }
 
@@ -27,59 +28,60 @@
 .rift-ammo__value-container {
   display: flex;
   align-items: baseline;
-  margin-right: var(--rift-space-md);
+  margin-right: 8px;
 }
 
 /* Current ammo value */
 .rift-ammo__current {
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-3xl);
-  font-weight: var(--rift-font-weight-bold);
-  color: var(--rift-ammo);
-  text-shadow: var(--rift-text-shadow);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+  color: var(--rift-color-secondary);
+  text-shadow: var(--rift-color-text-shadow);
   line-height: 1;
-  transition: color var(--rift-duration-normal) var(--rift-ease-out);
+  transition: color var(--rift-animation-normal) ease-out;
 }
 
 /* Ammo value separator */
 .rift-ammo__separator {
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-lg);
-  color: var(--rift-text-secondary);
-  margin: 0 var(--rift-space-xs);
+  font-size: var(--font-size-medium);
+  color: var(--rift-color-text-color);
+  margin: 0 4px;
   opacity: 0.7;
 }
 
 /* Total ammo value */
 .rift-ammo__total {
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-xl);
-  color: var(--rift-text-secondary);
-  text-shadow: var(--rift-text-shadow);
+  font-size: var(--font-size-medium);
+  color: var(--rift-color-text-color);
+  text-shadow: var(--rift-color-text-shadow);
   line-height: 1;
+  opacity: 0.8;
 }
 
 /* Low ammo state */
 .rift-ammo--low .rift-ammo__current,
 .rift-ammo__current--low {
-  color: var(--rift-ammo-low);
-  animation: rift-pulse var(--rift-duration-slow) infinite;
+  color: var(--rift-color-warning);
+  animation: rift-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Empty ammo state */
 .rift-ammo--empty .rift-ammo__current,
 .rift-ammo__current--empty {
-  color: var(--rift-danger);
+  color: var(--rift-color-danger);
 }
 
 /* Reloading state */
 .rift-ammo--reloading {
-  animation: rift-ammo-reload 1.5s var(--rift-ease-in-out);
+  animation: rift-ammo-reload 1.5s ease-in-out;
 }
 
 /* Animation when ammo value changes */
 .rift-ammo__current--changed {
-  animation: rift-ammo-change var(--rift-duration-fast) var(--rift-ease-out);
+  animation: rift-ammo-change var(--rift-animation-fast) ease-out;
 }
 
 /* Bullet visualizer */
@@ -94,21 +96,21 @@
 .rift-ammo__bullet {
   width: 6px;
   height: 12px;
-  background-color: var(--rift-ammo);
+  background-color: var(--rift-color-secondary);
   border-radius: 1px;
   opacity: 0.9;
-  transition: all var(--rift-duration-fast) var(--rift-ease-out);
+  transition: all var(--rift-animation-fast) ease-out;
 }
 
 /* Low ammo bullet */
 .rift-ammo__bullet--low {
-  background-color: var(--rift-ammo-low);
-  animation: rift-pulse var(--rift-duration-slow) infinite;
+  background-color: var(--rift-color-warning);
+  animation: rift-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Empty bullet */
 .rift-ammo__bullet--empty {
-  background-color: var(--rift-text-disabled);
+  background-color: rgba(255, 255, 255, 0.3);
   opacity: 0.4;
 }
 

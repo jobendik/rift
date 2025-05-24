@@ -8,18 +8,19 @@
 .rift-stamina {
   display: flex;
   align-items: center;
-  padding: var(--rift-hud-padding);
-  background-color: var(--rift-ui-background);
-  border: var(--rift-hud-border-width) solid var(--rift-stamina);
-  border-radius: var(--rift-border-radius);
-  box-shadow: var(--rift-hud-box-shadow);
+  padding: var(--hud-padding);
+  background-color: var(--rift-color-ui-background);
+  border: 2px solid var(--rift-color-warning);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
+  min-width: 100px;
 }
 
 /* Stamina icon */
 .rift-stamina__icon {
-  width: 24px;
-  height: 24px;
-  margin-right: var(--rift-space-sm);
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
   opacity: 0.9;
 }
 
@@ -36,52 +37,52 @@
 /* Stamina bar fill */
 .rift-stamina__bar {
   height: 100%;
-  background-color: var(--rift-stamina);
-  transition: width var(--rift-duration-fast) var(--rift-ease-out);
+  background-color: var(--rift-color-warning);
+  transition: width var(--rift-animation-fast) ease-out;
   border-radius: 4px;
 }
 
 /* Stamina bar low state */
 .rift-stamina__bar--low {
-  background-color: var(--rift-stamina-low);
-  animation: rift-stamina-pulse var(--rift-duration-slow) infinite;
+  background-color: var(--rift-color-danger);
+  animation: rift-stamina-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Stamina bar depleted state */
 .rift-stamina__bar--depleted {
-  background-color: var(--rift-text-disabled);
+  background-color: rgba(255, 255, 255, 0.3);
   animation: none;
   opacity: 0.6;
 }
 
 /* Stamina bar regenerating state */
 .rift-stamina__bar--regenerating {
-  background-color: var(--rift-stamina);
-  animation: rift-stamina-regenerating var(--rift-duration-slow) infinite;
+  background-color: var(--rift-color-warning);
+  animation: rift-stamina-regenerating var(--rift-animation-slow) infinite;
 }
 
 /* Stamina value */
 .rift-stamina__value {
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-lg);
-  font-weight: var(--rift-font-weight-medium);
-  color: var(--rift-stamina);
-  text-shadow: var(--rift-text-shadow);
+  font-size: var(--font-size-medium);
+  font-weight: bold;
+  color: var(--rift-color-warning);
+  text-shadow: var(--rift-color-text-shadow);
   line-height: 1;
-  margin-left: var(--rift-space-sm);
+  margin-left: 6px;
   min-width: 2.5rem;
   text-align: right;
 }
 
 /* Stamina value low state */
 .rift-stamina__value--low {
-  color: var(--rift-stamina-low);
-  animation: rift-stamina-pulse var(--rift-duration-slow) infinite;
+  color: var(--rift-color-danger);
+  animation: rift-stamina-pulse var(--rift-animation-slow) infinite;
 }
 
 /* Stamina value depleted state */
 .rift-stamina__value--depleted {
-  color: var(--rift-text-disabled);
+  color: rgba(255, 255, 255, 0.5);
   animation: none;
 }
 
@@ -96,12 +97,12 @@
   z-index: var(--rift-z-index-overlay);
   background-color: rgba(0, 53, 102, 0.2);
   opacity: 0;
-  transition: opacity var(--rift-duration-normal) var(--rift-ease-in-out);
+  transition: opacity var(--rift-animation-normal) ease-in-out;
 }
 
 .rift-stamina__drain-effect--active {
   opacity: 1;
-  animation: rift-stamina-drain 0.3s var(--rift-ease-out) forwards;
+  animation: rift-stamina-drain 0.3s ease-out forwards;
 }
 
 /* Cooldown indicator */
@@ -118,7 +119,7 @@
 }
 
 .rift-stamina__cooldown--active {
-  animation: rift-stamina-cooldown var(--rift-duration-very-slow) var(--rift-ease-out) forwards;
+  animation: rift-stamina-cooldown var(--rift-animation-very-slow) ease-out forwards;
 }
 
 /* Sprint indicator */
@@ -127,13 +128,13 @@
   top: -3px;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--rift-stamina);
+  color: var(--rift-color-warning);
   font-family: var(--rift-font-hud);
-  font-size: var(--rift-font-size-xs);
+  font-size: var(--font-size-small);
   text-transform: uppercase;
-  letter-spacing: var(--rift-letter-spacing-wider);
+  letter-spacing: 1px;
   opacity: 0;
-  transition: opacity var(--rift-duration-fast) var(--rift-ease-out);
+  transition: opacity var(--rift-animation-fast) ease-out;
 }
 
 .rift-stamina__sprint-indicator--active {
@@ -171,16 +172,16 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .rift-stamina {
-    padding: calc(var(--rift-hud-padding) * 0.75);
+    padding: calc(var(--hud-padding) * 0.75);
   }
   
   .rift-stamina__value {
-    font-size: var(--rift-font-size-md);
+    font-size: var(--font-size-normal);
     min-width: 2rem;
   }
   
   .rift-stamina__icon {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 }

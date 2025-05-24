@@ -875,6 +875,44 @@ export class UIManager {
     }
     
     /**
+     * Update ammo status (legacy bridge method)
+     * Called by weapon systems to update ammo display
+     * @return {UIManager} This UIManager instance
+     */
+    updateAmmoStatus() {
+        // Bridge method: Read current weapon state and emit proper events
+        if (!this.world?.player?.weaponSystem?.currentWeapon) {
+            return this;
+        }
+        
+        const weapon = this.world.player.weaponSystem.currentWeapon;
+        
+        // Emit standardized ammo change event
+        if (EventManager) {
+            EventManager.emit('ammo:changed', EventManager.createStateChangeEvent(
+                'ammo',
+                weapon.roundsLeft || 0,     // current value
+                null,                       // previous (unknown in this context)
+                0,                          // delta (unknown in this context)
+                weapon.roundsPerClip || 30, // max
+                'update'                    // reason
+            ));
+            
+            // Also emit reserve ammo update
+            EventManager.emit('ammo:reserve-changed', EventManager.createStateChangeEvent(
+                'ammo-reserve',
+                weapon.ammo || 0,           // current reserve ammo
+                null,                       // previous (unknown)
+                0,                          // delta (unknown)
+                weapon.maxAmmo || 100,      // max reserve
+                'update'                    // reason
+            ));
+        }
+        
+        return this;
+    }
+
+    /**
      * Clean up and dispose of all UI systems
      * @return {UIManager} This UIManager instance
      */

@@ -404,10 +404,9 @@ class World {
 	* @param {string} timeOfDay - The time of day ('dawn', 'day', 'sunset', 'dusk', 'night')
 	* @param {number} transitionDuration - Duration of transition in seconds (0 for instant)
 	* @return {World} A reference to this world object.
-	*/
-	setTimeOfDay(timeOfDay, transitionDuration = 2.0) {
+	*/	setTimeOfDay(timeOfDay, transitionDuration = 2.0) {
 		if (this.sky) {
-			console.info(`Setting time of day to: ${timeOfDay} with transition: ${transitionDuration}s`);
+			// console.info(`Setting time of day to: ${timeOfDay} with transition: ${transitionDuration}s`);
             
             // If we want instant change
             if (transitionDuration <= 0) {
@@ -447,11 +446,10 @@ class World {
         
         // Validate weather type
         if (!weather.types[weatherType]) {
-            console.warn(`Invalid weather type: ${weatherType}`);
-            return this;
+            console.warn(`Invalid weather type: ${weatherType}`);        return this;
         }
         
-        console.info(`Setting weather to: ${weatherType} with transition: ${transitionDuration}s`);
+        // console.info(`Setting weather to: ${weatherType} with transition: ${transitionDuration}s`);
         
         // Set up transition
         weather.currentType = weather.currentType || 'clear';

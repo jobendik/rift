@@ -179,10 +179,9 @@ function loadSoldierModel() {
             
             // Start animation loop
             animate();
-        },
-        // Progress callback
+        },        // Progress callback
         (xhr) => {
-            console.log(`Pause screen model loading: ${Math.floor(xhr.loaded / xhr.total * 100)}% loaded`);
+            // console.log(`Pause screen model loading: ${Math.floor(xhr.loaded / xhr.total * 100)}% loaded`);
         },
         // Error callback
         (error) => {

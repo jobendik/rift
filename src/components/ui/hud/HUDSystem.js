@@ -109,36 +109,43 @@ class HUDSystem extends UIComponent {
      * @private
      */
     _createContainers() {
-        // Create all container regions
+        // Create all container regions and explicitly append them
         this.containers = {
-            topLeft: this.createElement('div', {
+            topLeft: DOMFactory.createElement('div', {
                 className: 'rift-hud__top-left'
             }),
-            topCenter: this.createElement('div', {
+            topCenter: DOMFactory.createElement('div', {
                 className: 'rift-hud__top-center'
             }),
-            topRight: this.createElement('div', {
+            topRight: DOMFactory.createElement('div', {
                 className: 'rift-hud__top-right'
             }),
-            centerLeft: this.createElement('div', {
+            centerLeft: DOMFactory.createElement('div', {
                 className: 'rift-hud__center-left'
             }),
-            center: this.createElement('div', {
+            center: DOMFactory.createElement('div', {
                 className: 'rift-hud__center'
             }),
-            centerRight: this.createElement('div', {
+            centerRight: DOMFactory.createElement('div', {
                 className: 'rift-hud__center-right'
             }),
-            bottomLeft: this.createElement('div', {
+            bottomLeft: DOMFactory.createElement('div', {
                 className: 'rift-hud__bottom-left'
             }),
-            bottomCenter: this.createElement('div', {
+            bottomCenter: DOMFactory.createElement('div', {
                 className: 'rift-hud__bottom-center'
             }),
-            bottomRight: this.createElement('div', {
+            bottomRight: DOMFactory.createElement('div', {
                 className: 'rift-hud__bottom-right'
             })
         };
+        
+        // Append all containers to the HUD element
+        Object.values(this.containers).forEach(container => {
+            if (this.element && container) {
+                this.element.appendChild(container);
+            }
+        });
     }
     
     /**
@@ -147,15 +154,15 @@ class HUDSystem extends UIComponent {
      */
     _initComponents() {
         try {
-            // Health display (bottom left)
+            // Health display (bottom right)
             this.components.health = new HealthDisplay({
-                container: this.containers.bottomLeft,
+                container: this.containers.bottomRight,
                 showEffects: true
             });
             this.addChild(this.components.health);
-              // Stamina display (bottom left, next to health)
+              // Stamina display (bottom right, next to health)
             this.components.stamina = new StaminaSystem({
-                container: this.containers.bottomLeft
+                container: this.containers.bottomRight
             });
             this.addChild(this.components.stamina);
             
@@ -272,7 +279,7 @@ class HUDSystem extends UIComponent {
             if (this.world.player && this.world.player.weaponSystem && this.world.player.weaponSystem.currentWeapon && this.components.ammo) {
                 const weapon = this.world.player.weaponSystem.currentWeapon;
                 const currentAmmo = weapon.roundsLeft || 0;
-                const totalAmmo = weapon.totalRounds || 0;
+                const totalAmmo = weapon.ammo || 0;  // FIX: Use weapon.ammo not weapon.totalRounds
                 const magSize = weapon.roundsPerClip || 1;
                 const weaponType = weapon.type || 'rifle';
                 
@@ -362,8 +369,5 @@ class HUDSystem extends UIComponent {
         return this;
     }
 }
-
-
-
 
 export { HUDSystem };

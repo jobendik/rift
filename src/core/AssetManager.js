@@ -17,9 +17,8 @@ class AssetManager {
 
 	/**
 	* Constructs a new asset manager with the given values.
-	*/
-	constructor() {
-		console.log('AssetManager: Initializing with path prefix fix');
+	*/	constructor() {
+		// console.log('AssetManager: Initializing with path prefix fix');
 		
 		this.loadingManager = new LoadingManager();
 
@@ -44,10 +43,9 @@ class AssetManager {
 		this.loadingManager.onError = (url) => {
 			console.error('AssetManager: Loading error for', url);
 		};
-		
-		// Add global progress logger
+				// Add global progress logger
 		this.loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-			console.info(`AssetManager: Loading progress ${itemsLoaded}/${itemsTotal} - ${url}`);
+			// console.info(`AssetManager: Loading progress ${itemsLoaded}/${itemsTotal} - ${url}`);
 		};
 	}
 
@@ -56,9 +54,8 @@ class AssetManager {
 	* can be used by the game.
 	*
 	* @return {Promise} Resolves when all assets are ready.
-	*/
-	init() {
-		console.info('AssetManager: Initialization started');
+	*/	init() {
+		// console.info('AssetManager: Initialization started');
 
 		try {
 			this._loadAnimations();
@@ -106,10 +103,9 @@ class AssetManager {
 	* Loads all external animations from the backend.
 	*
 	* @return {AssetManager} A reference to this asset manager.
-	*/
-	_loadAnimations() {
-		console.info('AssetManager: Loading animations');
-		const animationLoader = this.animationLoader;			// player animations
+	*/	_loadAnimations() {
+		// console.info('AssetManager: Loading animations');
+		const animationLoader = this.animationLoader;// player animations
 		animationLoader.load('assets/animations/player.json', (clips) => {
 			console.info('AssetManager: Player animations loaded:', clips.length);
 			for (const clip of clips) {
@@ -199,9 +195,8 @@ class AssetManager {
 	* Loads all audios from the backend.
 	*
 	* @return {AssetManager} A reference to this asset manager.
-	*/
-	_loadAudios() {
-		console.info('AssetManager: Loading audios');
+	*/	_loadAudios() {
+		// console.info('AssetManager: Loading audios');
 		const audioLoader = this.audioLoader;
 		const audios = this.audios;
 		const listener = this.listener;
@@ -317,9 +312,8 @@ class AssetManager {
 	* Loads all configurations from the backend.
 	*
 	* @return {AssetManager} A reference to this asset manager.
-	*/
-	_loadConfigs() {
-		console.info('AssetManager: Loading configurations');
+	*/	_loadConfigs() {
+		// console.info('AssetManager: Loading configurations');
 		const loadingManager = this.loadingManager;
 		const configs = this.configs;
 
@@ -562,9 +556,8 @@ class AssetManager {
 			const loadTexture = (path, name) => {
 				console.info(`AssetManager: Loading texture: ${name}`);
 				// removed leading slash
-				let texture = textureLoader.load('assets/textures/' + path,
-					texture => {
-						console.info(`AssetManager: Texture loaded successfully: ${name}`);
+				let texture = textureLoader.load('assets/textures/' + path,					texture => {
+						// console.info(`AssetManager: Texture loaded successfully: ${name}`);
 						texture.colorSpace = SRGBColorSpace;
 						texture.needsUpdate = true;
 					},

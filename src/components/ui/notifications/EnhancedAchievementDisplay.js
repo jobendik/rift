@@ -203,10 +203,9 @@ export class EnhancedAchievementDisplay extends UIComponent {
      * @private
      */
     _createRootElement() {
-        this.element = DOMFactory.createElement({
-            type: 'div',
+        this.element = DOMFactory.createElement('div', {
             id: this.id,
-            classes: [this.className]
+            className: this.className
         });
         
         this.container.appendChild(this.element);

@@ -396,22 +396,19 @@ export class NotificationManager extends UIComponent {
         const notification = {};
         
         // Create main container
-        notification.element = DOMFactory.createElement({
-            type: 'div',
-            classes: ['rift-notification', `rift-notification--${type}`]
+        notification.element = DOMFactory.createElement('div', {
+            className: `rift-notification rift-notification--${type}`
         });
         
         // Add header if there's a title
         if (options.title) {
-            const header = DOMFactory.createElement({
-                type: 'div',
-                classes: ['rift-notification__header']
+            const header = DOMFactory.createElement('div', {
+                className: 'rift-notification__header'
             });
             
-            const title = DOMFactory.createElement({
-                type: 'strong',
-                classes: ['rift-notification__title'],
-                text: options.title
+            const title = DOMFactory.createElement('strong', {
+                className: 'rift-notification__title',
+                textContent: options.title
             });
             
             header.appendChild(title);
@@ -419,18 +416,16 @@ export class NotificationManager extends UIComponent {
         }
         
         // Add content
-        const content = DOMFactory.createElement({
-            type: 'div',
-            classes: ['rift-notification__content'],
-            text: text
+        const content = DOMFactory.createElement('div', {
+            className: 'rift-notification__content',
+            textContent: text
         });
         notification.element.appendChild(content);
         
         // Add close button if dismissible
         if (options.dismissible !== false) {
-            const closeBtn = DOMFactory.createElement({
-                type: 'div',
-                classes: ['rift-notification__close']
+            const closeBtn = DOMFactory.createElement('div', {
+                className: 'rift-notification__close'
             });
             
             // Add "X" to close button
@@ -449,14 +444,12 @@ export class NotificationManager extends UIComponent {
         }
         
         // Add progress bar
-        const progressContainer = DOMFactory.createElement({
-            type: 'div',
-            classes: ['rift-notification__progress']
+        const progressContainer = DOMFactory.createElement('div', {
+            className: 'rift-notification__progress'
         });
         
-        notification.progressBar = DOMFactory.createElement({
-            type: 'div',
-            classes: ['rift-notification__progress-bar']
+        notification.progressBar = DOMFactory.createElement('div', {
+            className: 'rift-notification__progress-bar'
         });
         
         progressContainer.appendChild(notification.progressBar);

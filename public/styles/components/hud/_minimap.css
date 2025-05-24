@@ -16,9 +16,9 @@
   overflow: hidden;
   pointer-events: none;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-  border: 2px solid var(--rift-primary-glow);
+  border: 2px solid var(--rift-color-primary-glow);
   box-sizing: border-box;
-  transition: all var(--rift-duration-medium) var(--rift-easing-standard);
+  transition: all var(--rift-animation-normal) ease-in-out;
 }
 
 /* Minimap canvas */
@@ -36,7 +36,7 @@
 
 .rift-minimap--interactive:hover {
   transform: scale(1.05);
-  border-color: var(--rift-primary);
+  border-color: var(--rift-color-primary);
 }
 
 /* Minimap markers */
@@ -47,14 +47,14 @@
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
   z-index: 1;
   pointer-events: none;
-  transition: all var(--rift-duration-fast) var(--rift-easing-standard);
+  transition: all var(--rift-animation-fast) ease-in-out;
 }
 
 /* Player marker */
 .rift-minimap__marker--player {
   width: 12px;
   height: 12px;
-  background-color: var(--rift-player-color);
+  background-color: var(--rift-color-secondary);
   border: 2px solid white;
   z-index: 2;
 }
@@ -63,7 +63,7 @@
 .rift-minimap__marker--enemy {
   width: 10px;
   height: 10px;
-  background-color: var(--rift-danger);
+  background-color: var(--rift-color-danger);
   border: 1px solid white;
 }
 
@@ -71,7 +71,7 @@
 .rift-minimap__marker--item {
   width: 8px;
   height: 8px;
-  background-color: var(--rift-success);
+  background-color: var(--rift-color-success);
   opacity: 0.9;
 }
 
@@ -79,7 +79,7 @@
 .rift-minimap__marker--objective {
   width: 12px;
   height: 12px;
-  background-color: var(--rift-warning);
+  background-color: var(--rift-color-warning);
   border-radius: 3px;
   transform: translate(-50%, -50%) rotate(45deg);
   border: 1px solid white;
@@ -87,7 +87,7 @@
 
 /* Pulsing marker animation */
 .rift-minimap__marker--pulse {
-  animation: rift-pulse-marker var(--rift-duration-slow) infinite;
+  animation: rift-pulse-marker var(--rift-animation-slow) infinite;
 }
 
 /* Minimap legend */
@@ -96,13 +96,13 @@
   top: 5px;
   right: 5px;
   background-color: rgba(0, 0, 0, 0.7);
-  border-radius: var(--rift-border-radius-sm);
+  border-radius: var(--border-radius);
   padding: 3px 5px;
-  font-size: var(--rift-font-size-xs);
+  font-size: var(--font-size-small);
   color: white;
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--rift-duration-fast) var(--rift-easing-standard);
+  transition: opacity var(--rift-animation-fast) ease-in-out;
 }
 
 .rift-minimap:hover .rift-minimap__legend {
@@ -121,8 +121,8 @@
   border-radius: 12px;
   padding: 3px 8px;
   opacity: 0;
-  transition: opacity var(--rift-duration-fast) var(--rift-easing-standard), 
-              bottom var(--rift-duration-fast) var(--rift-easing-standard);
+  transition: opacity var(--rift-animation-fast) ease-in-out, 
+              bottom var(--rift-animation-fast) ease-in-out;
   pointer-events: auto;
 }
 
@@ -145,7 +145,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color var(--rift-duration-fast) var(--rift-easing-standard);
+  transition: background-color var(--rift-animation-fast) ease-in-out;
 }
 
 .rift-minimap__control-button:hover {

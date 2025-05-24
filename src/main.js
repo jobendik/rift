@@ -92,11 +92,10 @@ if (THREE.SRGBColorSpace === undefined) {
 // Fix 2: Create a wrapper around TextureLoader to fix colorSpace
 const originalTextureLoader = THREE.TextureLoader.prototype.load;
 THREE.TextureLoader.prototype.load = function(url, onLoad, onProgress, onError) {
-  return originalTextureLoader.call(this, url, 
-    texture => {
+  return originalTextureLoader.call(this, url,    texture => {
       if (texture) {
         texture.colorSpace = THREE.SRGBColorSpace;
-        log(`Texture colorspace fixed: ${url}`, 'success');
+        // log(`Texture colorspace fixed: ${url}`, 'success');
       }
       if (onLoad) onLoad(texture);
     },

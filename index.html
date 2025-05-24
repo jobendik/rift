@@ -83,5 +83,97 @@
   </div>
 
   <script type="module" src="./src/main.js"></script>
+  
+  <!-- Debug injection -->
+  <script>
+    function runDebugCheck() {
+      console.log('🔍 RIFT DEBUG: Checking UI integration...');
+      
+      // Check global objects
+      const globals = ['world', 'scene', 'camera', 'player', 'EventManager'];
+      globals.forEach(global => {
+        if (window[global]) {
+          console.log(`✅ window.${global} exists`);
+          if (global === 'world' && window.world.player) {
+            console.log(`✅ world.player exists`);
+            if (window.world.player.weaponSystem) {
+              console.log(`✅ world.player.weaponSystem exists`);
+              if (window.world.player.weaponSystem.currentWeapon) {
+                const weapon = window.world.player.weaponSystem.currentWeapon;
+                console.log(`✅ Current weapon: ${weapon.type || 'unknown'}, Ammo: ${weapon.roundsLeft}/${weapon.roundsPerClip}`);
+              } else {
+                console.log(`⚠️ world.player.weaponSystem.currentWeapon is null`);
+              }
+            } else {
+              console.log(`❌ world.player.weaponSystem missing`);
+            }
+          }
+        } else {
+          console.log(`❌ window.${global} missing`);
+        }
+      });
+      
+      // Check UI elements
+      const hudElements = document.querySelectorAll('[class*="rift-"]');
+      console.log(`Found ${hudElements.length} RIFT UI elements in DOM`);
+      hudElements.forEach((el, i) => {
+        console.log(`  ${i+1}. ${el.className} (${el.tagName})`);
+      });
+      
+      // Check for ammo display specifically
+      const ammoDisplay = document.querySelector('.rift-ammo, #ammo-display');
+      if (ammoDisplay) {
+        console.log(`✅ Ammo display found: "${ammoDisplay.textContent}"`);
+      } else {
+        console.log('❌ Ammo display element NOT found in DOM');
+      }
+      
+      // Check UIManager
+      if (window.world && window.world.uiManager) {
+        console.log('✅ UIManager exists');
+        const uiManager = window.world.uiManager;
+        if (uiManager.components) {
+          console.log(`✅ UIManager has ${Object.keys(uiManager.components).length} components`);
+          Object.keys(uiManager.components).forEach(key => {
+            console.log(`  - ${key}: ${uiManager.components[key].constructor.name}`);
+          });
+        }
+        if (uiManager.ammoDisplay) {
+          console.log('✅ UIManager.ammoDisplay exists');
+        } else {
+          console.log('❌ UIManager.ammoDisplay missing');
+        }
+      } else {
+        console.log('❌ UIManager missing');
+      }
+    }
+
+    // Continuous monitoring for world creation
+    let debugInterval = setInterval(() => {
+      if (window.world && window.world.player) {
+        console.log('🎯 World and player detected! Running debug check...');
+        clearInterval(debugInterval);
+        setTimeout(runDebugCheck, 2000); // Wait 2 more seconds for UI to initialize
+        
+        // Also check weapon properties specifically
+        setTimeout(() => {
+          if (window.world.player.weaponSystem && window.world.player.weaponSystem.currentWeapon) {
+            const weapon = window.world.player.weaponSystem.currentWeapon;
+            console.log('🔫 WEAPON DEBUG: Current weapon properties:');
+            console.log('- roundsLeft:', weapon.roundsLeft);
+            console.log('- roundsPerClip:', weapon.roundsPerClip);
+            console.log('- ammo:', weapon.ammo);
+            console.log('- totalRounds:', weapon.totalRounds);
+            console.log('- type:', weapon.type);
+            console.log('- All properties:', Object.keys(weapon));
+          }
+        }, 3000);
+      }
+    }, 1000);
+
+    // Fallback: Allow manual debug trigger
+    window.debugUI = runDebugCheck;
+    console.log('💡 Tip: Type debugUI() in console to manually run debug check');
+  </script>
 </body>
 </html>

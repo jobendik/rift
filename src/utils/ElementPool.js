@@ -247,25 +247,11 @@ class ElementPool {
      * @returns {HTMLElement} The created element
      */
     _defaultCreateFn(options = {}) {
-        // Use DOMFactory if className follows BEM convention (rift-block)
-        if (this.className && this.className.startsWith('rift-')) {
-            const classNameParts = this.className.replace('rift-', '').split('__');
-            const blockName = classNameParts[0];
-            const elementName = classNameParts[1] || null;
-            
-            return DOMFactory.createElement(
-                this.elementType === 'div' ? blockName : this.elementType, 
-                elementName, 
-                options.modifiers || []
-            );
-        }
-        
-        // Fallback to standard DOM creation
-        const element = document.createElement(this.elementType);
-        if (this.className) {
-            element.className = this.className;
-        }
-        return element;
+        // Use DOMFactory with the correct signature
+        return DOMFactory.createElement(this.elementType, {
+            className: this.className,
+            ...options
+        });
     }
 
     /**

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct UI Injection Test</title>
+    <style>
+        .test-ammo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Simple direct injection test
+        function injectTestAmmo() {
+            const ammoDiv = document.createElement('div');
+            ammoDiv.className = 'test-ammo';
+            ammoDiv.innerHTML = 'AMMO: 30/120<br>TEST INJECTION';
+            document.body.appendChild(ammoDiv);
+            console.log('Direct ammo injection test added');
+        }
+        
+        // Inject after 2 seconds
+        setTimeout(injectTestAmmo, 2000);
+    </script>
+</body>
+</html>
+</script>
