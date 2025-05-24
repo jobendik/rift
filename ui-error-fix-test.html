@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - UI Initialization Error Fix Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .error-section {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success-section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); color: #ff4444; }
+        .warn { background: rgba(255, 255, 0, 0.2); color: #ffff00; }
+        .info { background: rgba(0, 150, 255, 0.2); color: #66aaff; }
+        .run-btn {
+            background: #006600;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        .run-btn:hover {
+            background: #008800;
+        }
+        .console-output {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .error-trace {
+            color: #ff6666;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚨 UI Initialization Error Fix Verification</h1>
+        
+        <div class="error-section">
+            <h2>📋 Original Error Being Fixed</h2>
+            <div class="error-trace">TypeError: Cannot read properties of null (reading 'className')
+    at DOMFactory.createElement (DOMFactory.js:26:21)
+    at ElementPool._defaultCreateFn (ElementPool.js:256:31)
+    at ElementPool._growPool (ElementPool.js:220:34)
+    at ElementPool._initialize (ElementPool.js:80:14)
+    at new ElementPool (ElementPool.js:66:14)
+    at EnhancedEventBanner._initializeElementPools (EnhancedEventBanner.js:115:28)
+    at EnhancedEventBanner.init (EnhancedEventBanner.js:69:14)
+    at NotificationSystem._initComponents (NotificationSystem.js:177:26)
+    at NotificationSystem.init (NotificationSystem.js:62:14)
+    at UIManager._initSystems (UIManager.js:219:24)</div>
+            <p><strong>Root Cause:</strong> DOMFactory.createElement was trying to read className property on null/undefined options</p>
+        </div>
+
+        <div class="success-section">
+            <h2>🔧 Fixes Applied</h2>
+            <ul>
+                <li>✅ Added null/undefined checking for options.className in DOMFactory</li>
+                <li>✅ Fixed ElementPool._defaultCreateFn to pass correct parameters to DOMFactory</li>
+                <li>✅ Added support for object-style DOMFactory calls with type property</li>
+                <li>✅ Added support for classes property in addition to className</li>
+            </ul>
+        </div>
+
+        <div class="success-section">
+            <h2>🧪 Verification Tests</h2>
+            <button class="run-btn" onclick="testSpecificErrorFix()">Test Specific Error Fix</button>
+            <button class="run-btn" onclick="testFullUIInitialization()">Test Full UI Initialization</button>
+            <button class="run-btn" onclick="testWorldInitialization()">Test World Initialization</button>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="success-section">
+            <h2>📊 Console Monitor</h2>
+            <div id="consoleOutput" class="console-output">Monitoring console output...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Capture and display console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        let consoleBuffer = [];
+
+        function captureConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            consoleBuffer.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            updateConsoleOutput();
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            captureConsole(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            captureConsole(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            captureConsole(args.join(' '), 'warn');
+        };
+
+        function updateConsoleOutput() {
+            const output = document.getElementById('consoleOutput');
+            output.textContent = consoleBuffer.slice(-50).join('\n');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function addResult(message, type = 'info') {
+            const container = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        // Test the specific error fix
+        window.testSpecificErrorFix = async function() {
+            document.getElementById('testResults').innerHTML = '';
+            addResult('🔍 Testing specific DOMFactory/ElementPool error fix...', 'info');
+
+            try {
+                // Test 1: EnhancedEventBanner initialization (this was failing before)
+                addResult('Testing EnhancedEventBanner initialization...', 'info');
+                
+                const { default: EnhancedEventBanner } = await import('./src/components/ui/notifications/EnhancedEventBanner.js');
+                
+                const eventBanner = new EnhancedEventBanner({
+                    container: document.body,
+                    eventBus: {
+                        on: () => {},
+                        emit: () => {},
+                        off: () => {}
+                    }
+                });
+
+                addResult('✅ EnhancedEventBanner instance created successfully', 'pass');
+
+                // This is where the error was occurring
+                await eventBanner.init();
+                addResult('✅ EnhancedEventBanner.init() completed without the className error!', 'pass');
+
+                // Test 2: Verify element pools were created
+                if (eventBanner.eventPool && eventBanner.outcomePool) {
+                    addResult('✅ Element pools (eventPool, outcomePool) created successfully', 'pass');
+                } else {
+                    addResult('❌ Element pools not created properly', 'fail');
+                }
+
+                // Test 3: Try to acquire elements from pools
+                if (eventBanner.eventPool) {
+                    const element = eventBanner.eventPool.acquire();
+                    if (element) {
+                        addResult('✅ Successfully acquired element from eventPool', 'pass');
+                        eventBanner.eventPool.release(element);
+                        addResult('✅ Successfully released element back to eventPool', 'pass');
+                    } else {
+                        addResult('❌ Failed to acquire element from eventPool', 'fail');
+                    }
+                }
+
+            } catch (error) {
+                addResult(`❌ Specific error test failed: ${error.message}`, 'fail');
+                console.error('Specific Error Test Failed:', error);
+                
+                // Check if it's the same error we were trying to fix
+                if (error.message.includes('Cannot read properties of null') && error.message.includes('className')) {
+                    addResult('🚨 ORIGINAL ERROR STILL PRESENT - Fix did not work!', 'fail');
+                } else {
+                    addResult('ℹ️ Different error occurred (original error may be fixed)', 'warn');
+                }
+            }
+        };
+
+        // Test full UI initialization
+        window.testFullUIInitialization = async function() {
+            addResult('🎮 Testing full UI initialization chain...', 'info');
+
+            try {
+                const { default: UIManager } = await import('./src/core/UIManager.js');
+                
+                addResult('Testing UIManager initialization...', 'info');
+                await UIManager.init();
+                addResult('✅ UIManager initialization completed', 'pass');
+
+                // Check if notification system initialized
+                if (UIManager.notificationSystem) {
+                    addResult('✅ Notification system initialized', 'pass');
+                    
+                    // Check specific components
+                    if (UIManager.notificationSystem.eventBanner) {
+                        addResult('✅ Event banner component initialized', 'pass');
+                    } else {
+                        addResult('⚠️ Event banner component not found', 'warn');
+                    }
+                } else {
+                    addResult('❌ Notification system not initialized', 'fail');
+                }
+
+            } catch (error) {
+                addResult(`❌ UI initialization test failed: ${error.message}`, 'fail');
+                console.error('UI Initialization Test Failed:', error);
+            }
+        };
+
+        // Test world initialization
+        window.testWorldInitialization = async function() {
+            addResult('🌍 Testing World initialization (full chain)...', 'info');
+
+            try {
+                const { default: World } = await import('./src/core/World.js');
+                
+                // Create a test canvas
+                const canvas = document.createElement('canvas');
+                canvas.id = 'testCanvas';
+                canvas.width = 800;
+                canvas.height = 600;
+                document.body.appendChild(canvas);
+
+                const world = new World(canvas);
+                addResult('✅ World instance created', 'pass');
+
+                // This should trigger the full UI initialization chain
+                await world.init();
+                addResult('✅ World initialization completed (includes UI init)', 'pass');
+
+                // Verify UI components are properly attached
+                if (world.uiManager) {
+                    addResult('✅ UIManager attached to world', 'pass');
+                    
+                    if (world.uiManager.notificationSystem) {
+                        addResult('✅ Notification system properly initialized in world', 'pass');
+                    } else {
+                        addResult('⚠️ Notification system not found in world UIManager', 'warn');
+                    }
+                } else {
+                    addResult('❌ UIManager not attached to world', 'fail');
+                }
+
+                // Clean up
+                canvas.remove();
+
+            } catch (error) {
+                addResult(`❌ World initialization test failed: ${error.message}`, 'fail');
+                console.error('World Initialization Test Failed:', error);
+                
+                // Check if it's related to our original error
+                if (error.message.includes('Cannot read properties of null') && error.message.includes('className')) {
+                    addResult('🚨 ORIGINAL ERROR DETECTED IN WORLD INIT', 'fail');
+                }
+            }
+        };
+
+        // Auto-run the specific error test
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addResult('🎬 Starting automatic error fix verification...', 'info');
+                testSpecificErrorFix();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

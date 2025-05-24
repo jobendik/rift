@@ -66,8 +66,7 @@ export class UIManager {
         this.update = this.update.bind(this);
         this._onWindowResize = this._onWindowResize.bind(this);
     }
-    
-    /**
+      /**
      * Initialize all UI systems
      * @return {UIManager} This UIManager instance
      */
@@ -77,21 +76,24 @@ export class UIManager {
             return this;
         }
         
-        console.log('Initializing RIFT UI Manager...');
+        console.log('🎮 UIManager: Starting initialization...');
         
         // Register global event listeners
         window.addEventListener('resize', this._onWindowResize);
+        console.log('✅ UIManager: Window resize listener added');
         
         // Initialize each UI system
         this._initSystems();
+        console.log('✅ UIManager: All systems initialized');
         
         // Setup FPS counter if enabled
         if (this.config.debug?.showFps) {
             this._setupFPSCounter();
+            console.log('✅ UIManager: FPS counter set up');
         }
         
         this.isInitialized = true;
-        console.log('RIFT UI Manager initialized');
+        console.log('🎉 UIManager: Initialization complete!');
         
         // Emit standardized initialization event
         if (EventManager) {
@@ -99,6 +101,7 @@ export class UIManager {
                 timestamp: performance.now(),
                 manager: this 
             });
+            console.log('✅ UIManager: ui:initialize event emitted');
         }
         
         return this;
@@ -204,23 +207,34 @@ export class UIManager {
             },
             debug: { init: () => {}, update: () => {} }
         };
-        
-        // Initialize each system
+          // Initialize each system
+        console.log('🔧 UIManager: Starting system initialization...');
         for (const key in this.systems) {
             const system = this.systems[key];
+            console.log(`🔧 UIManager: Initializing system '${key}'...`);
             
             // Check if it's a direct system or a group
             if (typeof system.init === 'function') {
+                console.log(`✅ UIManager: System '${key}' has init method, calling...`);
                 system.init();
+                console.log(`✅ UIManager: System '${key}' initialized`);
             } else if (typeof system === 'object') {
+                console.log(`🔧 UIManager: System '${key}' is a group, checking subsystems...`);
                 // It's a group of systems (like effects)
                 for (const subKey in system) {
                     if (typeof system[subKey].init === 'function') {
+                        console.log(`✅ UIManager: Subsystem '${key}.${subKey}' has init method, calling...`);
                         system[subKey].init();
+                        console.log(`✅ UIManager: Subsystem '${key}.${subKey}' initialized`);
+                    } else {
+                        console.log(`⚠️ UIManager: Subsystem '${key}.${subKey}' has no init method`);
                     }
                 }
+            } else {
+                console.log(`⚠️ UIManager: System '${key}' has no init method or is not an object`);
             }
         }
+        console.log('🎉 UIManager: All systems initialization completed!');
     }
     
     /**
@@ -375,14 +389,22 @@ export class UIManager {
     /**
      * Show the FPS interface elements
      * @return {UIManager} This UIManager instance
-     */
-    showFPSInterface() {
+     */    showFPSInterface() {
+        console.log('🎯 UIManager: showFPSInterface() called');
         const previousView = this.activeView;
         this.activeView = 'game';
         
         // Show HUD
         if (this.systems.hud?.show) {
+            console.log('🎯 UIManager: Calling HUD show method');
             this.systems.hud.show();
+            console.log('✅ UIManager: HUD show method called');
+        } else {
+            console.error('❌ UIManager: HUD system or show method not available!', {
+                hasHudSystem: !!this.systems.hud,
+                hasShowMethod: !!this.systems.hud?.show,
+                systems: Object.keys(this.systems)
+            });
         }
         
         // Emit event with standardized format
@@ -392,6 +414,7 @@ export class UIManager {
                 previous: 'hidden',    // Previous state
                 view: 'game'          // Additional context
             });
+            console.log('✅ UIManager: ui:view:changed event emitted');
         }
         
         return this;
@@ -420,8 +443,33 @@ export class UIManager {
         
         return this;
     }
-    
-    /**
+      /**
+     * Update ammo status in the HUD
+     * Called by weapons when ammo changes
+     * @return {UIManager} This UIManager instance
+     */
+    updateAmmoStatus() {
+        // Trigger an immediate HUD update for ammo display
+        if (this.systems.hud && this.systems.hud._updateComponentData) {
+            this.systems.hud._updateComponentData();
+        }
+        
+        // Emit ammo update event for other systems that might need it
+        if (EventManager && this.world && this.world.player) {
+            const weapon = this.world.player.weaponSystem?.currentWeapon;
+            if (weapon) {
+                EventManager.emit('ui:ammo:updated', {
+                    currentAmmo: weapon.roundsLeft || 0,
+                    totalAmmo: weapon.totalRounds || 0,
+                    magSize: weapon.roundsPerClip || 1,
+                    weaponType: weapon.type || 'rifle',
+                    timestamp: performance.now()
+                });
+            }
+        }
+        
+        return this;
+    }    /**
      * Toggle game pause state
      * @param {Boolean} isPaused - Whether the game should be paused
      * @return {UIManager} This UIManager instance

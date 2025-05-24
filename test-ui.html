@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT UI Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .test-container {
+            padding: 20px;
+        }
+        .test-element {
+            border: 2px solid #e63946;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+        }
+        .console-log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>RIFT UI System Test</h1>
+        <div class="test-element">
+            <h2>CSS Test</h2>
+            <div class="rift-hud">
+                <div class="rift-hud__bottom-left">
+                    <div class="rift-health">Health: 100</div>
+                </div>
+                <div class="rift-hud__bottom-right">
+                    <div class="rift-ammo">Ammo: 30/120</div>
+                </div>
+                <div class="rift-hud__center">
+                    <div class="rift-crosshair"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-element">
+            <h2>UI Manager Test</h2>
+            <button id="testBtn">Test UI Manager</button>
+            <div id="console" class="console-log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { UIManager } from './src/core/UIManager.js';
+        import { UIConfig } from './src/core/UIConfig.js';
+        
+        const console_div = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function logToDiv(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            console_div.innerHTML += `<div style="color: ${
+                type === 'error' ? '#f44' : 
+                type === 'warn' ? '#fa4' : 
+                type === 'success' ? '#4f4' : '#0f0'
+            };">[${timestamp}] ${message}</div>`;
+            console_div.scrollTop = console_div.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            logToDiv(args.join(' '));
+        };
+        
+        console.error = (...args) => {
+            originalError(...args);
+            logToDiv(args.join(' '), 'error');
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            logToDiv(args.join(' '), 'warn');
+        };
+        
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            console_div.innerHTML = '';
+            console.log('🧪 Starting UI Manager Test...');
+            
+            try {
+                // Create a minimal world mock
+                const mockWorld = {
+                    player: {
+                        health: 100,
+                        maxHealth: 100,
+                        stamina: 100,
+                        maxStamina: 100,
+                        weaponSystem: {
+                            currentWeapon: {
+                                roundsLeft: 30,
+                                totalRounds: 120,
+                                roundsPerClip: 30,
+                                type: 'rifle'
+                            }
+                        }
+                    }
+                };
+                
+                console.log('🌍 Mock world created:', mockWorld);
+                console.log('⚙️ UIConfig loaded:', UIConfig);
+                
+                // Create UI Manager
+                console.log('🎮 Creating UIManager...');
+                const uiManager = new UIManager(mockWorld);
+                
+                console.log('🚀 Initializing UIManager...');
+                uiManager.init();
+                
+                console.log('✅ UIManager initialized!');
+                
+                // Test showFPSInterface
+                console.log('🎯 Testing showFPSInterface...');
+                uiManager.showFPSInterface();
+                
+                console.log('🔍 Checking DOM for HUD elements...');
+                const hudElement = document.querySelector('.rift-hud');
+                if (hudElement) {
+                    console.log('✅ HUD element found in DOM!');
+                    console.log('📋 HUD children:', hudElement.children.length);
+                    for (let i = 0; i < hudElement.children.length; i++) {
+                        console.log(`  Child ${i}: ${hudElement.children[i].className}`);
+                    }
+                } else {
+                    console.log('❌ HUD element NOT found in DOM!');
+                }
+                
+                // Test update loop
+                console.log('🔄 Testing update loop...');
+                uiManager.update(0.016); // 60fps frame
+                
+                console.log('🎉 All tests completed!');
+                
+            } catch (error) {
+                console.error('💥 Test failed:', error);
+                console.error('Stack:', error.stack);
+            }
+        });
+        
+        console.log('🧪 Test page loaded. Click the button to test UI Manager.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - Final Validation Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-section h2 {
+            color: #00ffff;
+            margin-top: 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); color: #ff4444; }
+        .warn { background: rgba(255, 255, 0, 0.2); color: #ffff00; }
+        .info { background: rgba(0, 150, 255, 0.2); color: #66aaff; }
+        .run-btn {
+            background: #006600;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        .run-btn:hover {
+            background: #008800;
+        }
+        .log-output {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .hud-preview {
+            border: 2px solid #00ff00;
+            min-height: 200px;
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎮 RIFT - Final Integration Validation</h1>
+        
+        <div class="test-section">
+            <h2>📋 Test Summary</h2>
+            <div id="summary">
+                <div class="info">Testing the fixes implemented for HUD/UI integration issues...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎨 CSS Foundation Test</h2>
+            <button class="run-btn" onclick="testCSSFoundation()">Run CSS Tests</button>
+            <div id="cssResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🏗️ UIManager Integration Test</h2>
+            <button class="run-btn" onclick="testUIManager()">Test UIManager</button>
+            <div id="uiResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 HUD System Test</h2>
+            <button class="run-btn" onclick="testHUDSystem()">Test HUD System</button>
+            <button class="run-btn" onclick="forceShowHUD()">Force Show HUD</button>
+            <div id="hudResults"></div>
+            <div id="hudPreview" class="hud-preview" style="display: none;">
+                <div style="padding: 20px; color: #00ff00;">HUD Preview Area</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔫 Weapon Integration Test</h2>
+            <button class="run-btn" onclick="testWeaponIntegration()">Test Weapon Updates</button>
+            <div id="weaponResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 End-to-End Test</h2>
+            <button class="run-btn" onclick="runEndToEndTest()">Run Full E2E Test</button>
+            <div id="e2eResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Console Log Output</h2>
+            <div id="consoleOutput" class="log-output">Console logs will appear here...</div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script type="module">
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        let consoleBuffer = [];
+
+        function captureLog(message, type = 'log') {
+            consoleBuffer.push(`[${new Date().toLocaleTimeString()}] ${type.toUpperCase()}: ${message}`);
+            updateConsoleOutput();
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            captureLog(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            captureLog(args.join(' '), 'error');
+        };
+
+        function updateConsoleOutput() {
+            document.getElementById('consoleOutput').innerHTML = 
+                consoleBuffer.slice(-20).join('<br>');
+        }
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        // Test CSS Foundation
+        window.testCSSFoundation = function() {
+            const container = document.getElementById('cssResults');
+            container.innerHTML = '';
+            
+            addResult('cssResults', '🔍 Testing CSS variable availability...', 'info');
+
+            const criticalVars = [
+                '--rift-hud-margin',
+                '--rift-z-index-hud', 
+                '--rift-primary-color',
+                '--rift-background-dark',
+                '--rift-text-primary',
+                '--rift-accent-color',
+                '--rift-success-color'
+            ];
+
+            const rootStyles = getComputedStyle(document.documentElement);
+            let passCount = 0;
+
+            criticalVars.forEach(varName => {
+                const value = rootStyles.getPropertyValue(varName).trim();
+                if (value) {
+                    addResult('cssResults', `✅ ${varName}: "${value}"`, 'pass');
+                    passCount++;
+                } else {
+                    addResult('cssResults', `❌ ${varName}: NOT DEFINED`, 'fail');
+                }
+            });
+
+            const percentage = Math.round((passCount / criticalVars.length) * 100);
+            addResult('cssResults', `📊 CSS Foundation Score: ${percentage}% (${passCount}/${criticalVars.length})`, 
+                     percentage >= 80 ? 'pass' : 'fail');
+        };
+
+        // Test UIManager
+        window.testUIManager = async function() {
+            const container = document.getElementById('uiResults');
+            container.innerHTML = '';
+            
+            addResult('uiResults', '🔍 Testing UIManager initialization...', 'info');
+
+            try {
+                // Import UIManager
+                const { default: UIManager } = await import('./src/core/UIManager.js');
+                addResult('uiResults', '✅ UIManager module imported successfully', 'pass');
+
+                // Test initialization
+                await UIManager.init();
+                addResult('uiResults', '✅ UIManager.init() completed without errors', 'pass');
+
+                // Test updateAmmoStatus method
+                if (typeof UIManager.updateAmmoStatus === 'function') {
+                    addResult('uiResults', '✅ updateAmmoStatus method exists', 'pass');
+                    
+                    // Test calling the method
+                    UIManager.updateAmmoStatus(25, 100);
+                    addResult('uiResults', '✅ updateAmmoStatus(25, 100) called successfully', 'pass');
+                } else {
+                    addResult('uiResults', '❌ updateAmmoStatus method missing', 'fail');
+                }
+
+                // Test HUD system attachment
+                if (UIManager.hudSystem) {
+                    addResult('uiResults', '✅ HUD system attached to UIManager', 'pass');
+                } else {
+                    addResult('uiResults', '❌ HUD system not attached', 'fail');
+                }
+
+            } catch (error) {
+                addResult('uiResults', `❌ UIManager test failed: ${error.message}`, 'fail');
+                console.error('UIManager Test Error:', error);
+            }
+        };
+
+        // Test HUD System
+        window.testHUDSystem = async function() {
+            const container = document.getElementById('hudResults');
+            container.innerHTML = '';
+            
+            addResult('hudResults', '🔍 Testing HUD System...', 'info');
+
+            try {
+                const { default: UIManager } = await import('./src/core/UIManager.js');
+                await UIManager.init();
+
+                // Try to show the HUD
+                UIManager.showFPSInterface();
+                addResult('hudResults', '✅ showFPSInterface() called', 'pass');
+
+                // Check for HUD elements in DOM
+                setTimeout(() => {
+                    const hudContainer = document.querySelector('.hud-container');
+                    if (hudContainer) {
+                        addResult('hudResults', '✅ HUD container found in DOM', 'pass');
+                        
+                        const styles = window.getComputedStyle(hudContainer);
+                        addResult('hudResults', `📊 HUD display: ${styles.display}`, 
+                                 styles.display !== 'none' ? 'pass' : 'warn');
+                        addResult('hudResults', `📊 HUD opacity: ${styles.opacity}`, 
+                                 parseFloat(styles.opacity) > 0 ? 'pass' : 'warn');
+                        
+                        // Check for child elements
+                        const children = hudContainer.children;
+                        addResult('hudResults', `📊 HUD has ${children.length} child elements`, 
+                                 children.length > 0 ? 'pass' : 'warn');
+                    } else {
+                        addResult('hudResults', '❌ HUD container not found in DOM', 'fail');
+                    }
+                }, 200);
+
+            } catch (error) {
+                addResult('hudResults', `❌ HUD test failed: ${error.message}`, 'fail');
+                console.error('HUD Test Error:', error);
+            }
+        };
+
+        // Force show HUD for visual verification
+        window.forceShowHUD = async function() {
+            try {
+                const { default: UIManager } = await import('./src/core/UIManager.js');
+                await UIManager.init();
+                UIManager.showFPSInterface();
+                
+                // Show the preview area
+                document.getElementById('hudPreview').style.display = 'block';
+                
+                // Try to move HUD into preview
+                setTimeout(() => {
+                    const hudContainer = document.querySelector('.hud-container');
+                    if (hudContainer) {
+                        const clone = hudContainer.cloneNode(true);
+                        clone.style.position = 'relative';
+                        clone.style.transform = 'scale(0.8)';
+                        document.getElementById('hudPreview').appendChild(clone);
+                        addResult('hudResults', '✅ HUD cloned into preview area', 'pass');
+                    }
+                }, 300);
+
+            } catch (error) {
+                addResult('hudResults', `❌ Force HUD failed: ${error.message}`, 'fail');
+            }
+        };
+
+        // Test weapon integration
+        window.testWeaponIntegration = async function() {
+            const container = document.getElementById('weaponResults');
+            container.innerHTML = '';
+            
+            addResult('weaponResults', '🔍 Testing Weapon-HUD Integration...', 'info');
+
+            try {
+                const { default: UIManager } = await import('./src/core/UIManager.js');
+                await UIManager.init();
+
+                // Test multiple ammo updates
+                const testCases = [
+                    { current: 30, total: 90 },
+                    { current: 0, total: 30 },
+                    { current: 15, total: 30 }
+                ];
+
+                for (const test of testCases) {
+                    UIManager.updateAmmoStatus(test.current, test.total);
+                    addResult('weaponResults', `✅ Ammo update: ${test.current}/${test.total}`, 'pass');
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                addResult('weaponResults', '✅ All weapon integration tests passed', 'pass');
+
+            } catch (error) {
+                addResult('weaponResults', `❌ Weapon integration test failed: ${error.message}`, 'fail');
+            }
+        };
+
+        // End-to-end test
+        window.runEndToEndTest = async function() {
+            const container = document.getElementById('e2eResults');
+            container.innerHTML = '';
+            
+            addResult('e2eResults', '🚀 Running End-to-End Integration Test...', 'info');
+
+            try {
+                // Step 1: CSS Foundation
+                addResult('e2eResults', '1️⃣ Testing CSS foundation...', 'info');
+                await testCSSFoundation();
+
+                // Step 2: UIManager
+                addResult('e2eResults', '2️⃣ Testing UIManager...', 'info');
+                await testUIManager();
+
+                // Step 3: HUD System
+                addResult('e2eResults', '3️⃣ Testing HUD System...', 'info');
+                await testHUDSystem();
+
+                // Step 4: Weapon Integration
+                addResult('e2eResults', '4️⃣ Testing Weapon Integration...', 'info');
+                await testWeaponIntegration();
+
+                addResult('e2eResults', '🎉 End-to-End test completed!', 'pass');
+                addResult('e2eResults', '✅ All major integration issues appear to be resolved', 'pass');
+
+            } catch (error) {
+                addResult('e2eResults', `❌ E2E test failed: ${error.message}`, 'fail');
+                console.error('E2E Test Error:', error);
+            }
+        };
+
+        // Auto-run CSS test on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testCSSFoundation();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - HUD Integration Test</title>
+    <link rel="stylesheet" href="/public/styles/index.css">
+    <style>
+        .test-results {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            z-index: 10000;
+            max-width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .test-pass { color: #00ff00; }
+        .test-fail { color: #ff0000; }
+        .test-warn { color: #ffaa00; }
+        .test-section {
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+        #test-controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 10001;
+        }
+        .test-btn {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+        }
+        .test-btn:hover {
+            background: #0088ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="menu" class="menu-container">
+            <div class="menu-content">
+                <h1 class="game-title">RIFT</h1>
+                <div class="menu-buttons">
+                    <button id="startButton" class="menu-button">START GAME</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="gameContainer" style="display: none;">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+    </div>
+
+    <div class="test-results" id="testResults">
+        <h3>🧪 RIFT Integration Test</h3>
+        <div id="testOutput">Starting tests...</div>
+    </div>
+
+    <div id="test-controls">
+        <button class="test-btn" onclick="runFullTest()">🔄 Run Full Test</button>
+        <button class="test-btn" onclick="testHUDOnly()">🎯 Test HUD Only</button>
+        <button class="test-btn" onclick="testCSSVars()">🎨 Test CSS Variables</button>
+        <button class="test-btn" onclick="clearResults()">🗑️ Clear</button>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script type="module">
+        // Import game modules
+        import World from './src/core/World.js';
+        import UIManager from './src/core/UIManager.js';
+
+        let testOutput = '';
+        let world = null;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'pass' ? '✅' : type === 'fail' ? '❌' : type === 'warn' ? '⚠️' : 'ℹ️';
+            testOutput += `[${timestamp}] ${prefix} ${message}\n`;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('testOutput').innerHTML = testOutput.replace(/\n/g, '<br>');
+            document.getElementById('testOutput').scrollTop = document.getElementById('testOutput').scrollHeight;
+        }
+
+        window.clearResults = function() {
+            testOutput = '';
+            updateDisplay();
+        };
+
+        // Test CSS Variables
+        window.testCSSVars = function() {
+            log('🎨 Testing CSS Variables...', 'info');
+            
+            const testVars = [
+                '--rift-hud-margin',
+                '--rift-z-index-hud',
+                '--rift-primary-color',
+                '--rift-background-dark',
+                '--rift-text-primary'
+            ];
+
+            const rootStyles = getComputedStyle(document.documentElement);
+            
+            testVars.forEach(varName => {
+                const value = rootStyles.getPropertyValue(varName).trim();
+                if (value) {
+                    log(`${varName}: ${value}`, 'pass');
+                } else {
+                    log(`${varName}: NOT DEFINED`, 'fail');
+                }
+            });
+        };
+
+        // Test HUD System Only
+        window.testHUDOnly = async function() {
+            log('🎯 Testing HUD System Isolation...', 'info');
+            
+            try {
+                // Test UIManager initialization
+                log('Initializing UIManager...', 'info');
+                await UIManager.init();
+                log('UIManager initialized successfully', 'pass');
+
+                // Test HUD visibility
+                if (UIManager.hudSystem) {
+                    log('HUD System found', 'pass');
+                    
+                    // Try to show HUD
+                    UIManager.showFPSInterface();
+                    log('HUD show method called', 'pass');
+                    
+                    // Check if HUD elements exist in DOM
+                    const hudElement = document.querySelector('.hud-container');
+                    if (hudElement) {
+                        log('HUD container element found in DOM', 'pass');
+                        
+                        const isVisible = window.getComputedStyle(hudElement).display !== 'none';
+                        log(`HUD visibility: ${isVisible ? 'VISIBLE' : 'HIDDEN'}`, isVisible ? 'pass' : 'warn');
+                    } else {
+                        log('HUD container element NOT found in DOM', 'fail');
+                    }
+                    
+                    // Test ammo update method
+                    if (typeof UIManager.updateAmmoStatus === 'function') {
+                        log('updateAmmoStatus method exists', 'pass');
+                        UIManager.updateAmmoStatus(30, 90);
+                        log('updateAmmoStatus method called successfully', 'pass');
+                    } else {
+                        log('updateAmmoStatus method missing', 'fail');
+                    }
+                } else {
+                    log('HUD System not found', 'fail');
+                }
+                
+            } catch (error) {
+                log(`HUD test error: ${error.message}`, 'fail');
+                console.error('HUD Test Error:', error);
+            }
+        };
+
+        // Full integration test
+        window.runFullTest = async function() {
+            log('🚀 Starting Full Integration Test...', 'info');
+            
+            // Test 1: CSS Variables
+            await testCSSVars();
+            
+            // Test 2: Module Loading
+            log('📦 Testing Module Loading...', 'info');
+            try {
+                log('World module loaded', 'pass');
+                log('UIManager module loaded', 'pass');
+            } catch (error) {
+                log(`Module loading error: ${error.message}`, 'fail');
+            }
+
+            // Test 3: Game Initialization
+            log('🎮 Testing Game Initialization...', 'info');
+            try {
+                const canvas = document.getElementById('gameCanvas');
+                if (!canvas) {
+                    log('Game canvas not found', 'fail');
+                    return;
+                }
+
+                world = new World(canvas);
+                log('World instance created', 'pass');
+
+                await world.init();
+                log('World initialization completed', 'pass');
+
+                // Test 4: UI System Status
+                log('🖥️ Testing UI System Status...', 'info');
+                if (world.uiManager) {
+                    log('UIManager attached to world', 'pass');
+                    
+                    if (world.uiManager.hudSystem) {
+                        log('HUD System initialized', 'pass');
+                    } else {
+                        log('HUD System not initialized', 'fail');
+                    }
+                } else {
+                    log('UIManager not attached to world', 'fail');
+                }
+
+                // Test 5: HUD Integration
+                log('🎯 Testing HUD Integration...', 'info');
+                world.showFPSInterface();
+                
+                setTimeout(() => {
+                    const hudContainer = document.querySelector('.hud-container');
+                    if (hudContainer) {
+                        const style = window.getComputedStyle(hudContainer);
+                        log(`HUD display: ${style.display}`, style.display !== 'none' ? 'pass' : 'warn');
+                        log(`HUD opacity: ${style.opacity}`, parseFloat(style.opacity) > 0 ? 'pass' : 'warn');
+                    } else {
+                        log('HUD container not found after showFPSInterface', 'fail');
+                    }
+                }, 100);
+
+            } catch (error) {
+                log(`Game initialization error: ${error.message}`, 'fail');
+                console.error('Full Test Error:', error);
+            }
+        };
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🎬 Auto-running basic tests...', 'info');
+                testCSSVars();
+            }, 500);
+        });
+
+        // Make functions globally available
+        window.log = log;
+        window.world = world;
+    </script>
+</body>
+</html>

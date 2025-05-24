@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT Debug - Force HUD Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            background: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 10000;
+            max-width: 300px;
+            border: 1px solid #0f0;
+        }
+        
+        .debug-panel h4 {
+            margin: 0 0 10px 0;
+            color: #ff0;
+        }
+        
+        .debug-panel button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            margin: 5px 5px 5px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .debug-panel button:hover {
+            background: #0a0;
+        }
+        
+        #game-world {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(45deg, #333, #111);
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-world">
+        <div class="debug-panel">
+            <h4>RIFT HUD Debug Test</h4>
+            <div>CSS Variables: <span id="css-status">❓</span></div>
+            <div>UI Manager: <span id="ui-status">❓</span></div>
+            <div>HUD System: <span id="hud-status">❓</span></div>
+            <br>
+            <button onclick="testCSS()">Test CSS</button>
+            <button onclick="initHUD()">Init HUD</button>
+            <button onclick="showHUD()">Show HUD</button>
+            <button onclick="toggleDebug()">Toggle Debug</button>
+        </div>
+        
+        <!-- HUD will be injected here -->
+        <div id="hud-container"></div>
+    </div>
+
+    <script type="module">
+        import UIComponent from './src/components/ui/UIComponent.js';
+        import { DOMFactory } from './src/utils/DOMFactory.js';
+        
+        // Global debug variables
+        window.testUIManager = null;
+        window.testHUDSystem = null;
+        window.debugMode = false;
+
+        // Test CSS Variables function
+        window.testCSS = function() {
+            try {
+                const testEl = document.createElement('div');
+                testEl.style.cssText = `
+                    position: absolute;
+                    top: var(--rift-hud-margin, 999px);
+                    left: var(--rift-hud-margin, 999px);
+                    background: var(--rift-primary, red);
+                    color: white;
+                    padding: 10px;
+                    z-index: var(--rift-z-index-hud, 1);
+                `;
+                testEl.textContent = 'CSS Test Element';
+                document.body.appendChild(testEl);
+                
+                const styles = getComputedStyle(testEl);
+                const top = styles.top;
+                const background = styles.backgroundColor;
+                const zIndex = styles.zIndex;
+                
+                console.log('CSS Test Results:', { top, background, zIndex });
+                
+                if (top === '999px' || background === 'red') {
+                    document.getElementById('css-status').textContent = '❌ Using Fallbacks';
+                    console.warn('CSS variables not loading - check @import statements');
+                } else {
+                    document.getElementById('css-status').textContent = '✅ Working';
+                    console.log('CSS variables loading correctly');
+                }
+                
+                // Clean up test element
+                setTimeout(() => testEl.remove(), 3000);
+                
+            } catch (error) {
+                document.getElementById('css-status').textContent = '❌ Error';
+                console.error('CSS test error:', error);
+            }
+        };
+
+        // Initialize HUD function
+        window.initHUD = async function() {
+            try {
+                console.log('🔄 Loading HUD System...');
+                const HUDSystemModule = await import('./src/components/ui/hud/HUDSystem.js');
+                const HUDSystem = HUDSystemModule.default;
+                
+                console.log('🔄 Creating mock world...');
+                const mockWorld = {
+                    player: {
+                        health: 75,
+                        maxHealth: 100,
+                        ammo: 15,
+                        maxAmmo: 30,
+                        stamina: 80,
+                        maxStamina: 100
+                    }
+                };
+                
+                console.log('🔄 Creating HUD System instance...');
+                const hudContainer = document.getElementById('hud-container');
+                
+                window.testHUDSystem = new HUDSystem(mockWorld, {
+                    container: hudContainer,
+                    id: 'debug-hud-system'
+                });
+                
+                console.log('✅ HUD System created successfully');
+                document.getElementById('hud-status').textContent = '✅ Created';
+                
+                return window.testHUDSystem;
+                
+            } catch (error) {
+                console.error('❌ HUD initialization error:', error);
+                document.getElementById('hud-status').textContent = '❌ Error';
+                throw error;
+            }
+        };
+
+        // Show HUD function
+        window.showHUD = function() {
+            try {
+                if (!window.testHUDSystem) {
+                    console.warn('⚠️ HUD System not initialized - initializing now...');
+                    window.initHUD().then(() => {
+                        window.testHUDSystem.show();
+                        console.log('✅ HUD shown after initialization');
+                    });
+                } else {
+                    window.testHUDSystem.show();
+                    console.log('✅ HUD shown');
+                }
+                
+                document.getElementById('ui-status').textContent = '✅ Shown';
+                
+            } catch (error) {
+                console.error('❌ Error showing HUD:', error);
+                document.getElementById('ui-status').textContent = '❌ Error';
+            }
+        };
+
+        // Toggle debug mode function
+        window.toggleDebug = function() {
+            window.debugMode = !window.debugMode;
+            
+            if (window.debugMode) {
+                // Enable verbose logging
+                const originalLog = console.log;
+                window._originalLog = originalLog;
+                console.log = function(...args) {
+                    originalLog.apply(console, ['[DEBUG]', ...args]);
+                };
+                console.log('🔧 Debug mode enabled');
+            } else {
+                // Restore original logging
+                if (window._originalLog) {
+                    console.log = window._originalLog;
+                }
+                console.log('🔧 Debug mode disabled');
+            }
+        };
+
+        // Auto-run CSS test on load
+        setTimeout(() => {
+            console.log('🚀 Auto-running CSS test...');
+            window.testCSS();
+        }, 1000);
+
+        // Log that debug interface is ready
+        console.log('🎯 RIFT HUD Debug Interface Ready');
+        console.log('Use the buttons in the debug panel to test HUD functionality');
+    </script>
+</body>
+</html>

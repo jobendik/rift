@@ -249,17 +249,18 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }, 100);
       }
-      
-      try {
+        try {
         // Initialize the world
         try {
+          log('🚀 Main: Calling world.init()...', 'info');
           world.init();
+          log('✅ Main: World initialization completed', 'success');
         } catch (error) {
-          log(`Error during world initialization: ${error.message}`, 'error');
+          log(`❌ Main: Error during world initialization: ${error.message}`, 'error');
           console.error(error);
         }
       } catch (error) {
-        log(`Critical error starting game: ${error.message}`, 'error');
+        log(`❌ Main: Critical error starting game: ${error.message}`, 'error');
         console.error(error);
       }
     });

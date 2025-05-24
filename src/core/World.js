@@ -172,7 +172,6 @@ class World {
 		};
 
 	}
-
 	/**
 	* Entry point for the game. It initializes the asset manager and then
 	* starts to build the game environment.
@@ -181,46 +180,47 @@ class World {
 	*/
 	init() {
 		try {
+			console.log('🌍 World: Starting World initialization...');
 			this.assetManager = new AssetManager();
 
 			this.assetManager.init().then(() => {
 				try {
-					console.info('Initializing scene...');
+					console.info('🌍 World: Initializing scene...');
 					this._initScene();
 					
-					console.info('Initializing weather effects...');
+					console.info('🌍 World: Initializing weather effects...');
 					this._initWeatherEffects();
 					
-					console.info('Initializing level...');
+					console.info('🌍 World: Initializing level...');
 					this._initLevel();
 					
-					console.info('Initializing enemies...');
+					console.info('🌍 World: Initializing enemies...');
 					this._initEnemies();
 					
-					console.info('Initializing player...');
+					console.info('🌍 World: Initializing player...');
 					this._initPlayer();
 					
-					console.info('Initializing controls...');
+					console.info('🌍 World: Initializing controls...');
 					this._initControls();
 					
-					console.info('Initializing UI...');
+					console.info('🌍 World: Initializing UI...');
 					this._initUI();
 
-					console.info('Starting animation loop...');
+					console.info('🌍 World: Starting animation loop...');
 					this._animate();
 					
-					console.info('World initialization complete!');
+					console.info('🎉 World: World initialization complete!');
 				} catch (error) {
-					console.error('Error during world initialization process:', error);
+					console.error('❌ World: Error during world initialization process:', error);
 					console.error('Error in function:', error.stack);
 				}
 			})
 			.catch(error => {
-				console.error('Error initializing AssetManager:', error);
+				console.error('❌ World: Error initializing AssetManager:', error);
 			});
 
 		} catch (error) {
-			console.error('Critical error in World.init():', error);
+			console.error('❌ World: Critical error in World.init():', error);
 			throw error;
 		}
 
@@ -1546,11 +1546,10 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 			this.useFPSControls = true;
 
 			this.orbitControls.enabled = false;
-			this.camera.matrixAutoUpdate = false;
-
-			this.player.activate();
+			this.camera.matrixAutoUpdate = false;			this.player.activate();
 			this.player.head.setRenderComponent( this.camera, syncCamera );
 
+			console.log('🌍 World: Calling showFPSInterface() when FPS controls lock');
 			this.uiManager.showFPSInterface();
 
 			if ( this.debug ) {
@@ -1607,7 +1606,6 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 		return this;
 
 	}
-
 	/**
 	* Inits the user interface.
 	*
@@ -1615,22 +1613,25 @@ const death2Clip = this.assetManager.animations.get('soldier_death2');
 	*/
 	_initUI() {
 		try {
-			console.info('Starting UI initialization...');
+			console.info('🌍 World: Starting UI initialization...');
 			
 			// Make sure the UI manager initializes after DOM is ready
 			if (document.readyState === 'loading') {
+				console.info('🌍 World: DOM not ready, deferring UI initialization');
 				document.addEventListener('DOMContentLoaded', () => {
+					console.info('🌍 World: DOM ready, initializing UI Manager...');
 					this.uiManager.init();
-					console.info('UI initialization complete (deferred)');
+					console.info('🎉 World: UI initialization complete (deferred)');
 				});
 			} else {
+				console.info('🌍 World: DOM ready, initializing UI Manager...');
 				this.uiManager.init();
-				console.info('UI initialization complete');
+				console.info('🎉 World: UI initialization complete');
 			}
 			
 			return this;
 		} catch (error) {
-			console.error('Error in _initUI:', error);
+			console.error('❌ World: Error in _initUI:', error);
 			// Continue without UI
 			return this;
 		}

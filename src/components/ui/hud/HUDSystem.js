@@ -67,23 +67,29 @@ class HUDSystem extends UIComponent {
         // Now initialize manually
         this.init();
     }
-    
-    /**
+      /**
      * Initialize the HUD system
      */
     init() {
-        if (this.isInitialized) return this;
+        console.log('🎯 HUDSystem: Starting initialization...');
+        if (this.isInitialized) {
+            console.warn('🎯 HUDSystem: Already initialized');
+            return this;
+        }
         
         // Call parent init to create root element
         super.init();
+        console.log('✅ HUDSystem: Parent init called');
         
         // Create container regions
         this._createContainers();
+        console.log('✅ HUDSystem: Containers created');
         
         // Initialize components
         this._initComponents();
+        console.log('✅ HUDSystem: Components initialized');
         
-        console.log('[HUDSystem] Initialization complete');
+        console.log('🎉 HUDSystem: Initialization complete');
         
         return this;
     }

@@ -51,14 +51,14 @@ export class EnhancedAchievementDisplay extends UIComponent {
         this.eventSubscriptions = [];
         this.elementPool = null;
     }
-    
-    /**
+      /**
      * Initialize the achievement display and element pool
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init to create the element properly
+        super.init();
         
         // Initialize element pool
         this._initializeElementPool();
@@ -66,7 +66,6 @@ export class EnhancedAchievementDisplay extends UIComponent {
         // Set up event listeners
         this._setupEventListeners();
         
-        this.isInitialized = true;
         return this;
     }
     

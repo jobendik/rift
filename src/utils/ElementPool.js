@@ -245,8 +245,7 @@ class ElementPool {
      * @private
      * @param {Object} [options] - Options for element creation
      * @returns {HTMLElement} The created element
-     */
-    _defaultCreateFn(options = {}) {
+     */    _defaultCreateFn(options = {}) {
         // Use DOMFactory if className follows BEM convention (rift-block)
         if (this.className && this.className.startsWith('rift-')) {
             const classNameParts = this.className.replace('rift-', '').split('__');
@@ -255,8 +254,10 @@ class ElementPool {
             
             return DOMFactory.createElement(
                 this.elementType === 'div' ? blockName : this.elementType, 
-                elementName, 
-                options.modifiers || []
+                {
+                    className: this.className,
+                    modifiers: options.modifiers || []
+                }
             );
         }
         

@@ -144,27 +144,34 @@ export default class UIComponent {
         
         return this;
     }
-    
-    /**
+      /**
      * Show the component
      * @return {UIComponent} This component instance
      */
     show() {
+        console.log(`🎯 UIComponent(${this.id}): show() called`);
+        
         // Initialize if needed
         if (!this.isInitialized) {
+            console.log(`🎯 UIComponent(${this.id}): Not initialized, calling init()`);
             this.init();
             return this;
         }
         
-        if (!this.element) return this;
+        if (!this.element) {
+            console.error(`❌ UIComponent(${this.id}): No element found for show()`);
+            return this;
+        }
         
         this.isVisible = true;
         this.element.style.display = '';
         this.isActive = true;
+        console.log(`✅ UIComponent(${this.id}): Visibility set to true, display style cleared`);
         
         // Show children
         this.children.forEach(child => {
             if (typeof child.show === 'function') {
+                console.log(`🎯 UIComponent(${this.id}): Showing child component`);
                 child.show();
             }
         });
@@ -172,6 +179,7 @@ export default class UIComponent {
         // Emit visibility change event with standardized name
         if (EventManager) {
             EventManager.emit(`ui:${this.id}:show`, { component: this });
+            console.log(`✅ UIComponent(${this.id}): ui:${this.id}:show event emitted`);
         }
         
         return this;

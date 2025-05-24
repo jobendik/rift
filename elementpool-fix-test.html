@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElementPool & DOMFactory Fix Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            padding: 20px;
+        }
+        .test-section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .pass { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+        .fail { background: rgba(255, 0, 0, 0.2); color: #ff4444; }
+        .info { background: rgba(0, 150, 255, 0.2); color: #66aaff; }
+        .run-btn {
+            background: #006600;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 ElementPool & DOMFactory Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>🏭 DOMFactory Tests</h2>
+        <button class="run-btn" onclick="testDOMFactory()">Test DOMFactory</button>
+        <div id="domFactoryResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🏊 ElementPool Tests</h2>
+        <button class="run-btn" onclick="testElementPool()">Test ElementPool</button>
+        <div id="elementPoolResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Enhanced Event Banner Test</h2>
+        <button class="run-btn" onclick="testEventBanner()">Test Event Banner</button>
+        <div id="eventBannerResults"></div>
+    </div>
+
+    <script type="module">
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+        }
+
+        // Test DOMFactory with different parameter patterns
+        window.testDOMFactory = async function() {
+            const container = document.getElementById('domFactoryResults');
+            container.innerHTML = '';
+            
+            addResult('domFactoryResults', '🔍 Testing DOMFactory parameter patterns...', 'info');
+
+            try {
+                const { default: DOMFactory } = await import('./src/utils/DOMFactory.js');
+                
+                // Test 1: Standard (type, options) pattern
+                const element1 = DOMFactory.createElement('div', {
+                    className: 'test-class',
+                    text: 'Standard pattern'
+                });
+                addResult('domFactoryResults', '✅ Standard (type, options) pattern works', 'pass');
+                
+                // Test 2: Object with type property pattern
+                const element2 = DOMFactory.createElement({
+                    type: 'div',
+                    className: 'test-class-2',
+                    text: 'Object pattern'
+                });
+                addResult('domFactoryResults', '✅ Object with type property pattern works', 'pass');
+                
+                // Test 3: Object with classes property
+                const element3 = DOMFactory.createElement({
+                    type: 'span',
+                    classes: 'test-class-3 another-class',
+                    text: 'Classes pattern'
+                });
+                addResult('domFactoryResults', '✅ Object with classes property works', 'pass');
+                
+                // Test 4: Null/undefined className handling
+                const element4 = DOMFactory.createElement('div', {
+                    className: null,
+                    text: 'Null className'
+                });
+                addResult('domFactoryResults', '✅ Null className handling works', 'pass');
+                
+                // Test DOM attachment
+                document.body.appendChild(element1);
+                document.body.appendChild(element2);
+                document.body.appendChild(element3);
+                document.body.appendChild(element4);
+                
+                addResult('domFactoryResults', '✅ All DOMFactory tests passed', 'pass');
+                
+            } catch (error) {
+                addResult('domFactoryResults', `❌ DOMFactory test failed: ${error.message}`, 'fail');
+                console.error('DOMFactory Test Error:', error);
+            }
+        };
+
+        // Test ElementPool initialization
+        window.testElementPool = async function() {
+            const container = document.getElementById('elementPoolResults');
+            container.innerHTML = '';
+            
+            addResult('elementPoolResults', '🔍 Testing ElementPool initialization...', 'info');
+
+            try {
+                const { default: ElementPool } = await import('./src/utils/ElementPool.js');
+                
+                // Test 1: Basic ElementPool
+                const pool1 = new ElementPool({
+                    elementType: 'div',
+                    className: 'test-pool-element',
+                    container: document.body,
+                    initialSize: 2,
+                    maxSize: 5
+                });
+                addResult('elementPoolResults', '✅ Basic ElementPool created successfully', 'pass');
+                
+                // Test 2: BEM-style ElementPool (this was causing the error)
+                const pool2 = new ElementPool({
+                    elementType: 'div',
+                    className: 'rift-event-banner__message',
+                    container: document.body,
+                    initialSize: 2,
+                    maxSize: 5
+                });
+                addResult('elementPoolResults', '✅ BEM-style ElementPool created successfully', 'pass');
+                
+                // Test 3: Get element from pool
+                const element = pool2.acquire();
+                if (element) {
+                    addResult('elementPoolResults', '✅ Element acquired from pool successfully', 'pass');
+                    pool2.release(element);
+                    addResult('elementPoolResults', '✅ Element released back to pool successfully', 'pass');
+                } else {
+                    addResult('elementPoolResults', '❌ Failed to acquire element from pool', 'fail');
+                }
+                
+            } catch (error) {
+                addResult('elementPoolResults', `❌ ElementPool test failed: ${error.message}`, 'fail');
+                console.error('ElementPool Test Error:', error);
+            }
+        };
+
+        // Test EnhancedEventBanner initialization
+        window.testEventBanner = async function() {
+            const container = document.getElementById('eventBannerResults');
+            container.innerHTML = '';
+            
+            addResult('eventBannerResults', '🔍 Testing EnhancedEventBanner initialization...', 'info');
+
+            try {
+                const { default: EnhancedEventBanner } = await import('./src/components/ui/notifications/EnhancedEventBanner.js');
+                
+                const eventBanner = new EnhancedEventBanner({
+                    container: document.body,
+                    eventBus: { 
+                        on: () => {},
+                        emit: () => {}
+                    }
+                });
+                
+                addResult('eventBannerResults', '✅ EnhancedEventBanner instance created', 'pass');
+                
+                await eventBanner.init();
+                addResult('eventBannerResults', '✅ EnhancedEventBanner initialized successfully', 'pass');
+                
+                // This should now work without the className error
+                addResult('eventBannerResults', '✅ Element pools initialized without errors', 'pass');
+                
+            } catch (error) {
+                addResult('eventBannerResults', `❌ EnhancedEventBanner test failed: ${error.message}`, 'fail');
+                console.error('EnhancedEventBanner Test Error:', error);
+            }
+        };
+
+        // Auto-run basic tests
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testDOMFactory();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

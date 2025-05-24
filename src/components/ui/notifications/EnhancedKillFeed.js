@@ -79,21 +79,20 @@ export class EnhancedKillFeed extends UIComponent {
             { count: 10, type: 'unstoppable' }
         ];
     }
-    
-    /**
+      /**
      * Initialize the kill feed
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init to create the element properly
+        super.init();
         
         // Initialize element pools
         this._initElementPools();
         
         this._setupEventListeners();
         
-        this.isInitialized = true;
         return this;
     }
     

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT HUD Debug Test</title>
+    <link rel="stylesheet" href="./public/styles/index.css">
+    <style>
+        body {
+            background: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+        .debug-log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error { color: #f44; }
+        .warning { color: #fa0; }
+        .success { color: #4f4; }
+        .info { color: #4af; }
+    </style>
+</head>
+<body>
+    <h1>RIFT HUD System Debug Test</h1>
+    
+    <div class="debug-section">
+        <h3>CSS Variables Test</h3>
+        <div id="css-test" class="debug-log">Testing CSS variables...</div>
+        <div id="css-visual-test" style="
+            position: absolute;
+            top: var(--rift-hud-margin, 50px);
+            left: var(--rift-hud-margin, 50px);
+            background: var(--rift-primary, red);
+            color: var(--rift-color-text-color, white);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: var(--rift-z-index-hud, 1000);
+        ">CSS Variables Test Box</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Module Loading Test</h3>
+        <div id="module-test" class="debug-log">Testing module imports...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>HUD System Creation Test</h3>
+        <div id="hud-test" class="debug-log">Testing HUD system...</div>
+        <div id="hud-container" style="position: relative; width: 100%; height: 400px; border: 1px solid #666; background: #111;">
+            <div id="test-hud-root"><!-- HUD will be created here --></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Redirect console logs to our debug areas
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToLog(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = `[${timestamp}] ${message}\n`;
+            container.innerHTML += `<span class="${type}">${logLine}</span>`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Test CSS Variables
+        try {
+            const testElement = document.getElementById('css-visual-test');
+            const styles = getComputedStyle(testElement);
+            const hudMargin = styles.getPropertyValue('top');
+            const primaryColor = styles.getPropertyValue('background-color');
+            const zIndex = styles.getPropertyValue('z-index');
+            
+            addToLog('css-test', `✅ HUD Margin: ${hudMargin}`, 'success');
+            addToLog('css-test', `✅ Primary Color: ${primaryColor}`, 'success');
+            addToLog('css-test', `✅ Z-Index: ${zIndex}`, 'success');
+            
+            if (hudMargin === '50px' || primaryColor === 'red') {
+                addToLog('css-test', '⚠️ CSS variables not loading - using fallbacks', 'warning');
+            } else {
+                addToLog('css-test', '✅ CSS variables loading correctly', 'success');
+            }
+        } catch (error) {
+            addToLog('css-test', `❌ CSS test error: ${error.message}`, 'error');
+        }
+
+        // Test Module Loading
+        try {
+            addToLog('module-test', '🔄 Testing UIComponent import...', 'info');
+            
+            // Import UIComponent
+            const UIComponent = await import('./src/components/ui/UIComponent.js');
+            addToLog('module-test', '✅ UIComponent imported successfully', 'success');
+            
+            addToLog('module-test', '🔄 Testing DOMFactory import...', 'info');
+            const DOMFactory = await import('./src/utils/DOMFactory.js');
+            addToLog('module-test', '✅ DOMFactory imported successfully', 'success');
+            
+            addToLog('module-test', '🔄 Testing HUDSystem import...', 'info');
+            const HUDSystem = await import('./src/components/ui/hud/HUDSystem.js');
+            addToLog('module-test', '✅ HUDSystem imported successfully', 'success');
+
+            // Test basic HUD system creation
+            addToLog('hud-test', '🔄 Creating mock world object...', 'info');
+            const mockWorld = {
+                player: {
+                    health: 100,
+                    maxHealth: 100,
+                    ammo: 30,
+                    maxAmmo: 30
+                }
+            };
+            
+            addToLog('hud-test', '🔄 Creating HUD system instance...', 'info');
+            const hudContainer = document.getElementById('test-hud-root');
+            
+            // Create HUD system with mock world
+            const hudSystem = new HUDSystem.default(mockWorld, {
+                container: hudContainer,
+                id: 'test-hud-system'
+            });
+            
+            addToLog('hud-test', '✅ HUD system created successfully', 'success');
+            addToLog('hud-test', `🔍 HUD element classes: ${hudSystem.element.className}`, 'info');
+            addToLog('hud-test', `🔍 HUD element ID: ${hudSystem.element.id}`, 'info');
+            addToLog('hud-test', `🔍 HUD initialized: ${hudSystem.isInitialized}`, 'info');
+            addToLog('hud-test', `🔍 HUD visible: ${hudSystem.isVisible}`, 'info');
+            
+            // Test show method
+            hudSystem.show();
+            addToLog('hud-test', '✅ HUD show() called', 'success');
+            
+            // Check if containers were created
+            const containerCount = Object.keys(hudSystem.containers).length;
+            addToLog('hud-test', `🔍 Container regions created: ${containerCount}`, 'info');
+            
+            // Check if components were created
+            const componentCount = Object.keys(hudSystem.components).filter(key => hudSystem.components[key] !== null).length;
+            addToLog('hud-test', `🔍 Components initialized: ${componentCount}`, 'info');
+            
+        } catch (error) {
+            addToLog('module-test', `❌ Module loading error: ${error.message}`, 'error');
+            addToLog('hud-test', `❌ HUD test error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

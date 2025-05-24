@@ -19,16 +19,34 @@ class DOMFactory {
      * @param {HTMLElement} [options.parent] - Parent element to append to
      * @param {Boolean} [options.appendToBody] - Whether to append to document body
      * @return {HTMLElement} The created element
-     */
-    static createElement(type, options = {}) {
+     */    static createElement(type, options = {}) {
+        // Handle the case where the first argument is an options object with a type property
+        if (typeof type === 'object' && type !== null && type.type) {
+            options = type;
+            type = options.type;
+        }
+        
         const element = document.createElement(type);
         
-        if (options.className) {
+        if (options.className && typeof options.className === 'string') {
             const classNames = Array.isArray(options.className) 
                 ? options.className 
                 : options.className.split(' ');
             
             // Filter out empty strings to prevent "empty token" error
+            const validClassNames = classNames.filter(name => name && name.trim().length > 0);
+            
+            if (validClassNames.length > 0) {
+                element.classList.add(...validClassNames);
+            }
+        }
+        
+        // Handle classes property as well (alternative to className)
+        if (options.classes) {
+            const classNames = Array.isArray(options.classes) 
+                ? options.classes 
+                : options.classes.split(' ');
+            
             const validClassNames = classNames.filter(name => name && name.trim().length > 0);
             
             if (validClassNames.length > 0) {

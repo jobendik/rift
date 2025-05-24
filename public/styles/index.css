@@ -6,6 +6,13 @@
  * for the RIFT project.
  */
 
+/* Core system files */
+@import './core/_reset.css';
+@import './core/_variables.css';
+@import './core/_typography.css';
+@import './core/_animations.css';
+@import './core/_layout.css';
+
 /* Base styles and resets */
 @import './main.css';
 

@@ -56,14 +56,14 @@ export class EnhancedEventBanner extends UIComponent {
         this.bannerPool = null;
         this.outcomePool = null;
     }
-    
-    /**
+      /**
      * Initialize the event banner
      */
     init() {
-        if (!this.element) {
-            this._createRootElement();
-        }
+        if (this.isInitialized) return this;
+        
+        // Call parent init to create the element properly
+        super.init();
         
         // Initialize element pools
         this._initializeElementPools();
@@ -71,7 +71,6 @@ export class EnhancedEventBanner extends UIComponent {
         // Set up event listeners
         this._setupEventListeners();
         
-        this.isInitialized = true;
         return this;
     }
     

@@ -178,7 +178,6 @@ class Player extends MovingEntity {
 	* @return {Player} A reference to this game entity.
 	*/
 	reset() {
-
 		this.health = this.maxHealth;
 		this.status = STATUS_ALIVE;
 
@@ -186,6 +185,7 @@ class Player extends MovingEntity {
 
 		this.world.fpsControls.reset();
 
+		console.log('🎮 Player: Calling showFPSInterface() on respawn');
 		this.world.uiManager.showFPSInterface();
 
 		const animation = this.animations.get( 'player_death' );
