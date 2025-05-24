@@ -120,6 +120,11 @@ As of May 23, 2025, the following progress has been made:
      - Changed `input:player:sprint` → `input:player:sprint-started`/`input:player:sprint-stopped`
      - Changed `input:weapon:select` → `input:weapon:selected`
      - Added timestamps to all event payloads
+   - ✅ Movement system event standardization:
+     - Changed `movement:footstep` → `movement:footstep-detected` for consistency with past-tense action naming
+     - Updated JSDoc comments with standardized event name and parameter details
+     - Updated event handling logic in FootstepIndicator and EnhancedFootstepIndicator to subscribe to the standardized event
+     - Added clarifying comment for each event subscription explaining its purpose
 
 2. **Event Payload Standardization**:
    - ✅ All event payloads now follow standard templates

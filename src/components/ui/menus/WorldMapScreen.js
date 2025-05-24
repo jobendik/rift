@@ -51,10 +51,10 @@ export default class WorldMapScreen {
             console.warn('No screen manager provided to WorldMapScreen');
         }
         
-        // Register event listeners
-        EventManager.on('ui:toggleWorldMap', this._onToggleWorldMap);
-        EventManager.on('ui:showWorldMap', this._onShowWorldMap);
-        EventManager.on('ui:hideWorldMap', this._onHideWorldMap);
+        // Register event listeners with standardized event names
+        EventManager.on('ui:map-toggled', this._onToggleWorldMap); // Standardized event for map toggle
+        EventManager.on('ui:map:shown', this._onShowWorldMap); // Component-specific standardized event
+        EventManager.on('ui:map:hidden', this._onHideWorldMap); // Component-specific standardized event
         
         this.isInitialized = true;
         return this;
@@ -157,8 +157,14 @@ export default class WorldMapScreen {
             }
         }
         
-        // Emit event that world map is open
-        EventManager.emit('worldMap:opened', data);
+        // Emit standardized event that world map is open
+        EventManager.emit('ui:map:opened', {
+            timestamp: performance.now(), // Required timestamp for all standardized events
+            screen: 'world-map',
+            previous: null, // The previous screen, if known
+            source: 'user-action', // Source of the event
+            data: data // Any additional data passed
+        });
     }
     
     /**
@@ -173,8 +179,12 @@ export default class WorldMapScreen {
             }
         }
         
-        // Emit event that world map is closed
-        EventManager.emit('worldMap:closed', {});
+        // Emit standardized event that world map is closed
+        EventManager.emit('ui:map:closed', {
+            timestamp: performance.now(), // Required timestamp for all standardized events
+            screen: 'world-map',
+            reason: 'user-action' // Why the map was closed
+        });
     }
     
     /**
@@ -265,10 +275,10 @@ export default class WorldMapScreen {
      * Cleanup and dispose of resources
      */
     dispose() {
-        // Remove event listeners
-        EventManager.off('ui:toggleWorldMap', this._onToggleWorldMap);
-        EventManager.off('ui:showWorldMap', this._onShowWorldMap);
-        EventManager.off('ui:hideWorldMap', this._onHideWorldMap);
+        // Remove event listeners with standardized event names
+        EventManager.off('ui:map-toggled', this._onToggleWorldMap);
+        EventManager.off('ui:map:shown', this._onShowWorldMap);
+        EventManager.off('ui:map:hidden', this._onHideWorldMap);
         
         // Dispose of the world map component
         if (this.worldMap) {

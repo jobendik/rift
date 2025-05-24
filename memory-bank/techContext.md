@@ -1,786 +1,728 @@
 # Technical Context: RIFT FPS UI/CSS Redesign
 
-## Project Overview
-
-The RIFT FPS UI/CSS Redesign is a comprehensive update of the game's user interface systems. The project is focused on creating a modern, responsive, and performant UI layer that enhances gameplay feedback while maintaining the game's signature sci-fi aesthetic.
-
-## Technology Stack
-
-### Core Technologies
-
-- **JavaScript (ES6+)** - Core programming language for all UI components
-- **CSS3** - Styling with a focus on CSS variables and modern features
-- **HTML5** - Base DOM structure
-- **Three.js** - 3D rendering engine that the UI needs to integrate with
-- **Vite** - Build tool and development server
-
-### Key Libraries & Dependencies
-
-- No external UI frameworks (custom-built components)
-- Core game engine (proprietary - built on Three.js)
-- Asset management system for loading textures and sounds
-
-## Architecture Overview
-
-### Component-Based System
-
-The UI is built using a component-based architecture with the following characteristics:
-
-1. **UIComponent Base Class**
-   - Provides common lifecycle methods: `init()`, `update()`, `render()`, `dispose()`
-   - Manages parent-child relationships between components
-   - Handles event subscription and cleanup
-   - Provides animation utilities
-
-2. **System Orchestrators**
-   - HUDSystem, CombatSystem, NotificationSystem, etc.
-   - Coordinate related components
-   - Manage system-wide state
-   - Handle communication between systems
-
-3. **Individual Components**
-   - Specialized for specific UI functionality
-   - Extend UIComponent or appropriate sub-class
-   - Follow consistent patterns for state management and rendering
-
-### Event System
-
-The project uses a centralized event system for communication between components, with the following features:
-
-1. **EventManager**
-   - Provides pub/sub functionality
-   - Manages event subscriptions and cleanup
-   - Handles debugging and event monitoring
-   - Enhanced to support standardized events
-   - Includes comprehensive performance tracking
-
-2. **Event Standardization Implementation**
-   - Standardized naming convention:
-     - Two-part pattern: `namespace:action` (e.g., 'health:changed')
-     - Three-part pattern for component-specific events: `namespace:id:action` (e.g., 'ui:health-display:visible')
-   - Predefined payload structures for different event types
-   - Helper methods for creating standardized payloads
-   - Validation capabilities for event names and payloads
-   - Migration utilities for updating legacy event usage
-
-3. **Event Performance Monitoring System**
-   - Real-time metrics collection for event frequency and execution time
-   - Min/max/avg execution time tracking for each event type
-   - High-frequency event detection with configurable thresholds
-   - Slow handler identification and optimization recommendations
-   - Configuration options in UIConfig.js
-   - Dashboard for visualizing performance data
-   - Automatic recommendations for optimization
-   - Integration with developer tools panel (Ctrl+Shift+D)
-   - Filtering and sorting capabilities for metrics analysis
-   - Export functionality for sharing performance data
-
-4. **Event Types**
-   - State Change Events: For value changes (health, ammo, etc.)
-   - Combat Events: For combat interactions (hits, damage, kills)
-   - Notification Events: For user notifications
-   - Progress Events: For progression updates (XP, levels, achievements)
-   - Movement Events: For entity movement (footsteps, position changes)
-
-5. **Standard Event Structure**
-   - Common metadata (type, timestamp)
-   - Type-specific required fields
-   - Optional fields based on context
-
-### DOM Management
-
-The UI creates and manages DOM elements with the following approaches:
-
-1. **DOMFactory**
-   - Factory pattern for consistent DOM creation
-   - Enforces BEM naming conventions with `rift-` prefix
-   - Provides utility methods for common element types
-
-2. **Component Rendering**
-   - Components manage their own DOM elements
-   - Clear separation between state and rendering
-   - Uses CSS classes and attributes for styling
-   - Minimizes direct style manipulation
-
-3. **Performance Considerations**
-   - Batch DOM updates for high-frequency components
-   - Use of requestAnimationFrame for rendering
-   - CSS animations for performance
-   - Hardware acceleration via transform/opacity
-   - Element pooling via ElementPool utility for frequently created/destroyed elements
-
-4. **ElementPool System**
-   - Comprehensive DOM element pooling utility
-   - Significantly reduces garbage collection and DOM operations
-   - Efficient acquisition and release mechanisms
-   - Block container optimization for improved performance
-   - Statistics tracking for pool usage
-   - Full lifecycle integration with component system
-   - Automatic memory management with proper disposal
-   - Configurable pool sizes and creation strategies
-   - Customizable element reuse patterns
-   - Error handling for pool exhaustion
-   - Temporary element creation as fallback
-
-5. **Block Container Strategy**
-   - Elements are grouped in container blocks rather than added individually to the DOM
-   - Reduces parent-child relationship tracking overhead
-   - Improves memory locality for DOM operations
-   - Provides better rendering pipeline efficiency
-   - Configurable block sizes for different use cases
-   - Automatic block creation and management
-   - Significant performance benefits for high-frequency element creation/destruction
-
-### CSS Architecture
-
-The CSS follows BEM methodology with these organizational principles:
-
-1. **CSS Organization**
-   - Core files: variables, reset, typography, animations, layout, ui-states
-   - Utility files: mixins, helpers
-   - Component files: organized by system
-   - Responsive files: desktop, tablet, mobile adaptations
-
-2. **BEM Naming Convention**
-   - Block: `.rift-block`
-   - Element: `.rift-block__element`
-   - Modifier: `.rift-block__element--modifier`
-
-3. **CSS Variables**
-   - Color system
-   - Spacing system
-   - Typography system
-   - Animation timing
-   - Z-index management
-   - JavaScript mirror of variables in `UIConfig.js`
-
-## Component Systems
-
-### HUD System
-
-Displays core gameplay information constantly visible to the player.
-
-1. **Components**
-   - HealthDisplay: Player health visualization with states
-   - AmmoDisplay: Current ammo and magazine visualization
-   - CrosshairSystem: Dynamic crosshair with hit feedback
-   - MinimapSystem: Minimap visualization
-   - StaminaSystem: Stamina/sprint visualization
-   - CompassDisplay: Directional awareness and POI markers
-   - WeaponWheel: Weapon selection interface
-
-2. **Integration Points**
-   - Player health state
-   - Weapon system (current weapon, ammo)
-   - World position and orientation
-   - Sprint mechanics
-
-3. **Technologies Used**
-   - DOM-based elements for HUD components
-   - CSS animations for state changes
-   - Event-driven updates based on game state
-
-### Combat Feedback System
-
-Provides visual feedback during combat to enhance player awareness.
-
-1. **Standard Components**
-   - HitIndicator: Confirmation of successful hits
-   - DamageIndicator: Directional indicators for incoming damage
-   - DamageNumbers: Floating combat text
-   - ScreenEffects: Full-screen visual effects
-   - FootstepIndicator: Awareness of nearby movement
-
-2. **Enhanced Components**
-   - EnhancedDamageIndicator: Advanced directional damage with intensity scaling
-   - EnhancedHitIndicator: Hit type differentiation and multi-kill recognition
-   - EnhancedDamageNumbers: Optimized damage visualization with element pooling
-   - EnhancedFootstepIndicator: Optimized footstep awareness with element pooling
-   - DynamicCrosshairSystem: Contextual behaviors and adaptive spread
-   - AdvancedScreenEffects: Multi-layer effects with directional impact
-
-3. **Integration Points**
-   - Combat system (hits, damage)
-   - Enemy positions
-   - Player state (health, damage taken)
-   - Weapon accuracy and state
-
-4. **Technologies Used**
-   - CSS animations for visual effects
-   - Data attributes for visual variations
-   - CSS custom properties for intensity scaling
-   - Multi-element composition for complex effects
-   - ElementPool for high-frequency elements
-
-### Notification System
-
-Manages game notifications with priority and queuing.
-
-1. **Components**
-   - NotificationManager: Core notification handling
-   - KillFeed: Player elimination notifications
-   - EnhancedKillFeed: Optimized kill feed with element pooling
-   - EventBanner: Major event announcements
-   - AchievementDisplay: Achievement unlocks and progress
-   - EnhancedEventBanner: Optimized event banner with element pooling
-   - EnhancedNotificationManager: Optimized notification manager with element pooling
-   - EnhancedAchievementDisplay: Optimized achievement display with element pooling
-
-2. **Integration Points**
-   - Kill events
-   - Achievement system
-   - Game state changes
-   - Objective system
-
-3. **Technologies Used**
-   - Queue management for notifications
-   - Priority-based display
-   - CSS animations for transitions
-   - Automatic cleanup of old notifications
-   - ElementPool for efficient DOM management
-
-### Menu System
-
-Handles game menus, screens, and UI overlays.
-
-1. **Components**
-   - ScreenManager: Screen transitions and management
-   - WorldMap: Level navigation with interactive elements
-   - MissionBriefing: Mission details and objectives
-   - RoundSummary: Post-round statistics
-
-2. **Integration Points**
-   - Game state (paused, menu, playing)
-   - Mission/objective data
-   - Player statistics
-   - Level information
-
-3. **Technologies Used**
-   - Modal screen management
-   - CSS transitions for screen changes
-   - Interactive elements with event handling
-   - Data visualization for statistics
-
-### Progression System
-
-Visualizes player progression and rewards.
-
-1. **Components**
-   - ExperienceBar: XP visualization with animations
-   - PlayerRank: Rank display with badge and title
-   - SkillPointsDisplay: Skill point allocation interface
-
-2. **Integration Points**
-   - Player XP and level data
-   - Skill tree system
-   - Rank progression
-
-3. **Technologies Used**
-   - Progress visualizations
-   - Animation sequences for level-ups
-   - Interactive skill allocation
-   - Badge/rank visualization
-
-### Environmental System
-
-Provides contextual information about the game world.
-
-1. **Components**
-   - WeatherSystem: Visual effects for weather conditions
-   - ObjectiveMarkerSystem: Waypoints and objective indicators
-   - DangerZone: Hazardous area visualization
-   - PowerupDisplay: Active buffs and status effects
-
-2. **Integration Points**
-   - Weather/environment state
-   - Objective locations
-   - Hazard zones
-   - Active effects/buffs
-
-3. **Technologies Used**
-   - 3D to 2D position mapping
-   - Distance calculations
-   - Off-screen indicator system
-   - Particle effects for weather
-
-### Movement System
-
-Detects and visualizes entity movement for enhanced spatial awareness.
-
-1. **Components**
-   - MovementSystem: Tracks entity positions and detects movement
-   - FootstepIndicator: Visualizes detected footsteps with directional awareness
-   - EnhancedFootstepIndicator: Optimized footstep visualization with element pooling
-
-2. **Core Functionality**
-   - Position tracking for both player and entities
-   - Distance-based footstep detection with configurable thresholds
-   - Standardized event emission with rich payload data
-   - Direction calculation for spatial awareness
-   - Distinguished friend/foe detection with different thresholds
-   - Detection of continuous vs. single movement patterns
-   - Testing tools for simulating movement without actual entity position changes
-
-3. **Integration Points**
-   - Entity position updates from game world
-   - Player position and rotation
-   - Combat system for threat awareness
-   - Sprint state for movement pattern detection
-
-4. **Technologies Used**
-   - Position tracking with distance calculation
-   - Angle calculation for directional awareness
-   - Event standardization for consistent event payloads
-   - Configurable thresholds for different entity types
-   - ElementPool for efficient DOM element management
-   - Performance considerations for handling large entity counts
-
-## Development Approach
-
-### Development Process
-
-1. **Phase-Based Implementation**
-   - Core Architecture (UIComponent, EventManager, etc.)
-   - CSS Foundation (variables, reset, etc.)
-   - HUD Components
-   - Combat Feedback Systems
-   - Notification System
-   - Menu System
-   - Progression System
-   - Environmental Systems
-   - Refinement (Enhanced Combat Feedback, Event System Standardization, Movement System, etc.)
-   - Performance Optimization (ElementPool utility, Event Performance Monitoring System)
-   - Audio Integration
-
-2. **Testing Strategy**
-   - Component testing in isolation
-   - System integration testing
-   - Performance profiling
-   - Browser compatibility testing
-
-3. **Documentation**
-   - Memory Bank for knowledge persistence
-   - Component documentation in code
-   - System documentation in specialized files
-   - CSS and design system documentation
-
-### Development Environment
-
-1. **Tooling**
-   - VSCode as primary editor
-   - Vite for development server
-   - npm for package management
-   - Git for version control
-
-2. **Project Structure**
-   ```
-   /
-   ├── public/
-   │   ├── assets/
-   │   │   ├── animations/
-   │   │   ├── audios/
-   │   │   ├── config/
-   │   │   ├── hud/
-   │   │   ├── models/
-   │   │   ├── navmeshes/
-   │   │   └── textures/
-   │   ├── styles/
-   │   │   ├── components/
-   │   │   │   ├── combat/
-   │   │   │   ├── environment/
-   │   │   │   ├── hud/
-   │   │   │   ├── menus/
-   │   │   │   ├── movement/
-   │   │   │   ├── notifications/
-   │   │   │   └── progression/
-   │   │   ├── core/
-   │   │   ├── responsive/
-   │   │   └── utils/
-   │   ├── index.html
-   │   └── main.js
-   ├── src/
-   │   ├── components/
-   │   │   └── ui/
-   │   │       ├── combat/
-   │   │       ├── environment/
-   │   │       ├── hud/
-   │   │       ├── menus/
-   │   │       ├── movement/
-   │   │       ├── notifications/
-   │   │       └── progression/
-   │   ├── controls/
-   │   ├── core/
-   │   ├── effects/
-   │   ├── entities/
-   │   ├── etc/
-   │   ├── evaluators/
-   │   ├── goals/
-   │   ├── triggers/
-   │   ├── utils/
-   │   ├── weapons/
-   │   └── main.js
-   ├── docs/
-   │   ├── EnhancedCombatFeedback.md
-   │   ├── ElementPooling.md
-   │   ├── EventStandardization.md
-   │   ├── EventStandardizationCatalog.md
-   │   ├── EventStandardizationProgress.md
-   │   └── EventPerformanceMonitoring.md
-   ├── memory-bank/
-   │   ├── activeContext.md
-   │   ├── productContext.md
-   │   ├── progress.md
-   │   ├── projectbrief.md
-   │   ├── systemPatterns.md
-   │   └── techContext.md
-   └── .clinerules
-   ```
-
-## Technical Implementations
+This document outlines the technical foundations, technical decisions, and implementation details for the RIFT FPS UI/CSS redesign project.
+
+## Core Technologies
+
+### Frontend Stack
+- **HTML5**: Used for structure of all UI components
+- **CSS3**: Styling with advanced features (CSS variables, grid, flexbox, animations)
+- **Vanilla JavaScript**: ES6+ without additional frameworks
+- **BEM Methodology**: For CSS organization with rift- prefix (Block Element Modifier)
+- **Three.js**: For 3D rendering of the game world
+- **Canvas API**: For specialized 2D rendering like minimap and compass displays
+
+### Build Tools
+- **Vite**: Fast development server and build tool
+- **npm**: Package management
+- **ESLint**: Code quality and style enforcement
+- **stylelint**: CSS linting and style enforcement
+
+## Architecture & Design Patterns
+
+### Component-Based Architecture
+The UI is structured as a hierarchy of components, each encapsulating its own:
+- State management
+- DOM manipulation 
+- Event handling
+- Lifecycle methods
+- Visual representation
+
+### Event-Driven Communication
+Components communicate via a central EventManager using a publish/subscribe pattern:
+- Standardized event names (namespace:action format)
+- Consistent event payload structures
+- Automatic subscription tracking and cleanup
+- Event performance monitoring
+
+### DOM Management Strategies
+- **ElementPool**: DOM element reuse system for frequently created/destroyed elements
+- **Block Containers**: Element grouping for optimized DOM operations
+- **DOMFactory**: Factory pattern for consistent DOM element creation
+- **State-DOM Separation**: Clear separation between state and DOM representation
+
+### Performance Optimization Techniques
+- **Element Pooling**: Reuse DOM elements to minimize creation/destruction
+- **Event Performance Monitoring**: Track event frequency and handler execution time
+- **Batch DOM Operations**: Reduce reflows by grouping reads and writes
+- **Hardware Acceleration**: Use transform/opacity for animations
+- **requestAnimationFrame**: Coordinate visual updates with browser rendering cycle
+- **CSS Animations**: Offload animation work to GPU when possible
+- **Visibility Management**: Only update visible components
+- **Throttling**: Limit high-frequency events
+- **Debouncing**: Combine rapid sequential events
+
+## Browser Support
+
+The redesign targets modern browsers with these minimum versions:
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## Performance Targets
+
+### Target Specifications
+- **60+ FPS** maintained during gameplay on recommended hardware
+- **Sub-16ms** per frame budget (for 60 FPS)
+- **DOM Operations Budget**: <5ms per frame
+- **Event Handling Budget**: <3ms per frame
+- **Animation Budget**: <8ms per frame
+- **Memory**: <100MB for UI components
+
+### Component-Specific Budgets
+- **HUD Elements**: <2ms per frame total
+- **Combat Feedback**: <3ms per frame during intense combat
+- **Notification System**: <1ms per frame average
+- **Menu Transitions**: <50ms total for complete transition
+
+## Technical Implementation Details
+
+### Event System Implementation
+
+The EventManager provides these key capabilities:
+- Event subscription with automatic tracking
+- Event emission with payload validation
+- Standardized event naming conventions
+- Performance monitoring with metrics collection
+- Throttling and debouncing utilities
+
+```javascript
+// Core EventManager implementation
+class EventManager {
+  static instance = null;
+  
+  static getInstance() {
+    if (!EventManager.instance) {
+      EventManager.instance = new EventManager();
+    }
+    return EventManager.instance;
+  }
+
+  constructor() {
+    this._events = new Map();
+    this._subscriptionId = 0;
+    this._eventMetrics = new Map();
+    this._performanceTracking = false;
+  }
+  
+  // Subscribe to an event
+  subscribe(eventType, handler) {
+    if (!this._events.has(eventType)) {
+      this._events.set(eventType, new Map());
+    }
+    
+    const id = this._subscriptionId++;
+    this._events.get(eventType).set(id, handler);
+    
+    return {
+      eventType,
+      id,
+      unsubscribe: () => this.unsubscribe({ eventType, id })
+    };
+  }
+  
+  // Unsubscribe from an event
+  unsubscribe({ eventType, id }) {
+    if (!this._events.has(eventType)) return false;
+    return this._events.get(eventType).delete(id);
+  }
+  
+  // Emit an event to all subscribers
+  emit(eventType, data = {}) {
+    // Start performance tracking
+    const startTime = this._performanceTracking ? performance.now() : 0;
+    
+    if (!this._events.has(eventType)) return false;
+    
+    // Add standard metadata to event
+    const event = {
+      type: eventType,
+      timestamp: Date.now(),
+      ...data
+    };
+    
+    // Notify handlers
+    this._events.get(eventType).forEach(handler => {
+      try {
+        handler(event);
+      } catch (error) {
+        console.error(`Error in event handler for ${eventType}:`, error);
+      }
+    });
+    
+    // Track performance metrics
+    if (this._performanceTracking) {
+      this._trackEventPerformance(eventType, startTime);
+    }
+    
+    return true;
+  }
+  
+  // Track event performance metrics
+  _trackEventPerformance(eventType, startTime) {
+    const executionTime = performance.now() - startTime;
+    
+    if (!this._eventMetrics.has(eventType)) {
+      this._eventMetrics.set(eventType, {
+        count: 0,
+        totalExecutionTime: 0,
+        avgExecutionTime: 0,
+        minExecutionTime: Infinity,
+        maxExecutionTime: 0,
+        lastTimestamp: performance.now(),
+        frequency: 0
+      });
+    }
+    
+    const metrics = this._eventMetrics.get(eventType);
+    
+    // Update metrics
+    metrics.count++;
+    metrics.totalExecutionTime += executionTime;
+    metrics.avgExecutionTime = metrics.totalExecutionTime / metrics.count;
+    metrics.minExecutionTime = Math.min(metrics.minExecutionTime, executionTime);
+    metrics.maxExecutionTime = Math.max(metrics.maxExecutionTime, executionTime);
+    
+    // Calculate frequency (events per second)
+    const now = performance.now();
+    const elapsed = now - metrics.lastTimestamp;
+    if (elapsed > 0) {
+      metrics.frequency = 1000 / elapsed; // events per second
+    }
+    metrics.lastTimestamp = now;
+  }
+  
+  // Get performance metrics for all events
+  getPerformanceMetrics() {
+    const result = {};
+    this._eventMetrics.forEach((metrics, eventType) => {
+      result[eventType] = { ...metrics };
+    });
+    return result;
+  }
+  
+  // Enable performance tracking
+  enablePerformanceTracking(options = {}) {
+    this._performanceTracking = true;
+    this._performanceOptions = {
+      highFrequencyThreshold: options.highFrequencyThreshold || 60,
+      slowHandlerThreshold: options.slowHandlerThreshold || 1.0,
+      ...options
+    };
+  }
+  
+  // Disable performance tracking
+  disablePerformanceTracking() {
+    this._performanceTracking = false;
+  }
+  
+  // Reset performance metrics
+  resetPerformanceMetrics() {
+    this._eventMetrics.clear();
+  }
+}
+```
 
 ### ElementPool Implementation
 
-The ElementPool utility provides comprehensive DOM element pooling for efficient element reuse:
+The ElementPool utility provides an efficient way to reuse DOM elements:
 
-1. **Core Functionality**
-   - Efficient element acquisition/release mechanism
-   - Configurable pool sizes and creation strategies
-   - Block container optimization for better DOM performance
-   - Automatic element reset on release
-   - Statistics tracking for pool usage monitoring
-   - Memory management with proper disposal
-   - Error handling for pool exhaustion with fallback mechanisms
-   - Automatic parent management for element reuse
+```javascript
+class ElementPool {
+  constructor(options = {}) {
+    // Configuration
+    this.elementType = options.elementType || 'div';
+    this.container = options.container || document.body;
+    this.className = options.className || '';
+    this.initialSize = options.initialSize || 10;
+    this.maxSize = options.maxSize || 100;
+    this.growSize = options.growSize || Math.max(5, Math.floor(this.initialSize / 2));
+    this.createFn = options.createFn || this._defaultCreateFn.bind(this);
+    this.resetFn = options.resetFn || this._defaultResetFn.bind(this);
+    this.useBlocks = options.useBlocks !== false; // Default to true
+    this.blockSize = options.blockSize || 10;
+    
+    // State tracking
+    this.pool = [];          // Available elements
+    this.inUse = new Set();  // Currently active elements
+    this.blocks = [];        // Container blocks when using block system
+    
+    // Statistics
+    this.stats = {
+      created: 0,
+      acquired: 0,
+      released: 0,
+      maxUsed: 0,
+      outOfPoolCount: 0
+    };
+    
+    // Initialize the pool
+    this._initialize();
+  }
+  
+  _initialize() {
+    this._growPool(this.initialSize);
+  }
+  
+  _defaultCreateFn() {
+    const element = document.createElement(this.elementType);
+    if (this.className) {
+      element.className = this.className;
+    }
+    element.style.display = 'none'; // Hidden by default
+    return element;
+  }
+  
+  _defaultResetFn(element) {
+    // Reset to initial state
+    element.style.display = 'none';
+    element.className = this.className;
+    element.textContent = '';
+  }
+  
+  _createBlock() {
+    const block = document.createElement('div');
+    block.className = 'rift-element-pool-block';
+    block.style.display = 'contents'; // No visual impact
+    this.container.appendChild(block);
+    this.blocks.push(block);
+    return block;
+  }
+  
+  _growPool(count) {
+    // Calculate how many we can add within maxSize limit
+    const actualCount = Math.min(count, this.maxSize - (this.pool.length + this.inUse.size));
+    
+    if (actualCount <= 0) return;
+    
+    // Determine which block to use
+    let targetBlock;
+    if (this.useBlocks) {
+      const lastBlock = this.blocks[this.blocks.length - 1];
+      if (!lastBlock || lastBlock.childNodes.length >= this.blockSize) {
+        targetBlock = this._createBlock();
+      } else {
+        targetBlock = lastBlock;
+      }
+    }
+    
+    // Create elements
+    for (let i = 0; i < actualCount; i++) {
+      const element = this.createFn();
+      
+      // Add to appropriate container
+      if (this.useBlocks) {
+        targetBlock.appendChild(element);
+        
+        // Create new block if current one is full
+        if (targetBlock.childNodes.length >= this.blockSize && i < actualCount - 1) {
+          targetBlock = this._createBlock();
+        }
+      } else {
+        this.container.appendChild(element);
+      }
+      
+      this.pool.push(element);
+      this.stats.created++;
+    }
+  }
+  
+  // Acquire an element from the pool
+  acquire() {
+    // Update stats
+    this.stats.acquired++;
+    
+    // Get element from pool or create new ones if needed
+    if (this.pool.length === 0) {
+      if (this.inUse.size < this.maxSize) {
+        this._growPool(this.growSize);
+      } else {
+        this.stats.outOfPoolCount++;
+        console.warn(`ElementPool warning: Pool exhausted (${this.inUse.size} elements in use)`);
+        return { element: null, release: () => {} };
+      }
+    }
+    
+    const element = this.pool.pop();
+    this.inUse.add(element);
+    
+    // Update stats
+    this.stats.maxUsed = Math.max(this.stats.maxUsed, this.inUse.size);
+    
+    // Return element with release function
+    const release = () => this.release(element);
+    return { element, release };
+  }
+  
+  // Release an element back to the pool
+  release(element) {
+    if (!this.inUse.has(element)) return false;
+    
+    // Update stats
+    this.stats.released++;
+    
+    // Reset element state
+    this.resetFn(element);
+    
+    // Return to pool
+    this.inUse.delete(element);
+    this.pool.push(element);
+    
+    return true;
+  }
+  
+  // Release all elements
+  releaseAll() {
+    this.inUse.forEach(element => {
+      this.resetFn(element);
+      this.pool.push(element);
+    });
+    
+    // Update stats
+    this.stats.released += this.inUse.size;
+    
+    // Clear in-use set
+    this.inUse.clear();
+  }
+  
+  // Get statistics about pool usage
+  getStats() {
+    return {
+      ...this.stats,
+      available: this.pool.length,
+      inUse: this.inUse.size,
+      total: this.pool.length + this.inUse.size,
+      utilization: this.inUse.size / (this.pool.length + this.inUse.size)
+    };
+  }
+  
+  // Clean up resources
+  dispose(removeElements = true) {
+    // Release all elements
+    this.releaseAll();
+    
+    if (removeElements) {
+      // Remove block containers
+      this.blocks.forEach(block => {
+        if (block.parentNode) {
+          block.parentNode.removeChild(block);
+        }
+      });
+      
+      // Clear arrays
+      this.pool = [];
+      this.inUse.clear();
+      this.blocks = [];
+      
+      // Reset stats
+      this.stats = {
+        created: 0,
+        acquired: 0,
+        released: 0,
+        maxUsed: 0,
+        outOfPoolCount: 0
+      };
+    }
+  }
+}
+```
 
-2. **Configuration Options**
-   ```javascript
-   // ElementPool configuration options
-   const poolOptions = {
-     elementType: 'div',               // Type of element to create
-     container: this.element,          // Parent container
-     className: 'rift-damage-number',  // Base class name
-     initialSize: 20,                  // Initial pool size
-     maxSize: 100,                     // Maximum pool size 
-     createFn: null,                   // Custom creation function
-     resetFn: null,                    // Custom reset function
-     useBlocks: true,                  // Use block containers
-     blockSize: 10                     // Elements per block
-   };
-   ```
+### UI Component Base Class
 
-3. **Usage Pattern**
-   - Acquire elements using `pool.acquire()` which returns both the element and a release function
-   - Configure acquired elements as needed for specific use case
-   - Release elements back to the pool when no longer needed
-   - Track active elements for proper lifecycle management
-   - Dispose pool resources when component is disposed
+The `UIComponent` base class provides the foundation for all UI components:
 
-4. **Block Container Strategy**
-   - Elements are grouped into container blocks rather than added individually to the DOM
-   - Reduces parent-child relationship tracking overhead
-   - Improves memory locality for DOM operations
-   - Provides better rendering pipeline efficiency
-   - Configurable block sizes for different use cases
-   - Automatic block creation and management
+```javascript
+class UIComponent {
+  constructor(options = {}) {
+    this.id = options.id || `component-${UIComponent.nextId++}`;
+    this.className = options.className || '';
+    this.container = options.container || document.body;
+    this.parent = options.parent || null;
+    this.element = null;
+    this.children = new Set();
+    this.eventSubscriptions = [];
+    this.isInitialized = false;
+    this.isVisible = true;
+    
+    // Register with parent
+    if (this.parent) {
+      this.parent.addChild(this);
+    }
+  }
+  
+  init() {
+    if (this.isInitialized) return this;
+    
+    // Create component's main element if not provided
+    if (!this.element) {
+      this.element = document.createElement('div');
+      this.element.id = this.id;
+      if (this.className) {
+        this.element.className = this.className;
+      }
+      this.container.appendChild(this.element);
+    }
+    
+    this.isInitialized = true;
+    return this;
+  }
+  
+  update(deltaTime) {
+    // Update children
+    this.children.forEach(child => {
+      if (child.isVisible) {
+        child.update(deltaTime);
+      }
+    });
+    return this;
+  }
+  
+  render() {
+    // Render children
+    this.children.forEach(child => {
+      if (child.isVisible) {
+        child.render();
+      }
+    });
+    return this;
+  }
+  
+  dispose() {
+    // Unsubscribe from all events
+    this.eventSubscriptions.forEach(subscription => {
+      if (subscription.unsubscribe) {
+        subscription.unsubscribe();
+      }
+    });
+    this.eventSubscriptions = [];
+    
+    // Dispose children
+    this.children.forEach(child => {
+      child.dispose();
+    });
+    this.children.clear();
+    
+    // Remove from parent
+    if (this.parent) {
+      this.parent.removeChild(this);
+    }
+    
+    // Remove element from DOM
+    if (this.element && this.element.parentNode) {
+      this.element.parentNode.removeChild(this.element);
+    }
+    
+    this.isInitialized = false;
+    return this;
+  }
+  
+  addChild(child) {
+    this.children.add(child);
+    child.parent = this;
+    return this;
+  }
+  
+  removeChild(child) {
+    this.children.delete(child);
+    return this;
+  }
+  
+  show() {
+    if (this.element) {
+      this.element.style.display = '';
+    }
+    this.isVisible = true;
+    return this;
+  }
+  
+  hide() {
+    if (this.element) {
+      this.element.style.display = 'none';
+    }
+    this.isVisible = false;
+    return this;
+  }
+}
 
-5. **Integration with Components**
-   - EnhancedDamageNumbers: Pooled damage number elements
-   - EnhancedHitIndicator: Pooled hit markers with type differentiation
-   - EnhancedDamageIndicator: Pooled directional damage indicators
-   - EnhancedFootstepIndicator: Pooled footstep direction indicators
-   - EnhancedKillFeed: Pooled kill notification messages
-   - EnhancedEventBanner: Pooled event banner notifications
-   - EnhancedNotificationManager: Pooled general notifications
-   - EnhancedAchievementDisplay: Pooled achievement displays
+UIComponent.nextId = 0;
+```
 
-6. **Performance Benefits**
-   - 75% reduction in DOM operations for damage numbers during intense combat
-   - 60% reduction in garbage collection pauses during gameplay
-   - 40% improvement in frame rate during multi-kill sequences
-   - Significant reduction in layout thrashing during high-intensity gameplay
-   - Optimal memory usage with configurable pool sizes
+## File Structure & Organization
 
-### Event Performance Monitoring Implementation
+```
+public/
+├── assets/
+│   ├── hud/           # HUD-specific assets
+│   ├── models/        # 3D models
+│   ├── textures/      # Textures and images
+│   ├── animations/    # Animation data
+│   ├── audios/        # Sound effects
+│   ├── config/        # Configuration JSON files
+│   └── navmeshes/     # Navigation mesh data
+├── styles/
+│   ├── index.css      # Main CSS entry point
+│   ├── main.css       # Main CSS bundle
+│   ├── core/          # Core CSS files
+│   │   ├── _variables.css
+│   │   ├── _reset.css
+│   │   ├── _typography.css
+│   │   ├── _animations.css
+│   │   ├── _layout.css
+│   │   └── _ui-states.css
+│   ├── utils/         # Utility CSS
+│   │   ├── _mixins.css
+│   │   └── _helpers.css
+│   ├── components/    # Component-specific CSS
+│   │   ├── hud/       # HUD components
+│   │   ├── combat/    # Combat feedback components
+│   │   ├── menus/     # Menu components
+│   │   ├── notifications/  # Notification components
+│   │   ├── progression/    # Progression components
+│   │   ├── environment/    # Environment components
+│   │   └── movement/       # Movement components
+│   └── responsive/    # Responsive styles
+│       ├── _desktop.css
+│       ├── _tablet.css
+│       └── _mobile.css
+└── *.html             # Test pages and examples
+src/
+├── main.js           # Main entry point
+├── components/       # UI Components
+│   └── ui/
+│       ├── UIComponent.js        # Base component class
+│       ├── hud/                  # HUD components
+│       ├── combat/               # Combat feedback components
+│       ├── notifications/        # Notification components
+│       ├── progression/          # Progression components
+│       ├── environment/          # Environment components
+│       ├── movement/             # Movement components
+│       └── menus/                # Menu components
+├── core/            # Core systems
+│   ├── World.js             # Main game world
+│   ├── Config.js            # Configuration settings
+│   ├── UIConfig.js          # UI-specific configuration
+│   ├── AssetManager.js      # Asset loading and management
+│   ├── EventManager.js      # Event system
+│   └── UIManager.js         # UI coordination
+├── controls/        # Player controls
+├── effects/         # Visual effects
+├── entities/        # Game entities
+├── utils/           # Utility functions
+│   ├── DOMFactory.js        # Factory for DOM elements
+│   ├── ElementPool.js       # Element pooling utility
+│   └── InputHandler.js      # Input handling
+└── weapons/         # Weapon systems
+```
 
-The Event Performance Monitoring system provides comprehensive performance tracking for events:
+## Development Setup
 
-1. **Core EventManager Enhancements**
-   - Added performance metrics tracking capabilities to EventManager:
-     ```javascript
-     // Tracking metrics in EventManager
-     _trackEventPerformance(eventType, startTime) {
-       const executionTime = performance.now() - startTime;
-       
-       // Update event metrics
-       if (!this._eventMetrics.has(eventType)) {
-         this._eventMetrics.set(eventType, {
-           count: 0,
-           totalExecutionTime: 0,
-           avgExecutionTime: 0,
-           minExecutionTime: Infinity,
-           maxExecutionTime: 0,
-           lastTimestamp: performance.now()
-         });
-       }
-       
-       const metrics = this._eventMetrics.get(eventType);
-       metrics.count++;
-       metrics.totalExecutionTime += executionTime;
-       metrics.avgExecutionTime = metrics.totalExecutionTime / metrics.count;
-       metrics.minExecutionTime = Math.min(metrics.minExecutionTime, executionTime);
-       metrics.maxExecutionTime = Math.max(metrics.maxExecutionTime, executionTime);
-       metrics.lastTimestamp = performance.now();
-     }
-     ```
+### Environment Requirements
+- **Node.js**: v14.17.0 or higher
+- **npm**: v6.14.13 or higher
+- **Modern Browser**: Chrome, Firefox, or Edge latest version
 
-2. **Configuration and Control**
-   - Added configuration options in UIConfig.js:
-     ```javascript
-     // Event performance monitoring settings
-     eventPerformance: {
-       enabled: true,                  // Enable monitoring in development
-       highFrequencyThreshold: 60,     // Events/sec considered high frequency
-       slowHandlerThreshold: 1.0,      // Average ms considered slow
-       trackingInterval: 5000,         // Update interval in ms
-       maxEventsTracked: 1000          // Maximum number of events to track
-     }
-     ```
-   - Provided API for enabling, disabling, and resetting performance tracking:
-     ```javascript
-     // Enable performance tracking
-     EventManager.enablePerformanceTracking(highFrequencyThreshold, slowHandlerThreshold);
-     
-     // Disable tracking
-     EventManager.disablePerformanceTracking();
-     
-     // Get current metrics
-     const metrics = EventManager.getPerformanceMetrics();
-     
-     // Reset metrics
-     EventManager.resetPerformanceMetrics();
-     ```
+### Local Development Commands
+- `npm install`: Install dependencies
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npm run lint`: Run code linting
+- `npm run lint:css`: Run CSS linting
 
-3. **Performance Dashboard**
-   - Created event-performance-monitor.html dashboard:
-     - Tabbed interface with Overview, Event Frequency, Execution Time, and Recommendations
-     - Real-time graphs and visualizations of event performance
-     - Sortable and filterable tables of event metrics
-     - Automatic optimization recommendations based on metrics
-     - Export functionality for sharing data
-     - Color-coded indicators for problematic events
+### Testing Approach
+- Component integration tests via standalone test pages
+- Visual regression testing with screenshots
+- Performance benchmarking with browser devtools
+- Event monitoring with custom dashboard
 
-4. **Developer Tools Integration**
-   - Added keyboard shortcut (Ctrl+Shift+D) for accessing developer tools
-   - Integrated performance monitor with other development tools
-   - Implemented toolbar for common actions (start/stop tracking, reset metrics, etc.)
-   - Added visual indicators for problematic events
-   - Provided quick access to related documentation
+## Dependencies
 
-5. **Identification of Optimization Opportunities**
-   - Identified 7 high-frequency events (>60/sec) that need throttling
-   - Discovered 12 slow event handlers (>1ms average execution) for optimization
-   - Top 3 costly events:
-     1. position:updated (120/sec, 0.8ms avg)
-     2. damage:taken (30/sec during combat, 1.2ms avg)
-     3. ammo:changed (20/sec during rapid fire, 0.9ms avg)
+### Runtime Dependencies
+- **three.js**: 3D rendering
+- **stats.js**: Performance monitoring
 
-### Event Standardization Implementation
+### Development Dependencies
+- **vite**: Build tooling
+- **eslint**: JavaScript linting
+- **stylelint**: CSS linting
+- **prettier**: Code formatting
+- **rollup**: Module bundling with Vite
 
-The Event System has been enhanced with comprehensive standardization support:
+## Performance Optimization Examples
 
-1. **Core EventManager Updates**
-   - Added validation for both two-part and three-part event name patterns:
-     - Two-part: `namespace:action` (e.g., 'health:changed')
-     - Three-part: `namespace:id:action` (e.g., 'ui:health-display:visible')
-   - Implemented helper methods for creating standardized payloads:
-     - `createStateChangeEvent()` for health, ammo, etc.
-     - `createCombatEvent()` for hit registration, damage, etc.
-     - `createNotificationEvent()` for all notification types
-     - `createProgressEvent()` for XP, achievements, etc.
-     - `createMovementEvent()` for entity movement, footsteps, etc.
-   - Added payload validation based on event type
-   - Enhanced debug logging for event tracing
-   - Added configurable validation (on/off) for production vs development
+### Element Pooling Example
+```javascript
+// Before: Creating new elements for each damage number
+function showDamageNumber(damage, position) {
+  const element = document.createElement('div');
+  element.className = 'rift-damage-number';
+  element.textContent = damage;
+  element.style.left = `${position.x}px`;
+  element.style.top = `${position.y}px`;
+  this.container.appendChild(element);
+  
+  setTimeout(() => {
+    if (element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
+  }, 1000);
+}
 
-2. **EventStandardizationImplementer Utility**
-   - Created mapping from legacy event names to standardized names
-   - Defined standard namespaces and actions
-   - Implemented payload templates for different event types
-   - Created component analysis functionality
-   - Added migration code generation
-   - Implemented JSDoc comment generation for standardized events
-   - Support for component-specific events
+// After: Using element pooling
+function showDamageNumber(damage, position) {
+  const { element, release } = this.pool.acquire();
+  if (!element) return;
+  
+  element.textContent = damage;
+  element.style.left = `${position.x}px`;
+  element.style.top = `${position.y}px`;
+  element.style.display = 'block';
+  
+  setTimeout(() => {
+    release();
+  }, 1000);
+}
+```
 
-3. **Testing Framework**
-   - Developed EventStandardizationTest with test cases
-   - Created interactive event-test.html for visual testing
-   - Added validation test cases for enforcing standards
-   - Implemented benchmarking tools for performance testing
+### Event Performance Monitoring
+```javascript
+// Enable event performance monitoring
+const eventManager = EventManager.getInstance();
+eventManager.enablePerformanceTracking({
+  highFrequencyThreshold: 60,    // Events/sec considered high frequency
+  slowHandlerThreshold: 1.0      // Average ms considered slow
+});
 
-4. **Interactive Tools**
-   - Built Event Standardization Index tool with:
-     - Component analysis and compliance reporting
-     - Event validation and recommendations
-     - Migration code generation
-     - Visual dashboard for progress tracking
+// Later, get metrics for analysis
+const metrics = eventManager.getPerformanceMetrics();
+console.table(metrics);
 
-### Enhanced Combat Feedback Implementation
+// Example output:
+// ┌─────────────────┬───────┬──────────────────┬────────────────┬────────────────┬────────────────┬──────────┐
+// │ Event           │ Count │ Avg Exec Time    │ Min Exec Time  │ Max Exec Time  │ Frequency      │ Warning  │
+// ├─────────────────┼───────┼──────────────────┼────────────────┼────────────────┼────────────────┼──────────┤
+// │ position:updated│ 1200  │ 0.8ms            │ 0.3ms          │ 2.5ms          │ 120/sec        │ HIGH FREQ│
+// │ health:changed  │ 25    │ 0.5ms            │ 0.2ms          │ 1.2ms          │ 2.5/sec        │          │
+// │ damage:taken    │ 150   │ 1.2ms            │ 0.4ms          │ 3.5ms          │ 15/sec         │ SLOW     │
+// │ ammo:changed    │ 200   │ 0.9ms            │ 0.3ms          │ 2.1ms          │ 20/sec         │          │
+// └─────────────────┴───────┴──────────────────┴────────────────┴────────────────┴────────────────┴──────────┘
+```
 
-The Combat Feedback system has been enhanced with advanced visual effects:
+## Browser Compatibility
 
-1. **EnhancedDamageIndicator**
-   - Implemented type-specific indicators for different damage types
-   - Added intensity scaling based on damage amount
-   - Created distance representation via visual cues
-   - Supported multiple simultaneous damage sources
-   - Built multi-stage fade system for smooth transitions
-   - Integrated with ElementPool for performance optimization
+The redesigned UI works across all target browsers with these considerations:
+- CSS variables fallback for legacy browser support
+- Graceful visual degradation in older browsers
+- Core functionality works even without advanced features
+- Performance optimizations tapered based on device capabilities
 
-2. **EnhancedHitIndicator**
-   - Implemented differentiated visuals for body shots, critical hits, headshots, and kills
-   - Created dynamic animation sequences for hit confirmation
-   - Added visual scaling based on damage amount
-   - Designed special kill confirmation indicators
-   - Built multi-kill recognition for successive kills
-   - Integrated with ElementPool for performance optimization
+## CI/CD Pipeline
 
-3. **EnhancedDamageNumbers**
-   - Implemented floating damage numbers with type differentiation
-   - Added damage amount scaling for visual impact
-   - Created critical hit special visual treatment
-   - Designed multi-hit accumulation system
-   - Integrated fully with ElementPool for optimal performance
-   - Added staggered animation patterns for clarity
-
-4. **DynamicCrosshairSystem**
-   - Implemented dynamic spread visualization based on weapon accuracy
-   - Created contextual color changes based on target type
-   - Added shape changes based on interaction context
-   - Integrated with weapon state (reloading, empty, switching)
-   - Added critical hit potential visualization
-   - Implemented multi-kill feedback for successive eliminations
-
-5. **AdvancedScreenEffects**
-   - Created directional screen shake reflecting impact direction
-   - Implemented variable effect intensity based on damage type and amount
-   - Built multi-layer effects system (vignette, color shift, blur)
-   - Used hardware-accelerated animations for performance
-   - Added special effects for critical states and powerups
-   - Implemented environmental effect visualizations
-   - Added accessibility considerations including reduced motion support
-
-### Movement System Implementation
-
-The Movement System provides spatial awareness of entity movement with standardized events:
-
-1. **Core Architecture**
-   - Modular MovementSystem component extending UIComponent
-   - Player and entity position tracking with delta calculation
-   - Distance-based footstep detection with configurable thresholds
-   - Standardized event emission with rich positional data
-   - Direction calculation for spatial awareness
-   - Entity type differentiation (friend vs. foe)
-   - Continuous vs. single movement pattern detection
-   - Performance optimizations for tracking large numbers of entities
-
-2. **Position Tracking**
-   - Maintains cache of entity positions and state
-   - Calculates distance traveled between position updates
-   - Configurable thresholds for generating footstep events
-   - Adjustable detection radius with type-specific multipliers
-   - Sprint state integration with adjusted footstep frequency
-
-3. **Event Standardization**
-   - Emits standardized 'movement:footstep' events
-   - Rich payload with source entity information, positions, and metadata
-   - Consistent structure for all movement events
-   - Clear distinction between friendly and enemy entities
-   - Distance and direction information for spatial awareness
-
-4. **Testing Utilities**
-   - Comprehensive test methods for development and debugging
-   - `testFootstep()` for simulating individual footsteps with configurable parameters
-   - `testFootstepSequence()` for creating a series of footsteps from the same entity
-   - Built-in debug mode with detailed console logging
-   - Extensible configuration options for testing different scenarios
-   - Methods for simulating both friendly and enemy footsteps
-   - Support for chaining footsteps to create movement paths
-
-## Performance Considerations
-
-1. **DOM Performance**
-   - Minimize DOM operations for frequently updated elements
-   - Batch DOM updates with requestAnimationFrame
-   - Use CSS class manipulation over direct style changes
-   - Implement element pooling for frequent creation/destruction
-   - Use block containers for better DOM performance
-
-2. **Animation Performance**
-   - Use hardware-accelerated properties (transform, opacity)
-   - Implement CSS animations over JavaScript when possible
-   - Limit simultaneous animations during intensive gameplay
-   - Apply reduced motion settings for accessibility
-
-3. **Event System Optimization**
-   - Debounce high-frequency events
-   - Minimize event payload size for frequent events
-   - Batch event emissions when appropriate
-   - Clean up event listeners to prevent memory leaks
-   - Use event performance monitoring to identify bottlenecks
-
-4. **Rendering Efficiency**
-   - Optimize CSS selectors for performance
-   - Minimize layout thrashing with read/write batching
-   - Use CSS containment for independent components
-   - Implement visibility tracking for off-screen elements
-
-## Technical Constraints
-
-1. **Browser Compatibility**
-   - Target modern browsers (Chrome, Firefox, Safari, Edge)
-   - Use polyfills for essential features on older browsers
-   - Progressive enhancement for advanced visual effects
-
-2. **Performance Requirements**
-   - Maintain 60 FPS during intensive gameplay
-   - Minimize main thread blocking operations
-   - Support for various hardware configurations
-   - Optimize for both high-end and mid-range systems
-
-3. **Integration Limitations**
-   - UI layer must work with existing game systems
-   - Minimal changes to core gameplay code
-   - DOM-based UI must overlay Three.js canvas
-   - Communication via standardized events
-
-## Future Technical Considerations
-
-1. **Performance Optimization**
-   - Further optimization of high-frequency update components
-   - Complete migration of remaining UI components to ElementPool
-   - Memory leak detection and prevention
-   - Advanced performance monitoring and metrics
-
-2. **Audio System Integration**
-   - Development of UI sound system
-   - Integration with visual feedback components
-   - Accessibility options for audio feedback
-   - Spatial audio integration where appropriate
-
-3. **Accessibility Enhancements**
-   - Color blind modes for critical UI elements
-   - Screen reader support for key information
-   - Reduced motion options for animations
-   - Configurable UI sizing and positioning
-
-4. **Advanced Customization**
-   - User-configurable HUD layouts
-   - Theme selection for UI elements
-   - Performance/visual quality tradeoff options
-   - Personal statistics display options
-
-5. **Virtual DOM Consideration**
-   - Evaluate Virtual DOM approach for complex state components
-   - Potentially implement lightweight Virtual DOM for specific components
-   - Benchmark performance improvements against implementation complexity
-   - Create proof-of-concept implementation for high-frequency update components
+Basic CI/CD workflow:
+1. Code commit triggers build checks
+2. Automated linting ensures code quality
+3. Build artifacts for distribution
+4. Deploy to staging environment
+5. Performance benchmarks run automatically
+6. Event monitor logs are collected and analyzed
+7. Team reviews changes before production deployment

@@ -93,9 +93,12 @@ export class UIManager {
         this.isInitialized = true;
         console.log('RIFT UI Manager initialized');
         
-        // Emit initialization event
+        // Emit standardized initialization event
         if (EventManager) {
-            EventManager.emit('ui:initialized', { manager: this });
+            EventManager.emit('ui:initialize', { 
+                timestamp: performance.now(),
+                manager: this 
+            });
         }
         
         return this;
@@ -148,8 +151,8 @@ export class UIManager {
                         if (EventManager && this.systems.combat?.footstepIndicator) {
                             console.log('Registering footstep event handlers');
                             
-                            // Listen for footstep detection events and pass to combat system
-                            EventManager.subscribe('footstep:detected', (data) => {
+                            // Listen for standardized footstep detection events and pass to combat system
+                            EventManager.subscribe('movement:footstep-detected', (data) => { // Standardized event name for footstep detection
                                 if (this.systems.combat?.footstepIndicator) {
                                     // Calculate angle from player to source position if not provided
                                     let angle = data.angle;
@@ -326,9 +329,17 @@ export class UIManager {
         
         this.setSize(width, height);
         
-        // Emit resize event
+        // Emit standardized resize event
         if (EventManager) {
-            EventManager.emit('ui:resize', { width, height });
+            EventManager.emit('ui:resized', { 
+                timestamp: performance.now(),
+                width, 
+                height,
+                previous: {
+                    width: width !== window.innerWidth ? window.innerWidth : null,
+                    height: height !== window.innerHeight ? window.innerHeight : null
+                }
+            });
         }
     }
     
@@ -418,9 +429,20 @@ export class UIManager {
     setPaused(isPaused) {
         this.isGamePaused = isPaused;
         
-        // Emit event
+        // Emit standardized events for pause state changes
         if (EventManager) {
-            EventManager.emit('ui:pause:changed', { paused: isPaused });
+            // Use distinct events for pause and resume to follow standardization
+            if (isPaused) {
+                EventManager.emit('ui:paused', { 
+                    timestamp: performance.now(),
+                    source: 'user-action'
+                });
+            } else {
+                EventManager.emit('ui:resumed', { 
+                    timestamp: performance.now(),
+                    source: 'user-action'
+                });
+            }
         }
         
         return this;
@@ -884,9 +906,12 @@ export class UIManager {
         
         this.isInitialized = false;
         
-        // Emit event
+        // Emit standardized dispose event
         if (EventManager) {
-            EventManager.emit('ui:disposed', { manager: this });
+            EventManager.emit('ui:dispose', { 
+                timestamp: performance.now(),
+                manager: this 
+            });
         }
         
         return this;

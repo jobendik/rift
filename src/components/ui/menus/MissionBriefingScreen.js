@@ -49,8 +49,8 @@ export default class MissionBriefingScreen {
         }
         
         // Register event listeners
-        EventManager.on('ui:showMissionBriefing', this._onShowMissionBriefing);
-        EventManager.on('ui:hideMissionBriefing', this._onHideMissionBriefing);
+        EventManager.on('ui:mission-briefing:shown', this._onShowMissionBriefing); // Standardized event name for showing mission briefing
+        EventManager.on('ui:mission-briefing:hidden', this._onHideMissionBriefing); // Standardized event name for hiding mission briefing
         
         this.isInitialized = true;
         return this;
@@ -108,8 +108,12 @@ export default class MissionBriefingScreen {
             this.missionBriefing.setMission(data.mission);
         }
         
-        // Emit event that mission briefing is open
-        EventManager.emit('missionBriefing:opened', data);
+        // Emit standardized event that mission briefing is shown
+        EventManager.emit('mission-briefing:shown', {
+            timestamp: performance.now(),
+            mission: data.mission,
+            source: 'screen-manager'
+        });
     }
     
     /**
@@ -122,8 +126,11 @@ export default class MissionBriefingScreen {
             this.world.resume();
         }
         
-        // Emit event that mission briefing is closed
-        EventManager.emit('missionBriefing:closed', {});
+        // Emit standardized event that mission briefing is hidden
+        EventManager.emit('mission-briefing:hidden', {
+            timestamp: performance.now(),
+            reason: 'user-action'
+        });
     }
     
     /**
@@ -187,8 +194,8 @@ export default class MissionBriefingScreen {
      */
     dispose() {
         // Remove event listeners
-        EventManager.off('ui:showMissionBriefing', this._onShowMissionBriefing);
-        EventManager.off('ui:hideMissionBriefing', this._onHideMissionBriefing);
+        EventManager.off('ui:mission-briefing:shown', this._onShowMissionBriefing);
+        EventManager.off('ui:mission-briefing:hidden', this._onHideMissionBriefing);
         
         // Dispose of the mission briefing component
         if (this.missionBriefing) {

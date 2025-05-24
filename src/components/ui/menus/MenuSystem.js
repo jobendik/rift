@@ -110,23 +110,23 @@ export class MenuSystem extends UIComponent {
         // Add keyboard event listener for menu shortcuts
         window.addEventListener('keydown', this._onKeyDown);
         
-        // Register event handlers
-        EventManager.on('ui:toggleMenu', this._onToggleMenu);
+        // Register event handlers with standardized event name
+        EventManager.on('ui:menu-toggled', this._onToggleMenu); // Standardized event for toggling the menu
         
-        // Register events for our component to handle
+        // Register events for our component to handle with standardized event names
         this.registerEvents({
-            'ui:toggleWorldMap': (data) => this._toggleWorldMap(data),
-            'ui:showWorldMap': (data) => this._showWorldMap(data),
-            'ui:hideWorldMap': () => this._hideWorldMap(),
-            'ui:toggleMissionBriefing': (data) => this._toggleMissionBriefing(data),
-            'ui:showMissionBriefing': (data) => this._showMissionBriefing(data),
-            'ui:hideMissionBriefing': () => this._hideMissionBriefing(),
-            'ui:toggleRoundSummary': (data) => this._toggleRoundSummary(data),
-            'ui:showRoundSummary': (data) => this._showRoundSummary(data),
-            'ui:hideRoundSummary': () => this._hideRoundSummary(),
-            'ui:toggleWeaponWheel': (data) => this._toggleWeaponWheel(data),
-            'ui:showWeaponWheel': (data) => this._showWeaponWheel(data),
-            'ui:hideWeaponWheel': () => this._hideWeaponWheel()
+            'ui:map-toggled': (data) => this._toggleWorldMap(data), // Standardized event for toggling world map
+            'ui:map:shown': (data) => this._showWorldMap(data), // Component-specific standardized event
+            'ui:map:hidden': () => this._hideWorldMap(), // Component-specific standardized event
+            'ui:mission-briefing-toggled': (data) => this._toggleMissionBriefing(data), // Standardized event
+            'ui:mission-briefing:shown': (data) => this._showMissionBriefing(data), // Component-specific standardized event
+            'ui:mission-briefing:hidden': () => this._hideMissionBriefing(), // Component-specific standardized event
+            'ui:round-summary-toggled': (data) => this._toggleRoundSummary(data), // Standardized event
+            'ui:round-summary:shown': (data) => this._showRoundSummary(data), // Component-specific standardized event
+            'ui:round-summary:hidden': () => this._hideRoundSummary(), // Component-specific standardized event
+            'ui:weapon-wheel-toggled': (data) => this._toggleWeaponWheel(data), // Standardized event
+            'ui:weapon-wheel:shown': (data) => this._showWeaponWheel(data), // Component-specific standardized event
+            'ui:weapon-wheel:hidden': () => this._hideWeaponWheel() // Component-specific standardized event
         });
     }
     
@@ -454,9 +454,9 @@ export class MenuSystem extends UIComponent {
      * Clean up resources when disposed
      */
     dispose() {
-        // Remove event listeners
+        // Remove event listeners with standardized event names
         window.removeEventListener('keydown', this._onKeyDown);
-        EventManager.off('ui:toggleMenu', this._onToggleMenu);
+        EventManager.off('ui:menu-toggled', this._onToggleMenu);
         
         // Dispose components
         if (this.screenManager) {
@@ -490,4 +490,3 @@ export class MenuSystem extends UIComponent {
         this.isInitialized = false;
     }
 }
-

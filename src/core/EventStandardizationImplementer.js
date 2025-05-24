@@ -78,7 +78,10 @@ class EventStandardizationImplementer {
             // Input events
             'input:key': 'input:keydown',
             'input:mouse': 'input:mousemove',
-            'input:click': 'input:mousedown'
+            'input:click': 'input:mousedown',
+            
+            // Movement events
+            'movement:footstep': 'movement:footstep-detected'
         };
         
         // Standard namespaces defined in the guidelines

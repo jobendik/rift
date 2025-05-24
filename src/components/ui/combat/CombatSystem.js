@@ -75,10 +75,10 @@ class CombatSystem extends UIComponent {
         // Initialize components
         this._initComponents();
         
-        // Register event handlers
+        // Register event handlers with standardized event names
         this.registerEvents({
-            'game:paused': () => this._onGamePaused(),
-            'game:resumed': () => this._onGameResumed()
+            'ui:paused': () => this._onGamePaused(),  // Standardized event for game pause
+            'ui:resumed': () => this._onGameResumed() // Standardized event for game resume
         });
         
         return this;

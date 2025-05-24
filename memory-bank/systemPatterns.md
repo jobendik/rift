@@ -949,4 +949,67 @@ Prefer CSS properties that are hardware-accelerated:
 ```css
 /* Instead of */
 .element {
-  animation
+  animation: slide 300ms;
+  left: 100px;
+}
+
+/* Use */
+.element {
+  animation: slide 300ms;
+  transform: translateX(100px);
+}
+```
+
+```javascript
+// Instead of
+element.style.top = `${y}px`;
+element.style.left = `${x}px`;
+
+// Use
+element.style.transform = `translate(${x}px, ${y}px)`;
+```
+
+### Efficient Animation Handling
+
+Use requestAnimationFrame for animations:
+
+```javascript
+class AnimationManager {
+  constructor() {
+    this.animations = new Set();
+    this.isRunning = false;
+  }
+  
+  start() {
+    if (this.isRunning) return;
+    this.isRunning = true;
+    this._tick();
+  }
+  
+  _tick(timestamp) {
+    if (!this.isRunning) return;
+    
+    // Update all animations
+    this.animations.forEach(animation => {
+      animation.update(timestamp);
+    });
+    
+    // Request next frame
+    requestAnimationFrame(this._tick.bind(this));
+  }
+  
+  add(animation) {
+    this.animations.add(animation);
+    this.start();
+  }
+  
+  remove(animation) {
+    this.animations.delete(animation);
+    
+    // Stop the loop if there are no animations
+    if (this.animations.size === 0) {
+      this.isRunning = false;
+    }
+  }
+}
+```

@@ -156,7 +156,7 @@ All event payloads include:
 
 | Event Name | Description | Payload Properties |
 |------------|-------------|-------------------|
-| `movement:footstep` | Entity footstep detected | `entityId: String`, `entityType: String`, `position: {x, y, z}`, `distance: Number`, `intensity: Number` |
+| `movement:footstep-detected` | Entity footstep detected | `entityId: String`, `entityType: String`, `position: {x, y, z}`, `distance: Number`, `intensity: Number` |
 | `movement:slide` | Slide movement started | `duration: Number`, `direction: Vector3` |
 | `movement:jump` | Jump performed | `height: Number`, `startPosition: {x, y, z}` |
 | `movement:collision` | Entity collided with surface | `entityId: String`, `surfaceType: String`, `velocity: Number` |

@@ -434,7 +434,7 @@ class FootstepIndicator extends UIComponent {
     _registerEventListeners() {
         // Register for footstep events using standardized event names
         this.registerEvents({
-            'movement:footstep': this._onFootstepDetected.bind(this),
+            'movement:footstep-detected': this._onFootstepDetected.bind(this), // Updated to standardized event name
             'game:paused': () => this.clearAllIndicators(),
             'game:resumed': () => this.clearAllIndicators()
         });
@@ -591,9 +591,9 @@ class FootstepIndicator extends UIComponent {
         };
         
         // Emit the standardized event
-        EventManager.emit('movement:footstep', eventData);
+        EventManager.emit('movement:footstep-detected', eventData);
         
-        console.log('[FootstepIndicator] Emitted standardized movement:footstep event:', eventData);
+        console.log('[FootstepIndicator] Emitted standardized movement:footstep-detected event:', eventData);
         
         return this;
     }

@@ -3,10 +3,10 @@
  *
  * Responsible for detecting and emitting footstep events based on entity movement.
  * This component monitors player and entity movement, and emits standardized
- * 'movement:footstep' events that will be picked up by the FootstepIndicator component.
+ * 'movement:footstep-detected' events that will be picked up by the FootstepIndicator component.
  *
  * Following Event Standardization guidelines, this component is responsible for
- * emitting 'movement:footstep' events with the standardized payload structure that
+ * emitting 'movement:footstep-detected' events with the standardized payload structure that
  * includes source entity information, position data, and movement characteristics.
  *
  * @extends UIComponent
@@ -520,8 +520,9 @@ class MovementSystem extends UIComponent {
             timestamp: performance.now()
         };
         
-        // Emit the standardized movement:footstep event
-        EventManager.emit('movement:footstep', footstepEvent);
+        // Emit the standardized event that follows EventStandardizationCatalog naming standards
+        // This event will be picked up by FootstepIndicator component
+        EventManager.emit('movement:footstep-detected', footstepEvent);
         
         if (this.debugMode) {
             const entityName = entity.name || entityId;
@@ -602,7 +603,7 @@ class MovementSystem extends UIComponent {
         const entityType = options.isFriendly ? 'ally' : 'enemy';
         const entityName = `${entityType}-${entityId}`;
         
-        // Create standardized movement:footstep event
+        // Create standardized movement:footstep-detected event
         const footstepEvent = {
             // Source entity information
             source: {
@@ -625,7 +626,7 @@ class MovementSystem extends UIComponent {
         };
         
         // Emit the standardized event
-        EventManager.emit('movement:footstep', footstepEvent);
+        EventManager.emit('movement:footstep-detected', footstepEvent);
         
         console.log(`[MovementSystem] Test footstep: ${options.isFriendly ? 'friendly' : 'enemy'} at ${distance.toFixed(1)}m, angle ${angle.toFixed(1)}Â°`);
         
@@ -700,4 +701,3 @@ class MovementSystem extends UIComponent {
 }
 
 export { MovementSystem };
-
