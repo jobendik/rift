@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kill Feed Debug Test</title>
+    <link rel="stylesheet" href="./styles/index.css">
+    <style>
+        /* Force kill feed to be visible for debugging */
+        .rift-kill-feed {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            background: red !important;
+            border: 2px solid yellow !important;
+            padding: 10px !important;
+            z-index: 9999 !important;
+            width: 300px !important;
+            height: 200px !important;
+        }
+        
+        .rift-kill-message {
+            background: blue !important;
+            color: white !important;
+            padding: 5px !important;
+            margin: 2px 0 !important;
+            opacity: 1 !important;
+            transform: none !important;
+            border: 1px solid white !important;
+        }
+        
+        body {
+            background: #333;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kill Feed Debug Test</h1>
+    
+    <button onclick="testKillFeed()">Test Kill Feed</button>
+    <button onclick="checkDOM()">Check DOM</button>
+    <button onclick="clearFeed()">Clear Feed</button>
+    
+    <div id="output"></div>
+    
+    <script type="module">
+        import { KillFeed } from './src/components/ui/notifications/KillFeed.js';
+        
+        window.killFeed = new KillFeed({
+            container: document.body
+        });
+        
+        window.testKillFeed = function() {
+            console.log('Testing kill feed...');
+            const testData = {
+                killer: 'Player',
+                victim: 'Enemy' + Math.floor(Math.random() * 100),
+                weapon: 'assault_rifle',
+                isHeadshot: Math.random() > 0.5,
+                specialType: Math.random() > 0.7 ? 'MULTI-KILL' : null
+            };
+            
+            window.killFeed.addKillMessage(testData);
+            console.log('Kill message added:', testData);
+        };
+        
+        window.checkDOM = function() {
+            const output = document.getElementById('output');
+            const killFeedEl = document.querySelector('.rift-kill-feed');
+            const messages = document.querySelectorAll('.rift-kill-message');
+            
+            output.innerHTML = `
+                <h3>DOM Check Results:</h3>
+                <p>Kill Feed Element: ${killFeedEl ? 'Found' : 'NOT FOUND'}</p>
+                <p>Number of messages: ${messages.length}</p>
+                <p>Kill Feed Classes: ${killFeedEl ? killFeedEl.className : 'N/A'}</p>
+                <p>Kill Feed Position: ${killFeedEl ? getComputedStyle(killFeedEl).position : 'N/A'}</p>
+                <p>Kill Feed Visibility: ${killFeedEl ? getComputedStyle(killFeedEl).visibility : 'N/A'}</p>
+                <p>Kill Feed Opacity: ${killFeedEl ? getComputedStyle(killFeedEl).opacity : 'N/A'}</p>
+                <h4>Messages:</h4>
+            `;
+            
+            messages.forEach((msg, i) => {
+                output.innerHTML += `
+                    <p>Message ${i+1}: "${msg.textContent}" - Classes: ${msg.className}</p>
+                `;
+            });
+            
+            if (killFeedEl) {
+                console.log('Kill Feed Element:', killFeedEl);
+                console.log('Computed Styles:', getComputedStyle(killFeedEl));
+            }
+        };
+        
+        window.clearFeed = function() {
+            if (window.killFeed) {
+                window.killFeed.clearAll();
+            }
+        };
+        
+        // Auto-test
+        setTimeout(() => {
+            console.log('Auto-testing kill feed...');
+            window.testKillFeed();
+            setTimeout(window.checkDOM, 100);
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kill Feed Direct Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        /* CSS Variables for Kill Feed */
+        :root {
+            --rift-color-text-color: #ffffff;
+            --rift-color-primary: #00bcd4;
+            --rift-color-danger: #f44336;
+            --rift-color-warning: #ff9800;
+            --rift-sizing-border-radius: 4px;
+            --rift-font-hud: Arial, sans-serif;
+            --rift-animation-fast: 0.2s;
+            --rift-animation-normal: 0.3s;
+            --rift-animation-slow: 0.5s;
+        }
+
+        /* Kill Feed Styles */
+        .rift-kill-feed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 6px;
+            width: 360px;
+            max-height: 30vh;
+            z-index: 9999;
+            pointer-events: none;
+            overflow: hidden;
+            border: 2px solid red;
+        }
+
+        .rift-kill-message {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: var(--rift-sizing-border-radius);
+            padding: 6px 12px;
+            color: var(--rift-color-text-color);
+            font-family: var(--rift-font-hud);
+            font-size: 0.9rem;
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity var(--rift-animation-fast) ease-out, 
+                        transform var(--rift-animation-fast) ease-out;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            box-sizing: border-box;
+            border: 1px solid yellow;
+        }
+
+        .rift-kill-message__player {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        .rift-kill-message__killer {
+            color: var(--rift-color-primary);
+        }
+
+        .rift-kill-message__victim {
+            color: var(--rift-color-text-color);
+            opacity: 0.8;
+        }
+
+        .rift-kill-message__weapon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            opacity: 0.9;
+        }
+
+        .rift-kill-message__special {
+            font-size: 0.8rem;
+            color: var(--rift-color-warning);
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0 4px;
+            border-radius: 2px;
+            background-color: rgba(255, 152, 0, 0.2);
+        }
+
+        .rift-kill-message__special--headshot {
+            color: var(--rift-color-danger);
+            background-color: rgba(244, 67, 54, 0.2);
+        }
+
+        .rift-kill-message--enter {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .rift-kill-message--exit {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .test-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .test-controls button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px 20px;
+            background: #00bcd4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .test-controls button:hover {
+            background: #00acc1;
+        }
+
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-controls">
+        <h3>Kill Feed Direct Test</h3>
+        <button onclick="addKillMessage()">Add Kill Message</button>
+        <button onclick="addHeadshotMessage()">Add Headshot</button>
+        <button onclick="clearMessages()">Clear All</button>
+        <button onclick="inspectFeed()">Inspect Feed</button>
+        <div class="debug-info" id="debug-info">Ready for testing...</div>
+    </div>
+
+    <div id="kill-feed" class="rift-kill-feed">
+        <!-- Kill messages will be added here -->
+    </div>
+
+    <script>
+        const killFeed = document.getElementById('kill-feed');
+        const debugInfo = document.getElementById('debug-info');
+        let messageCount = 0;
+
+        function log(message) {
+            console.log(message);
+            debugInfo.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        function addKillMessage() {
+            messageCount++;
+            log(`Adding kill message #${messageCount}`);
+
+            const message = document.createElement('div');
+            message.className = 'rift-kill-message';
+            
+            const killer = document.createElement('span');
+            killer.className = 'rift-kill-message__player rift-kill-message__killer';
+            killer.textContent = 'Player';
+            
+            const weapon = document.createElement('span');
+            weapon.className = 'rift-kill-message__weapon';
+            weapon.textContent = ' → ';
+            
+            const victim = document.createElement('span');
+            victim.className = 'rift-kill-message__player rift-kill-message__victim';
+            victim.textContent = `Enemy${messageCount}`;
+            
+            message.appendChild(killer);
+            message.appendChild(weapon);
+            message.appendChild(victim);
+            
+            killFeed.appendChild(message);
+            
+            // Add enter animation
+            setTimeout(() => {
+                message.classList.add('rift-kill-message--enter');
+            }, 10);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                removeMessage(message);
+            }, 5000);
+            
+            log(`Message added. Feed children: ${killFeed.children.length}`);
+        }
+
+        function addHeadshotMessage() {
+            messageCount++;
+            log(`Adding headshot message #${messageCount}`);
+
+            const message = document.createElement('div');
+            message.className = 'rift-kill-message';
+            
+            const killer = document.createElement('span');
+            killer.className = 'rift-kill-message__player rift-kill-message__killer';
+            killer.textContent = 'Player';
+            
+            const weapon = document.createElement('span');
+            weapon.className = 'rift-kill-message__weapon';
+            weapon.textContent = ' → ';
+            
+            const victim = document.createElement('span');
+            victim.className = 'rift-kill-message__player rift-kill-message__victim';
+            victim.textContent = `Enemy${messageCount}`;
+            
+            const special = document.createElement('span');
+            special.className = 'rift-kill-message__special rift-kill-message__special--headshot';
+            special.textContent = ' (HS)';
+            
+            message.appendChild(killer);
+            message.appendChild(weapon);
+            message.appendChild(victim);
+            message.appendChild(special);
+            
+            killFeed.appendChild(message);
+            
+            // Add enter animation
+            setTimeout(() => {
+                message.classList.add('rift-kill-message--enter');
+            }, 10);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                removeMessage(message);
+            }, 5000);
+            
+            log(`Headshot message added. Feed children: ${killFeed.children.length}`);
+        }
+
+        function removeMessage(message) {
+            if (!message.parentNode) return;
+            
+            message.classList.add('rift-kill-message--exit');
+            message.classList.remove('rift-kill-message--enter');
+            
+            setTimeout(() => {
+                if (message.parentNode) {
+                    message.parentNode.removeChild(message);
+                    log(`Message removed. Feed children: ${killFeed.children.length}`);
+                }
+            }, 200);
+        }
+
+        function clearMessages() {
+            log('Clearing all messages');
+            killFeed.innerHTML = '';
+        }
+
+        function inspectFeed() {
+            log(`Inspecting kill feed:`);
+            log(`- Container exists: ${!!killFeed}`);
+            log(`- Container display: ${getComputedStyle(killFeed).display}`);
+            log(`- Container position: ${getComputedStyle(killFeed).position}`);
+            log(`- Container visibility: ${getComputedStyle(killFeed).visibility}`);
+            log(`- Container opacity: ${getComputedStyle(killFeed).opacity}`);
+            log(`- Children count: ${killFeed.children.length}`);
+            
+            for (let i = 0; i < killFeed.children.length; i++) {
+                const child = killFeed.children[i];
+                log(`- Child ${i}: ${child.className}, opacity: ${getComputedStyle(child).opacity}, display: ${getComputedStyle(child).display}`);
+            }
+        }
+
+        // Add initial test message
+        setTimeout(() => {
+            addKillMessage();
+        }, 1000);
+    </script>
+</body>
+</html>

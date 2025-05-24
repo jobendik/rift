@@ -231,18 +231,41 @@ class GameEventBridge {
     /**
      * Handle enemy being killed
      */
-    onEnemyKilled(enemy, killer) {
+    onEnemyKilled(enemy, killer, weapon = null, damage = 0, isCritical = false, isHeadshot = false) {
+        // Get weapon info from player's current weapon if not provided
+        let weaponData = weapon;
+        if (!weaponData && killer && killer.weaponSystem?.currentWeapon) {
+            weaponData = {
+                type: killer.weaponSystem.currentWeapon.type,
+                name: this._getWeaponName(killer.weaponSystem.currentWeapon.type)
+            };
+        }
+
         EventManager.emit('enemy:killed', EventManager.createCombatEvent(
             {
-                id: killer.uuid,
+                id: killer.uuid || 'player',
                 type: killer.isPlayer ? 'player' : 'enemy',
-                name: killer.name || (killer.isPlayer ? 'Player' : 'Enemy')
+                name: killer.name || (killer.isPlayer ? 'Player' : 'Enemy'),
+                position: killer.position ? {
+                    x: killer.position.x,
+                    y: killer.position.y,
+                    z: killer.position.z
+                } : null
             },
             {
-                id: enemy.uuid,
+                id: enemy.uuid || 'enemy',
                 type: 'enemy', 
-                name: enemy.name || 'Enemy'
-            }
+                name: enemy.name || 'Enemy',
+                position: enemy.position ? {
+                    x: enemy.position.x,
+                    y: enemy.position.y,
+                    z: enemy.position.z
+                } : null
+            },
+            weaponData,
+            damage,
+            isCritical,
+            isHeadshot
         ));
     }
     

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT UI Components Debug</title>
+    <link rel="stylesheet" href="public/styles/index.css">
+    <style>
+        body {
+            background: #2a2a2a;
+            color: white;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .debug-section {
+            border: 1px solid #555;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .error { color: #ff4444; }
+        .success { color: #44ff44; }
+        .warning { color: #ffaa44; }
+        .component-list {
+            margin-left: 20px;
+        }
+        .status {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>RIFT UI Components Debug Test</h1>
+    
+    <div class="debug-section">
+        <h2>Component Status</h2>
+        <div id="component-status"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Test Actions</h2>
+        <button onclick="testHUDSystem()">Test HUD System</button>
+        <button onclick="testNotifications()">Test Notifications</button>
+        <button onclick="testCombatSystem()">Test Combat System</button>
+        <button onclick="testComponentInitialization()">Test Component Init</button>
+    </div>
+
+    <div class="debug-section">
+        <h2>Console Output</h2>
+        <div id="console-output"></div>
+    </div>
+
+    <script type="module">
+        // Import the necessary components for debugging
+        import { HUDSystem } from './src/components/ui/hud/HUDSystem.js';
+        import { NotificationSystem } from './src/components/ui/notifications/NotificationSystem.js';
+        import { CombatSystem } from './src/components/ui/combat/CombatSystem.js';
+        import { EventManager } from './src/core/EventManager.js';
+        import { UIManager } from './src/core/UIManager.js';
+
+        // Capture console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function logToDebug(message, type = 'log') {
+            const output = document.getElementById('console-output');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            logToDebug(args.join(' '), 'log');
+        };
+        
+        console.error = (...args) => {
+            originalError(...args);
+            logToDebug(args.join(' '), 'error');
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            logToDebug(args.join(' '), 'warning');
+        };
+
+        // Mock world object for testing
+        const mockWorld = {
+            player: {
+                health: 100,
+                maxHealth: 100,
+                stamina: 100,
+                maxStamina: 100,
+                weaponSystem: {
+                    currentWeapon: {
+                        roundsLeft: 12,
+                        ammo: 48,
+                        roundsPerClip: 30,
+                        type: 'assault_rifle',
+                        maxAmmo: 120
+                    }
+                },
+                rotation: { y: 0 }
+            }
+        };
+
+        // Global variables for debugging
+        window.hudSystem = null;
+        window.notificationSystem = null;
+        window.combatSystem = null;
+        window.uiManager = null;
+
+        // Test functions
+        window.testHUDSystem = function() {
+            console.log('Testing HUD System initialization...');
+            try {
+                window.hudSystem = new HUDSystem(mockWorld);
+                console.log('HUD System created successfully');
+                
+                // Check components
+                const components = window.hudSystem.components;
+                const statusDiv = document.getElementById('component-status');
+                statusDiv.innerHTML = '<h3>HUD Components:</h3>';
+                
+                Object.keys(components).forEach(key => {
+                    const component = components[key];
+                    const status = component && component.isInitialized ? 'success' : 'error';
+                    const statusText = component && component.isInitialized ? 'OK' : 'FAILED';
+                    statusDiv.innerHTML += `<div class="${status}"><span class="status">[${statusText}]</span> ${key}</div>`;
+                });
+                
+            } catch (error) {
+                console.error('HUD System failed:', error);
+            }
+        };
+
+        window.testNotifications = function() {
+            console.log('Testing Notification System...');
+            try {
+                window.notificationSystem = new NotificationSystem(mockWorld);
+                console.log('Notification System created successfully');
+                
+                // Test notifications
+                setTimeout(() => {
+                    if (window.notificationSystem) {
+                        window.notificationSystem.testNotification('info');
+                        window.notificationSystem.testNotification('kill');
+                        window.notificationSystem.testNotification('achievement');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Notification System failed:', error);
+            }
+        };
+
+        window.testCombatSystem = function() {
+            console.log('Testing Combat System...');
+            try {
+                window.combatSystem = new CombatSystem(mockWorld);
+                console.log('Combat System created successfully');
+            } catch (error) {
+                console.error('Combat System failed:', error);
+            }
+        };
+
+        window.testComponentInitialization = function() {
+            console.log('Testing individual component imports...');
+            
+            // Test individual component imports
+            const testImports = [
+                { name: 'HealthDisplay', path: './src/components/ui/hud/HealthDisplay.js' },
+                { name: 'AmmoDisplay', path: './src/components/ui/hud/AmmoDisplay.js' },
+                { name: 'StaminaSystem', path: './src/components/ui/hud/StaminaSystem.js' },
+                { name: 'CompassDisplay', path: './src/components/ui/hud/CompassDisplay.js' },
+                { name: 'MinimapSystem', path: './src/components/ui/hud/MinimapSystem.js' },
+                { name: 'CrosshairSystem', path: './src/components/ui/hud/CrosshairSystem.js' },
+                { name: 'WeaponWheel', path: './src/components/ui/hud/WeaponWheel.js' },
+                { name: 'NotificationManager', path: './src/components/ui/notifications/NotificationManager.js' },
+                { name: 'KillFeed', path: './src/components/ui/notifications/KillFeed.js' }
+            ];
+            
+            Promise.all(testImports.map(async ({ name, path }) => {
+                try {
+                    const module = await import(path);
+                    console.log(`✅ ${name} import successful`);
+                    return { name, status: 'success', module };
+                } catch (error) {
+                    console.error(`❌ ${name} import failed:`, error.message);
+                    return { name, status: 'error', error: error.message };
+                }
+            })).then(results => {
+                const statusDiv = document.getElementById('component-status');
+                statusDiv.innerHTML += '<h3>Import Status:</h3>';
+                
+                results.forEach(({ name, status, error }) => {
+                    const statusText = status === 'success' ? 'OK' : 'FAILED';
+                    const errorText = error ? ` - ${error}` : '';
+                    statusDiv.innerHTML += `<div class="${status}"><span class="status">[${statusText}]</span> ${name}${errorText}</div>`;
+                });
+            });
+        };
+
+        window.testUIManager = function() {
+            console.log('Testing UI Manager...');
+            try {
+                window.uiManager = new UIManager(mockWorld);
+                console.log('UI Manager created successfully');
+                
+                // Log system status
+                const systems = window.uiManager.systems;
+                Object.keys(systems).forEach(key => {
+                    const system = systems[key];
+                    console.log(`System ${key}:`, system?.isInitialized ? 'initialized' : 'not initialized');
+                });
+                
+            } catch (error) {
+                console.error('UI Manager failed:', error);
+            }
+        };
+
+        // Auto-start some tests
+        console.log('Starting component debug tests...');
+        testComponentInitialization();
+        
+        // Add UI Manager test button
+        document.querySelector('.debug-section:nth-child(2)').innerHTML += '<button onclick="testUIManager()">Test UI Manager</button>';
+
+    </script>
+</body>
+</html>

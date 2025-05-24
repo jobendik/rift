@@ -34,7 +34,10 @@ class HUDSystem extends UIComponent {
         });
         
         this.world = world;
-          // Store HUD components
+        this.useExistingElements = options.useExistingElements || false;
+        this.existingElements = options.existingElements || {};
+        
+        // Store HUD components
         this.components = {
             health: null,
             ammo: null,
@@ -154,6 +157,36 @@ class HUDSystem extends UIComponent {
      */
     _initComponents() {
         try {
+            if (this.useExistingElements) {
+                console.log('[HUDSystem] Using existing elements - skipping component creation to prevent duplicates');
+                
+                // Create lightweight wrappers that connect to existing DOM elements
+                this.components.health = this._createElementWrapper('hudHealth');
+                this.components.ammo = this._createElementWrapper('hudAmmo');
+                this.components.crosshair = this._createElementWrapper('dynamicCrosshair');
+                this.components.notifications = this._createElementWrapper('hudFragList');
+                
+                // Create stub components for features that need programmatic control
+                this.components.minimap = { 
+                    init: () => {}, 
+                    update: () => {},
+                    dispose: () => {},
+                    state: {}
+                };
+                this.components.compass = this._createElementWrapper('hudCompass');
+                this.components.stamina = this._createElementWrapper('staminaContainer');
+                this.components.weaponWheel = { 
+                    init: () => {}, 
+                    update: () => {},
+                    dispose: () => {},
+                    state: {}
+                };
+                
+                console.log('[HUDSystem] Element wrappers created for existing elements');
+                return;
+            }
+            
+            // Original component creation (fallback if not using existing elements)
             // Health display (bottom right)
             this.components.health = new HealthDisplay({
                 container: this.containers.bottomRight,
@@ -198,11 +231,14 @@ class HUDSystem extends UIComponent {
             });
             this.addChild(this.components.compass);
             
-            // Notification system (manages kill feed, notifications, etc.) - uses container's root
-            this.components.notifications = new NotificationSystem(this.world, {
-                container: this.element // Use HUD system's root element as container
-            });
-            this.addChild(this.components.notifications);
+            // SKIP NotificationSystem creation - it's already created by UIManager
+            console.log('[HUDSystem] Skipping NotificationSystem - using UIManager instance');
+            this.components.notifications = { 
+                init: () => {}, 
+                update: () => {},
+                dispose: () => {},
+                state: {}
+            };
             
             // Weapon wheel (center, initially hidden)
             this.components.weaponWheel = new WeaponWheel({
@@ -228,6 +264,39 @@ class HUDSystem extends UIComponent {
                 }
             });
         }
+    }
+    
+    /**
+     * Create a lightweight wrapper for existing DOM elements
+     * @private
+     */
+    _createElementWrapper(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn(`[HUDSystem] Element ${elementId} not found for wrapper`);
+            return { init: () => {}, update: () => {}, dispose: () => {}, state: {} };
+        }
+        
+        return {
+            element: element,
+            init: () => {},
+            update: () => {},
+            dispose: () => {},
+            state: {},
+            // Add methods to update the existing elements
+            updateContent: (content) => {
+                if (element) element.textContent = content;
+            },
+            updateStyle: (styles) => {
+                if (element) Object.assign(element.style, styles);
+            },
+            addClass: (className) => {
+                if (element) element.classList.add(className);
+            },
+            removeClass: (className) => {
+                if (element) element.classList.remove(className);
+            }
+        };
     }
     
     /**

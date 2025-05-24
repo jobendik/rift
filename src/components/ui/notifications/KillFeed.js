@@ -90,6 +90,8 @@ export class KillFeed extends UIComponent {
      * @param {string} data.specialType - Special kill type (if any)
      */
     addKillMessage(data) {
+        console.log('[KillFeed] Adding kill message:', data);
+        
         // Remove oldest message if at maximum
         if (this.messages.length >= this.maxMessages) {
             this._removeOldestMessage();
@@ -104,7 +106,7 @@ export class KillFeed extends UIComponent {
         
         // Show with animation
         setTimeout(() => {
-            message.element.classList.add('rift-kill-message--show');
+            message.element.classList.add('rift-kill-message--enter');
         }, 10);
         
         // Set up auto-remove timer
@@ -122,6 +124,8 @@ export class KillFeed extends UIComponent {
      * @param {string} data.streakType - Type of streak ('killing_spree', 'rampage', etc.)
      */
     addKillStreak(data) {
+        console.log('[KillFeed] Adding kill streak:', data);
+        
         // Create streak element
         const streak = this._createKillStreak(data);
         
@@ -131,7 +135,7 @@ export class KillFeed extends UIComponent {
         
         // Show with animation
         setTimeout(() => {
-            streak.element.classList.add('rift-kill-streak--show');
+            streak.element.classList.add('rift-kill-streak--enter');
         }, 10);
         
         // Auto-remove after longer duration
@@ -242,21 +246,21 @@ export class KillFeed extends UIComponent {
         // Add killer name
         const killer = DOMFactory.createElement('span', {
             className: 'rift-kill-message__player rift-kill-message__killer',
-            textContent: data.killer
+            text: data.killer
         });
         message.element.appendChild(killer);
         
-        // Add weapon icon
-        const weaponClass = this.weaponIcons[data.weapon] || 'icon-weapon';
+        // Add weapon icon/text (simplified for now since we don't have icons)
         const weapon = DOMFactory.createElement('span', {
-            className: `rift-kill-message__weapon ${weaponClass}`
+            className: 'rift-kill-message__weapon',
+            text: ' → '  // Simple arrow for now
         });
         message.element.appendChild(weapon);
         
         // Add victim name
         const victim = DOMFactory.createElement('span', {
             className: 'rift-kill-message__player rift-kill-message__victim',
-            textContent: data.victim
+            text: data.victim
         });
         message.element.appendChild(victim);
         
@@ -264,13 +268,13 @@ export class KillFeed extends UIComponent {
         if (data.isHeadshot) {
             const special = DOMFactory.createElement('span', {
                 className: 'rift-kill-message__special rift-kill-message__special--headshot',
-                textContent: 'HS'
+                text: ' (HS)'
             });
             message.element.appendChild(special);
         } else if (data.specialType) {
             const special = DOMFactory.createElement('span', {
                 className: 'rift-kill-message__special',
-                textContent: data.specialType.toUpperCase()
+                text: ` (${data.specialType.toUpperCase()})`
             });
             message.element.appendChild(special);
         }
@@ -291,21 +295,21 @@ export class KillFeed extends UIComponent {
         
         // Create streak container
         streak.element = DOMFactory.createElement('div', {
-            className: `rift-kill-streak rift-kill-streak--${data.streakType}`
+            className: `rift-kill-streak rift-kill-streak--${data.streakType.replace('_', '-')}`
         });
         
         // Add streak text
         const streakText = this._getStreakText(data.killCount, data.streakType);
         const text = DOMFactory.createElement('div', {
             className: 'rift-kill-streak__text',
-            textContent: `${data.player} ${streakText}!`
+            text: `${data.player} ${streakText}!`
         });
         streak.element.appendChild(text);
         
         // Add kill count
         const count = DOMFactory.createElement('div', {
             className: 'rift-kill-streak__count',
-            textContent: `${data.killCount} kills`
+            text: `${data.killCount} kills`
         });
         streak.element.appendChild(count);
         
@@ -379,7 +383,7 @@ export class KillFeed extends UIComponent {
         } else {
             // Remove with animation
             message.element.classList.add('rift-kill-message--exit');
-            message.element.classList.remove('rift-kill-message--show');
+            message.element.classList.remove('rift-kill-message--enter');
             
             setTimeout(() => {
                 if (message.element.parentNode) {
@@ -408,7 +412,7 @@ export class KillFeed extends UIComponent {
         
         // Remove with animation
         streak.element.classList.add('rift-kill-streak--exit');
-        streak.element.classList.remove('rift-kill-streak--show');
+        streak.element.classList.remove('rift-kill-streak--enter');
         
         setTimeout(() => {
             if (streak.element.parentNode) {

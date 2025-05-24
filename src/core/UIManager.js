@@ -9,6 +9,7 @@
 import { EventManager } from './EventManager.js';
 import { UIConfig } from './UIConfig.js';
 import { DOMFactory } from '../utils/DOMFactory.js';
+import { UIBootstrap } from './UIBootstrap.js';
 
 // Import UI component systems
 // These will be uncommented and used as we implement each system
@@ -109,12 +110,31 @@ export class UIManager {
      * @private
      */
     _initSystems() {
-        // Create system instances
-        // We'll gradually replace the placeholders as we implement each system
+        // CRITICAL: Create all DOM elements FIRST using UIBootstrap
+        // This solves the 50-hour problem where systems expected elements that didn't exist
+        console.log('Creating essential DOM elements before system initialization...');
+        this.uiBootstrap = new UIBootstrap();
+        const elements = this.uiBootstrap.createEssentialElements();
+        
+        // Store elements reference for systems to use
+        this.elements = elements;
+        
+        // Create system instances with COORDINATED INITIALIZATION
+        // Pass existing elements to prevent duplicate creation
         this.systems = {
-            hud: new HUDSystem(this.world),
-            combat: new CombatSystem(this.world),
-            notifications: new NotificationSystem(this.world),
+            // HUDSystem will USE existing elements rather than create new ones
+            hud: new HUDSystem(this.world, { 
+                useExistingElements: true,
+                existingElements: elements 
+            }),
+            combat: new CombatSystem(this.world, {
+                existingElements: elements
+            }),
+            // Only create ONE NotificationSystem and pass existing elements
+            notifications: new NotificationSystem(this.world, {
+                useExistingElements: true,
+                existingElements: elements
+            }),
             menus: new MenuSystem(this.world),
             environment: new EnvironmentSystem({ world: this.world }),
             movement: new MovementSystem(this.world),

@@ -14,10 +14,8 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import { EnhancedNotificationManager } from './EnhancedNotificationManager.js';
-import { EnhancedKillFeed } from './EnhancedKillFeed.js';
-import { EnhancedEventBanner } from './EnhancedEventBanner.js';
-import { EnhancedAchievementDisplay } from './EnhancedAchievementDisplay.js';
+import { NotificationManager } from './NotificationManager.js';
+import { KillFeed } from './KillFeed.js';
 import { EventManager } from '../../../core/EventManager.js';
 
 class NotificationSystem extends UIComponent {
@@ -38,12 +36,17 @@ class NotificationSystem extends UIComponent {
 
         this.world = world;
         this.config = this.config.notifications || {};
+        this.useExistingElements = options.useExistingElements || false;
+        this.existingElements = options.existingElements || {};
 
         // Component references
         this.notificationManager = null;
         this.killFeed = null;
         this.eventBanner = null;
         this.achievementDisplay = null;
+        
+        // Initialize immediately to prevent timing issues
+        this.init();
     }
 
     /**
@@ -52,13 +55,15 @@ class NotificationSystem extends UIComponent {
     init() {
         if (this.isInitialized) return this;
         
+        console.log('[NotificationSystem] Initializing...');
+        
         // Call parent init first
         super.init();
         
         // Set initialized flag early to prevent infinite recursion
         this.isInitialized = true;
         
-        // Initialize components
+        // Initialize components with error handling
         this._initComponents();
         
         // Register event handlers with standardized event names
@@ -67,12 +72,15 @@ class NotificationSystem extends UIComponent {
             'game:resumed': this._onGameResumed.bind(this),
             'enemy:killed': this._onEnemyKilled.bind(this),
             'player:died': this._onPlayerDied.bind(this),
-            'notification:request': this._onNotificationRequest.bind(this),
+            'notification:displayed': this._onNotificationRequest.bind(this),
             'objective:completed': this._onObjectiveCompleted.bind(this),
             'objective:failed': this._onObjectiveFailed.bind(this),
             'round:end': this._onRoundEnd.bind(this),
-            'player:levelup': this._onPlayerLevelUp.bind(this)
+            'player:levelup': this._onPlayerLevelUp.bind(this),
+            'kill:confirmed': this._onKillConfirmed.bind(this)
         });
+        
+        console.log('[NotificationSystem] Initialized successfully');
         
         return this;
     }
@@ -83,13 +91,21 @@ class NotificationSystem extends UIComponent {
      * @param {number} delta - Time since last update in ms
      */
     update(delta) {
-        if (!this.isActive || !this.isVisible || !this.world) return;
+        if (!this.isActive || !this.isVisible) return;
 
         // Update components
-        if (this.notificationManager) this.notificationManager.update(delta);
-        if (this.killFeed) this.killFeed.update(delta);
-        if (this.eventBanner) this.eventBanner.update(delta);
-        if (this.achievementDisplay) this.achievementDisplay.update(delta);
+        if (this.notificationManager && typeof this.notificationManager.update === 'function') {
+            this.notificationManager.update(delta);
+        }
+        if (this.killFeed && typeof this.killFeed.update === 'function') {
+            this.killFeed.update(delta);
+        }
+        if (this.eventBanner && typeof this.eventBanner.update === 'function') {
+            this.eventBanner.update(delta);
+        }
+        if (this.achievementDisplay && typeof this.achievementDisplay.update === 'function') {
+            this.achievementDisplay.update(delta);
+        }
         
         return this;
     }
@@ -125,11 +141,21 @@ class NotificationSystem extends UIComponent {
      * Clean up resources when disposing the component
      */
     dispose() {
+        console.log('[NotificationSystem] Disposing...');
+        
         // Dispose children first
-        if (this.notificationManager) this.notificationManager.dispose();
-        if (this.killFeed) this.killFeed.dispose();
-        if (this.eventBanner) this.eventBanner.dispose();
-        if (this.achievementDisplay) this.achievementDisplay.dispose();
+        if (this.notificationManager && typeof this.notificationManager.dispose === 'function') {
+            this.notificationManager.dispose();
+        }
+        if (this.killFeed && typeof this.killFeed.dispose === 'function') {
+            this.killFeed.dispose();
+        }
+        if (this.eventBanner && typeof this.eventBanner.dispose === 'function') {
+            this.eventBanner.dispose();
+        }
+        if (this.achievementDisplay && typeof this.achievementDisplay.dispose === 'function') {
+            this.achievementDisplay.dispose();
+        }
         
         // Call parent dispose method to handle unsubscribing events and DOM removal
         super.dispose();
@@ -142,52 +168,91 @@ class NotificationSystem extends UIComponent {
      * @private
      */
     _initComponents() {
-        // Create Enhanced Notification Manager with element pooling for better performance
-        this.notificationManager = new EnhancedNotificationManager({
-            container: this.element,
-            displayDuration: this.config.displayDuration || 4000,
-            fadeDuration: this.config.fadeDuration || 500,
-            cooldown: this.config.cooldown || 500,
-            spacingDelay: this.config.spacingDelay || 500,
-            maxNotifications: this.config.maxNotifications || 5
-        });
-        this.notificationManager.init();
-        this.addChild(this.notificationManager);
+        try {
+            // Create Notification Manager
+            console.log('[NotificationSystem] Creating NotificationManager...');
+            this.notificationManager = new NotificationManager({
+                container: this.element,
+                displayDuration: this.config.displayDuration || 4000,
+                fadeDuration: this.config.fadeDuration || 500,
+                cooldown: this.config.cooldown || 500,
+                spacingDelay: this.config.spacingDelay || 500,
+                maxNotifications: this.config.maxNotifications || 5
+            });
+            this.addChild(this.notificationManager);
+            console.log('[NotificationSystem] NotificationManager created successfully');
+        } catch (error) {
+            console.error('[NotificationSystem] Error creating NotificationManager:', error);
+        }
         
-        // Create Enhanced Kill Feed with element pooling for better performance
-        this.killFeed = new EnhancedKillFeed({
-            container: this.element,
-            displayDuration: this.config.killFeedDuration || 5000,
-            fadeDuration: this.config.fadeDuration || 500,
-            maxMessages: this.config.maxKillMessages || 5,
-            streakTimeout: this.config.killStreakTimeout || 10000
-        });
-        this.killFeed.init();
-        this.addChild(this.killFeed);
+        try {
+            // Create Kill Feed
+            console.log('[NotificationSystem] Creating KillFeed...');
+            this.killFeed = new KillFeed({
+                container: this.element,
+                messageDuration: this.config.killFeedDuration || 6000,
+                fadeDuration: this.config.fadeDuration || 500,
+                maxMessages: this.config.maxKillMessages || 10,
+                streakMinimum: this.config.killStreakMinimum || 3
+            });
+            this.addChild(this.killFeed);
+            console.log('[NotificationSystem] KillFeed created successfully');
+        } catch (error) {
+            console.error('[NotificationSystem] Error creating KillFeed:', error);
+        }
         
-        // Create Enhanced Event Banner with element pooling for better performance
-        const eventConfig = this.config.events || {};
-        this.eventBanner = new EnhancedEventBanner({
-            container: this.element,
-            displayDuration: eventConfig.displayDuration || 3000,
-            fadeDuration: eventConfig.fadeDuration || 1000,
-            poolSize: eventConfig.poolSize || 10,
-            maxPoolSize: eventConfig.maxPoolSize || 30
-        });
-        this.eventBanner.init();
-        this.addChild(this.eventBanner);
+        // Create placeholder event banner (using a simple div for now)
+        try {
+            console.log('[NotificationSystem] Creating EventBanner placeholder...');
+            this.eventBanner = {
+                showBanner: (text, type, options) => {
+                    console.log(`[EventBanner] ${type}: ${text}`, options);
+                    // Use notification manager as fallback
+                    if (this.notificationManager) {
+                        this.notificationManager.addNotification(text, type === 'objective' ? 'info' : type, {
+                            title: options?.title,
+                            duration: options?.duration
+                        });
+                    }
+                },
+                showRoundOutcome: (outcome, subtitle) => {
+                    console.log(`[EventBanner] Round ${outcome}: ${subtitle}`);
+                    if (this.notificationManager) {
+                        const type = outcome === 'victory' ? 'success' : outcome === 'defeat' ? 'error' : 'info';
+                        this.notificationManager.addNotification(subtitle || `Round ${outcome}`, type, {
+                            title: outcome.charAt(0).toUpperCase() + outcome.slice(1),
+                            duration: 5000
+                        });
+                    }
+                },
+                update: () => {},
+                dispose: () => {}
+            };
+            console.log('[NotificationSystem] EventBanner placeholder created');
+        } catch (error) {
+            console.error('[NotificationSystem] Error creating EventBanner:', error);
+        }
         
-        // Create Enhanced Achievement Display with element pooling for better performance
-        const achievementConfig = this.config.achievements || {};
-        this.achievementDisplay = new EnhancedAchievementDisplay({
-            container: this.element,
-            displayDuration: this.config.achievementDuration || 5000,
-            fadeDuration: this.config.fadeDuration || 500,
-            initialPoolSize: achievementConfig.initialPoolSize || 5,
-            maxPoolSize: achievementConfig.maxPoolSize || 20
-        });
-        this.achievementDisplay.init();
-        this.addChild(this.achievementDisplay);
+        // Create placeholder achievement display
+        try {
+            console.log('[NotificationSystem] Creating AchievementDisplay placeholder...');
+            this.achievementDisplay = {
+                showAchievement: (achievement) => {
+                    console.log(`[AchievementDisplay] ${achievement.title}: ${achievement.description}`);
+                    if (this.notificationManager) {
+                        this.notificationManager.addNotification(achievement.description, 'success', {
+                            title: achievement.title,
+                            duration: 6000
+                        });
+                    }
+                },
+                update: () => {},
+                dispose: () => {}
+            };
+            console.log('[NotificationSystem] AchievementDisplay placeholder created');
+        } catch (error) {
+            console.error('[NotificationSystem] Error creating AchievementDisplay:', error);
+        }
     }
 
     /**
@@ -197,10 +262,12 @@ class NotificationSystem extends UIComponent {
      */
     _onGamePaused(event) {
         // Pause any animations or timers for notifications
-        if (this.notificationManager) this.notificationManager.pauseTimers();
-        if (this.killFeed) this.killFeed.pauseTimers();
-        if (this.eventBanner) this.eventBanner.pauseTimers();
-        if (this.achievementDisplay) this.achievementDisplay.pauseTimers();
+        if (this.notificationManager && this.notificationManager.pauseTimers) {
+            this.notificationManager.pauseTimers();
+        }
+        if (this.killFeed && this.killFeed.pauseTimers) {
+            this.killFeed.pauseTimers();
+        }
     }
 
     /**
@@ -210,10 +277,12 @@ class NotificationSystem extends UIComponent {
      */
     _onGameResumed(event) {
         // Resume animations and timers for notifications
-        if (this.notificationManager) this.notificationManager.resumeTimers();
-        if (this.killFeed) this.killFeed.resumeTimers();
-        if (this.eventBanner) this.eventBanner.resumeTimers();
-        if (this.achievementDisplay) this.achievementDisplay.resumeTimers();
+        if (this.notificationManager && this.notificationManager.resumeTimers) {
+            this.notificationManager.resumeTimers();
+        }
+        if (this.killFeed && this.killFeed.resumeTimers) {
+            this.killFeed.resumeTimers();
+        }
     }
     
     /**
@@ -222,13 +291,16 @@ class NotificationSystem extends UIComponent {
      * @private
      */
     _onEnemyKilled(event) {
+        console.log('[NotificationSystem] Enemy killed event:', event);
+        
         // Format kill message for KillFeed
         const killData = {
             killer: event.source?.name || 'Player',
             victim: event.target?.name || 'Enemy',
             weapon: event.weapon?.type || 'weapon',
             isHeadshot: event.isHeadshot || false,
-            isCritical: event.isCritical || false
+            isCritical: event.isCritical || false,
+            specialType: event.specialType || null
         };
         
         // Add to kill feed
@@ -242,6 +314,16 @@ class NotificationSystem extends UIComponent {
                 event.killStreak.count
             );
         }
+    }
+    
+    /**
+     * Handle kill:confirmed event (alternative event name)
+     * @param {Object} event - Standardized kill event
+     * @private
+     */
+    _onKillConfirmed(event) {
+        console.log('[NotificationSystem] Kill confirmed event:', event);
+        this._onEnemyKilled(event);
     }
     
     /**
@@ -273,7 +355,7 @@ class NotificationSystem extends UIComponent {
     }
     
     /**
-     * Handle notification:request event
+     * Handle notification:displayed event
      * @param {Object} event - Standardized notification event
      * @private
      */
@@ -394,8 +476,11 @@ class NotificationSystem extends UIComponent {
      * @param {object} options - Additional notification options
      */
     addNotification(text, type = 'info', options = {}) {
-        if (this.notificationManager) {
+        console.log(`[NotificationSystem] Adding notification: ${type} - ${text}`);
+        if (this.notificationManager && typeof this.notificationManager.addNotification === 'function') {
             this.notificationManager.addNotification(text, type, options);
+        } else {
+            console.warn('[NotificationSystem] NotificationManager not available:', text);
         }
     }
 
@@ -405,8 +490,16 @@ class NotificationSystem extends UIComponent {
      * @param {object} data - Kill data including killer, victim, weapon, etc.
      */
     addKillMessage(data) {
-        if (this.killFeed) {
+        console.log(`[NotificationSystem] Adding kill message:`, data);
+        if (this.killFeed && typeof this.killFeed.addKillMessage === 'function') {
             this.killFeed.addKillMessage(data);
+        } else {
+            console.warn('[NotificationSystem] KillFeed not available, using notification fallback');
+            // Fallback to notification
+            this.addNotification(`${data.killer} eliminated ${data.victim}${data.isHeadshot ? ' (Headshot)' : ''}`, 'info', {
+                title: 'Elimination',
+                duration: 3000
+            });
         }
     }
 
@@ -418,8 +511,19 @@ class NotificationSystem extends UIComponent {
      * @param {number} kills - Number of kills in the streak
      */
     showKillStreak(playerName, streakType, kills) {
-        if (this.killFeed) {
-            this.killFeed.showKillStreak(playerName, streakType, kills);
+        console.log(`[NotificationSystem] Kill streak: ${playerName} - ${streakType} (${kills})`);
+        if (this.killFeed && typeof this.killFeed.addKillStreak === 'function') {
+            this.killFeed.addKillStreak({
+                player: playerName,
+                streakType: streakType,
+                killCount: kills
+            });
+        } else {
+            // Fallback to notification
+            this.addNotification(`${playerName} ${this._getStreakText(kills)}!`, 'success', {
+                title: 'Kill Streak',
+                duration: 4000
+            });
         }
     }
 
@@ -431,8 +535,11 @@ class NotificationSystem extends UIComponent {
      * @param {object} options - Additional options (title, subtitle, duration)
      */
     showBanner(text, type = 'default', options = {}) {
-        if (this.eventBanner) {
+        console.log(`[NotificationSystem] Showing banner: ${type} - ${text}`);
+        if (this.eventBanner && typeof this.eventBanner.showBanner === 'function') {
             this.eventBanner.showBanner(text, type, options);
+        } else {
+            console.warn('[NotificationSystem] EventBanner not available, using notification fallback');
         }
     }
 
@@ -454,8 +561,11 @@ class NotificationSystem extends UIComponent {
      * @param {string} subtitle - Optional subtitle text
      */
     showRoundOutcome(outcome, subtitle = '') {
-        if (this.eventBanner) {
+        console.log(`[NotificationSystem] Round outcome: ${outcome} - ${subtitle}`);
+        if (this.eventBanner && typeof this.eventBanner.showRoundOutcome === 'function') {
             this.eventBanner.showRoundOutcome(outcome, subtitle);
+        } else {
+            console.warn('[NotificationSystem] EventBanner not available for round outcome');
         }
     }
 
@@ -471,8 +581,11 @@ class NotificationSystem extends UIComponent {
      * @param {object} achievement.progress - Optional progress data for cumulative achievements
      */
     showAchievement(achievement) {
-        if (this.achievementDisplay) {
+        console.log(`[NotificationSystem] Achievement: ${achievement.title}`, achievement);
+        if (this.achievementDisplay && typeof this.achievementDisplay.showAchievement === 'function') {
             this.achievementDisplay.showAchievement(achievement);
+        } else {
+            console.warn('[NotificationSystem] AchievementDisplay not available, using notification fallback');
         }
     }
     
@@ -491,12 +604,29 @@ class NotificationSystem extends UIComponent {
     }
     
     /**
+     * Get streak text based on kill count (for fallback)
+     * @private
+     * @param {number} killCount - Number of kills
+     * @returns {string} - Streak description text
+     */
+    _getStreakText(killCount) {
+        if (killCount >= 15) return 'is godlike';
+        if (killCount >= 10) return 'is unstoppable';
+        if (killCount >= 7) return 'is on a rampage';
+        if (killCount >= 5) return 'is dominating';
+        if (killCount >= 3) return 'is on a killing spree';
+        return 'is on a streak';
+    }
+    
+    /**
      * Test method to show sample notifications
      * For development/debugging only
      * @public
      * @param {string} type - Type of notification to test
      */
     testNotification(type = 'info') {
+        console.log(`[NotificationSystem] Testing notification: ${type}`);
+        
         switch (type) {
             case 'info':
                 this.addNotification('Test notification message', 'info', { title: 'Info' });
@@ -545,7 +675,5 @@ class NotificationSystem extends UIComponent {
         }
     }
 }
-
-
 
 export { NotificationSystem };

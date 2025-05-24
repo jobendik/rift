@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIBootstrap Integration Test</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; color: white; font-family: Arial, sans-serif; }
+        .test-info { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; z-index: 1001; }
+        .test-success { color: #4caf50; }
+        .test-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h3>UIBootstrap Integration Test</h3>
+        <div id="testResults">Running tests...</div>
+    </div>
+
+    <script type="module">
+        import { UIBootstrap } from './src/core/UIBootstrap.js';
+        
+        async function runTests() {
+            const results = document.getElementById('testResults');
+            let html = '';
+            let passCount = 0;
+            let totalTests = 0;
+            
+            function addResult(test, passed, message = '') {
+                totalTests++;
+                if (passed) passCount++;
+                const status = passed ? '✅' : '❌';
+                const className = passed ? 'test-success' : 'test-error';
+                html += `<div class="${className}">${status} ${test} ${message}</div>`;
+                results.innerHTML = html;
+            }
+            
+            try {
+                // Test 1: UIBootstrap instantiation
+                const bootstrap = new UIBootstrap();
+                addResult('UIBootstrap instantiation', !!bootstrap);
+                
+                // Test 2: Essential elements creation
+                const elements = bootstrap.createEssentialElements();
+                addResult('Essential elements creation', !!elements && typeof elements === 'object');
+                
+                // Test 3: Critical DOM elements exist
+                const criticalElements = [
+                    'hudHealth', 'hudAmmo', 'dynamicCrosshair', 'hudFragList',
+                    'notificationArea', 'matchEventsBanner', 'experienceBar'
+                ];
+                
+                let elementsFound = 0;
+                criticalElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) elementsFound++;
+                });
+                
+                addResult('Critical DOM elements', elementsFound === criticalElements.length, `(${elementsFound}/${criticalElements.length})`);
+                
+                // Test 4: Element styling
+                const healthElement = document.getElementById('hudHealth');
+                const hasStyles = healthElement && healthElement.style.position === 'fixed';
+                addResult('Element styling applied', hasStyles);
+                
+                // Test 5: Bootstrap ready state
+                addResult('Bootstrap ready state', bootstrap.isReady());
+                
+                // Test 6: Elements collection structure
+                const hasElements = elements.hudHealth && elements.hudAmmo && elements.dynamicCrosshair;
+                addResult('Elements collection structure', hasElements);
+                
+                // Final summary
+                html += `<br><strong>Tests: ${passCount}/${totalTests} passed</strong>`;
+                if (passCount === totalTests) {
+                    html += `<br><div class="test-success">🎉 ALL TESTS PASSED - UIBootstrap fix is working!</div>`;
+                } else {
+                    html += `<br><div class="test-error">❌ Some tests failed - needs investigation</div>`;
+                }
+                
+            } catch (error) {
+                addResult('Test execution', false, error.message);
+            }
+            
+            results.innerHTML = html;
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
