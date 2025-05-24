@@ -6,6 +6,9 @@
     <title>RIFT - UI Initialization Error Fix Test</title>
     <link rel="stylesheet" href="./public/styles/index.css">
     <style>
+        html, body { /* Added html here */
+            overflow: auto; /* Added overflow: auto */
+        }
         body {
             background: #000;
             color: #00ff00;
@@ -168,7 +171,7 @@
                 // Test 1: EnhancedEventBanner initialization (this was failing before)
                 addResult('Testing EnhancedEventBanner initialization...', 'info');
                 
-                const { default: EnhancedEventBanner } = await import('./src/components/ui/notifications/EnhancedEventBanner.js');
+                const { EnhancedEventBanner } = await import('./src/components/ui/notifications/EnhancedEventBanner.js');
                 
                 const eventBanner = new EnhancedEventBanner({
                     container: document.body,
@@ -186,21 +189,21 @@
                 addResult('✅ EnhancedEventBanner.init() completed without the className error!', 'pass');
 
                 // Test 2: Verify element pools were created
-                if (eventBanner.eventPool && eventBanner.outcomePool) {
-                    addResult('✅ Element pools (eventPool, outcomePool) created successfully', 'pass');
+                if (eventBanner.bannerPool && eventBanner.outcomePool) {
+                    addResult('✅ Element pools (bannerPool, outcomePool) created successfully', 'pass');
                 } else {
-                    addResult('❌ Element pools not created properly', 'fail');
+                    addResult('❌ Element pools not created properly (expected bannerPool and outcomePool)', 'fail');
                 }
 
                 // Test 3: Try to acquire elements from pools
-                if (eventBanner.eventPool) {
-                    const element = eventBanner.eventPool.acquire();
+                if (eventBanner.bannerPool) {
+                    const element = eventBanner.bannerPool.acquire();
                     if (element) {
-                        addResult('✅ Successfully acquired element from eventPool', 'pass');
-                        eventBanner.eventPool.release(element);
-                        addResult('✅ Successfully released element back to eventPool', 'pass');
+                        addResult('✅ Successfully acquired element from bannerPool', 'pass');
+                        eventBanner.bannerPool.release(element);
+                        addResult('✅ Successfully released element back to bannerPool', 'pass');
                     } else {
-                        addResult('❌ Failed to acquire element from eventPool', 'fail');
+                        addResult('❌ Failed to acquire element from bannerPool', 'fail');
                     }
                 }
 
@@ -222,21 +225,31 @@
             addResult('🎮 Testing full UI initialization chain...', 'info');
 
             try {
-                const { default: UIManager } = await import('./src/core/UIManager.js');
+                const { UIManager } = await import('./src/core/UIManager.js'); // Changed from default import
                 
                 addResult('Testing UIManager initialization...', 'info');
-                await UIManager.init();
+                // UIManager constructor expects a 'world' argument.
+                // For this test, we can mock a minimal world object.
+                const mockWorld = { 
+                    assetManager: { on: () => {} }, // Mock assetManager if UIManager uses it directly
+                    eventBus: { on: () => {}, emit: () => {} }, // Mock eventBus if needed
+                    config: { debug: {} }, // Mock config
+                    player: null, // Mock player
+                    gameEventBridge: { on: () => {}, emit: () => {} } // Mock gameEventBridge
+                };
+                const uiManagerInstance = new UIManager(mockWorld);
+                await uiManagerInstance.init(); // Call init on the instance
                 addResult('✅ UIManager initialization completed', 'pass');
 
                 // Check if notification system initialized
-                if (UIManager.notificationSystem) {
+                if (uiManagerInstance.systems.notifications) { // Access systems property for notification system
                     addResult('✅ Notification system initialized', 'pass');
                     
                     // Check specific components
-                    if (UIManager.notificationSystem.eventBanner) {
+                    if (uiManagerInstance.systems.notifications.eventBanner) {
                         addResult('✅ Event banner component initialized', 'pass');
                     } else {
-                        addResult('⚠️ Event banner component not found', 'warn');
+                        addResult('⚠️ Event banner component not found in NotificationSystem', 'warn');
                     }
                 } else {
                     addResult('❌ Notification system not initialized', 'fail');
@@ -253,27 +266,42 @@
             addResult('🌍 Testing World initialization (full chain)...', 'info');
 
             try {
-                const { default: World } = await import('./src/core/World.js');
+                // World.js exports an instance, so we import it directly.
+                const { default: worldInstance } = await import('./src/core/World.js');
                 
-                // Create a test canvas
-                const canvas = document.createElement('canvas');
-                canvas.id = 'testCanvas';
-                canvas.width = 800;
-                canvas.height = 600;
-                document.body.appendChild(canvas);
+                // The canvas is usually created and managed within the World's _initScene method.
+                // For this test, we might not need to pass a canvas if World.js handles it.
+                // If World's constructor or init specifically needs a canvas from outside,
+                // this approach needs to be re-evaluated based on World.js's actual structure.
+                // For now, assuming World.js handles its canvas.
 
-                const world = new World(canvas);
-                addResult('✅ World instance created', 'pass');
+                addResult('✅ World instance imported (singleton)', 'pass');
 
-                // This should trigger the full UI initialization chain
-                await world.init();
+                // The worldInstance is already constructed. We just need to call init.
+                // Ensure the DOM is ready or mock necessary elements if init() interacts with it.
+                // If world.init() expects a canvas, we need to ensure it's available or mock it.
+                // The World.js constructor doesn't take arguments, and _initScene creates the renderer.
+                
+                // A simple div might be needed if UIManager or other parts expect a body/container
+                let testContainer = document.getElementById('rift-game-container');
+                if (!testContainer) {
+                    testContainer = document.createElement('div');
+                    testContainer.id = 'rift-game-container';
+                    document.body.appendChild(testContainer);
+                }
+                
+                // If World.js's init method tries to get a canvas element,
+                // ensure it exists or modify World.js to accept a canvas/container.
+                // For now, let's assume it finds/creates what it needs or we mock it.
+                
+                await worldInstance.init(); // Call init on the already existing instance
                 addResult('✅ World initialization completed (includes UI init)', 'pass');
 
                 // Verify UI components are properly attached
-                if (world.uiManager) {
+                if (worldInstance.uiManager) {
                     addResult('✅ UIManager attached to world', 'pass');
                     
-                    if (world.uiManager.notificationSystem) {
+                    if (worldInstance.uiManager.systems.notifications) { // Check systems.notifications
                         addResult('✅ Notification system properly initialized in world', 'pass');
                     } else {
                         addResult('⚠️ Notification system not found in world UIManager', 'warn');
@@ -282,8 +310,10 @@
                     addResult('❌ UIManager not attached to world', 'fail');
                 }
 
-                // Clean up
-                canvas.remove();
+                // Clean up test container if it was added
+                // if (document.getElementById('rift-game-container')) {
+                // document.body.removeChild(document.getElementById('rift-game-container'));
+                // }
 
             } catch (error) {
                 addResult(`❌ World initialization test failed: ${error.message}`, 'fail');

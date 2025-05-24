@@ -143,6 +143,7 @@ class NotificationSystem extends UIComponent {
      */
     _initComponents() {
         // Create Enhanced Notification Manager with element pooling for better performance
+        console.log(`[NotificationSystem._initComponents] Initializing NotificationManager. this.element is:`, this.element);
         this.notificationManager = new EnhancedNotificationManager({
             container: this.element,
             displayDuration: this.config.displayDuration || 4000,
@@ -155,6 +156,7 @@ class NotificationSystem extends UIComponent {
         this.addChild(this.notificationManager);
         
         // Create Enhanced Kill Feed with element pooling for better performance
+        console.log(`[NotificationSystem._initComponents] Initializing KillFeed. this.element is:`, this.element);
         this.killFeed = new EnhancedKillFeed({
             container: this.element,
             displayDuration: this.config.killFeedDuration || 5000,
@@ -167,6 +169,7 @@ class NotificationSystem extends UIComponent {
         
         // Create Enhanced Event Banner with element pooling for better performance
         const eventConfig = this.config.events || {};
+        console.log(`[NotificationSystem._initComponents] Initializing EventBanner. this.element is:`, this.element);
         this.eventBanner = new EnhancedEventBanner({
             container: this.element,
             displayDuration: eventConfig.displayDuration || 3000,
@@ -179,8 +182,12 @@ class NotificationSystem extends UIComponent {
         
         // Create Enhanced Achievement Display with element pooling for better performance
         const achievementConfig = this.config.achievements || {};
+        console.log(`[NotificationSystem._initComponents] Initializing AchievementDisplay. this.element is:`, this.element); // Log this.element
+        if (!this.element) {
+            console.error("❌ [NotificationSystem._initComponents] CRITICAL: this.element is null or undefined before creating EnhancedAchievementDisplay. This will cause a crash.");
+        }
         this.achievementDisplay = new EnhancedAchievementDisplay({
-            container: this.element,
+            container: this.element, // Pass NotificationSystem's element as container
             displayDuration: this.config.achievementDuration || 5000,
             fadeDuration: this.config.fadeDuration || 500,
             initialPoolSize: achievementConfig.initialPoolSize || 5,

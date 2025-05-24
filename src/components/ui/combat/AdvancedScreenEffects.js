@@ -25,17 +25,15 @@ export class AdvancedScreenEffects extends UIComponent {
      */
     constructor(options = {}) {
         super({
-            autoInit: false,
+            autoInit: false, // We call init explicitly
             id: options.id || 'advanced-screen-effects',
-            className: 'rift-advanced-screen-effects',
+            className: 'rift-advanced-screen-effects', // Direct string assignment
             container: options.container || document.body,
-            ...options
+            ...options // Pass through other options like template, events
         });
 
-        // Get config with defaults
+        // Config, state, and bindings from original constructor
         this.config = (UIConfig.enhancedCombat && UIConfig.enhancedCombat.screenEffects) || {};
-        
-        // State
         this.activeEffects = new Map();
         this.shakeDuration = 0;
         this.shakeIntensity = 0;
@@ -44,9 +42,8 @@ export class AdvancedScreenEffects extends UIComponent {
         this.lastFrameTime = 0;
         this.perlinSeed = Math.random() * 1000;
         
-        // Effect layers
-        this.layers = {};
-        
+        this.layers = {}; // Initialize layers object
+
         // Bind methods
         this._onPlayerDamaged = this._onPlayerDamaged.bind(this);
         this._onPlayerHealed = this._onPlayerHealed.bind(this);
@@ -61,18 +58,34 @@ export class AdvancedScreenEffects extends UIComponent {
      * Initialize the advanced screen effects component
      */
     init() {
+        if (this.isInitialized) {
+            return this;
+        }
+
+        // Call the parent UIComponent's init method first.
+        // This will handle creating this.element, appending to container,
+        // setting visibility, calling render, and emitting init event.
+        super.init(); 
+
+        // After super.init(), this.element should be created and available.
         if (!this.element) {
-            this._createRootElement();
+            console.error(`❌ AdvancedScreenEffects (${this.id}): Element was not created by super.init(). Aborting further initialization.`);
+            // super.init() sets isInitialized = true. If element creation failed,
+            // the component is in a broken state. UIComponent.init should ideally handle this.
+            return this;
         }
         
-        // Create layers for different effect types
+        // Create layers for different effect types (these are children of this.element)
         this._createEffectLayers();
         
-        // Register event listeners
+        // Register event listeners specific to AdvancedScreenEffects
+        // (UIComponent constructor handles options.events, this is for additional ones)
         this._registerEventListeners();
         
-        this.isInitialized = true;
-        this.isActive = true;
+        // Set component to active. super.init() handles isVisible.
+        this.isActive = true; 
+        
+        console.log(`✅ AdvancedScreenEffects (${this.id}): Initialized successfully via super.init().`);
         return this;
     }
     
@@ -81,6 +94,10 @@ export class AdvancedScreenEffects extends UIComponent {
      * @private
      */
     _createEffectLayers() {
+        if (!this.element) {
+            console.error(`❌ AdvancedScreenEffects (${this.id}): Cannot create effect layers, root element is missing.`);
+            return;
+        }
         // Create individual effect layers
         this.layers = {
             vignette: this._createLayer('vignette'),
@@ -95,12 +112,16 @@ export class AdvancedScreenEffects extends UIComponent {
      * Create an effect layer element
      * @private
      * @param {string} type - Type of layer
-     * @returns {HTMLElement} The created layer element
+     * @returns {HTMLElement | null} The created layer element or null on error
      */
     _createLayer(type) {
+        if (!this.element) {
+            console.error(`❌ AdvancedScreenEffects (${this.id}): Cannot create layer '${type}', root element (this.element) is missing.`);
+            return null; 
+        }
         return DOMFactory.createElement('div', {
             className: `rift-advanced-screen-effects__layer rift-advanced-screen-effects__layer--${type}`,
-            parent: this.element
+            parent: this.element // this.element should be valid here
         });
     }
     

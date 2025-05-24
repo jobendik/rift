@@ -63,26 +63,38 @@ export default class UIComponent {
      * @return {UIComponent} This component instance
      */
     init() {
-        if (this.isInitialized) return this;
+        if (this.isInitialized) {
+            console.log(`🏁 UIComponent (${this.id}): Already initialized.`);
+            return this;
+        }
         
-        // Set initialized flag early to prevent infinite recursion
+        console.log(`🏁 UIComponent (${this.id}): Initializing... Container:`, this.container);
         this.isInitialized = true;
         
-        // Create root element if not provided
         if (!this.element) {
+            console.log(`🏁 UIComponent (${this.id}): No pre-existing element, calling _createRootElement().`);
             this.element = this._createRootElement();
+            if (!this.element) {
+                console.error(`❌ UIComponent (${this.id}): _createRootElement() failed to return an element.`);
+                // Decide on recovery or error propagation. For now, log and continue (might lead to errors).
+            } else {
+                console.log(`✅ UIComponent (${this.id}): _createRootElement() created:`, this.element);
+            }
         }
         
-        // Add to container if specified
-        if (this.container && this.element.parentNode !== this.container) {
-            this.container.appendChild(this.element);
-        }
-        
-        // Set initial visibility without triggering init recursion
-        if (!this.isVisible) {
-            this._setVisibility(false);
-        } else {
-            this._setVisibility(true);
+        if (this.container && this.element && this.element.parentNode !== this.container) {
+            console.log(`🏁 UIComponent (${this.id}): Appending element to container:`, this.container);
+            try {
+                this.container.appendChild(this.element);
+                console.log(`✅ UIComponent (${this.id}): Element appended to container.`);
+            } catch (e) {
+                console.error(`❌ UIComponent (${this.id}): Error appending element to container:`, e);
+                console.error(`   Element:`, this.element, `Container:`, this.container);
+            }
+        } else if (!this.container && this.element) {
+            console.warn(`⚠️ UIComponent (${this.id}): Initializing with an element but no container specified. Element will not be automatically appended to the DOM unless already parented.`);
+        } else if (this.container && !this.element) {
+            console.error(`❌ UIComponent (${this.id}): Container specified but no element to append.`);
         }
         
         this.render();
@@ -505,17 +517,15 @@ export default class UIComponent {
      * @private
      */
     _createRootElement() {
-        let classes = `rift-component`;
-        
-        if (this.className) {
-            classes += ` ${this.className}`;
-        }
-        
-        return DOMFactory.createElement('div', {
+        console.log(`🏁 UIComponent (${this.id}): _createRootElement() called.`);
+        // Default implementation: create a div with component ID and class
+        // Subclasses should override this if they need a different root element type or structure
+        const element = DOMFactory.createElement('div', {
             id: this.id,
-            className: classes,
-            html: this.template || ''
+            className: this.className || '' // Ensure className is a string
         });
+        console.log(`✅ UIComponent (${this.id}): _createRootElement() created element:`, element);
+        return element;
     }
     
     /**
