@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Achievement Display Test</title>
+    <link rel="stylesheet" href="styles/core/_variables.css">
+    <link rel="stylesheet" href="styles/core/_reset.css">
+    <link rel="stylesheet" href="styles/core/_typography.css">
+    <link rel="stylesheet" href="styles/components/notifications/_achievement.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: var(--rift-font-family, 'Exo 2', sans-serif);
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        
+        button {
+            background-color: #2a6496;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin: 5px 0;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #3a7ab6;
+        }
+        
+        .stats {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 100;
+        }
+        
+        .comparison-container {
+            display: flex;
+            width: 100%;
+            margin-top: 80px;
+        }
+        
+        .component-container {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+            height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        
+        .component-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        #stress-test-progress {
+            position: fixed;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background-color: #333;
+            z-index: 100;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #4caf50;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <button id="achievement-btn">Show Achievement</button>
+            <button id="challenge-btn">Show Challenge</button>
+            <button id="unlock-btn">Show Item Unlock</button>
+        </div>
+        <div class="control-group">
+            <button id="progress-btn">Show Progress Achievement</button>
+            <button id="pause-btn">Pause Game</button>
+            <button id="resume-btn">Resume Game</button>
+        </div>
+        <div class="control-group">
+            <button id="dismiss-btn">Dismiss Current</button>
+            <button id="stress-test-btn">Run Stress Test</button>
+            <button id="clear-btn">Clear All</button>
+        </div>
+        <div class="control-group">
+            <button id="switch-components-btn">Switch Components</button>
+            <button id="toggle-stats-btn">Toggle Stats</button>
+        </div>
+    </div>
+    
+    <div class="comparison-container">
+        <div class="component-container">
+            <div class="component-label" id="left-label">Enhanced (ElementPool)</div>
+            <div id="enhanced-container"></div>
+        </div>
+        <div class="component-container">
+            <div class="component-label" id="right-label">Standard</div>
+            <div id="standard-container"></div>
+        </div>
+    </div>
+    
+    <div class="stats" id="stats-panel">
+        <div>Pool Stats:</div>
+        <pre id="pool-stats">Loading...</pre>
+    </div>
+    
+    <div id="stress-test-progress">
+        <div id="progress-bar"></div>
+    </div>
+    
+    <script type="module">
+        import { EnhancedAchievementDisplay } from '../src/components/ui/notifications/EnhancedAchievementDisplay.js';
+        import { AchievementDisplay } from '../src/components/ui/notifications/AchievementDisplay.js';
+        import { EventManager } from '../src/core/EventManager.js';
+        
+        // Create containers
+        const enhancedContainer = document.getElementById('enhanced-container');
+        const standardContainer = document.getElementById('standard-container');
+        
+        // Create instances
+        let enhancedAchievement = new EnhancedAchievementDisplay({
+            container: enhancedContainer,
+            id: 'enhanced-achievement-display',
+            displayDuration: 5000,
+            initialPoolSize: 5,
+            maxPoolSize: 30
+        });
+        
+        let standardAchievement = new AchievementDisplay({
+            container: standardContainer,
+            id: 'standard-achievement-display',
+            displayDuration: 5000
+        });
+        
+        // Initialize components
+        enhancedAchievement.init();
+        standardAchievement.init();
+        
+        // Track which is on which side
+        let enhancedOnLeft = true;
+        
+        // Sample achievements
+        const sampleAchievements = [
+            {
+                title: "First Blood",
+                description: "Defeat your first enemy",
+                type: "achievement",
+                value: 100,
+                iconUrl: "assets/textures/crosshairs.png"
+            },
+            {
+                title: "Sharpshooter",
+                description: "Achieve 10 headshots in a single match",
+                type: "challenge",
+                value: 500,
+                iconUrl: "assets/textures/crosshairs.png",
+                progress: {
+                    current: 10,
+                    max: 10
+                }
+            },
+            {
+                title: "High-Powered Scope",
+                description: "Increases zoom level for all sniper rifles",
+                type: "unlock",
+                iconUrl: "assets/textures/crosshairs.png"
+            }
+        ];
+        
+        // Add button event listeners
+        document.getElementById('achievement-btn').addEventListener('click', () => {
+            enhancedAchievement.showAchievement(sampleAchievements[0]);
+            standardAchievement.showAchievement(sampleAchievements[0]);
+            updateStats();
+        });
+        
+        document.getElementById('challenge-btn').addEventListener('click', () => {
+            enhancedAchievement.showAchievement(sampleAchievements[1]);
+            standardAchievement.showAchievement(sampleAchievements[1]);
+            updateStats();
+        });
+        
+        document.getElementById('unlock-btn').addEventListener('click', () => {
+            enhancedAchievement.showAchievement(sampleAchievements[2]);
+            standardAchievement.showAchievement(sampleAchievements[2]);
+            updateStats();
+        });
+        
+        document.getElementById('progress-btn').addEventListener('click', () => {
+            const progressAchievement = {
+                title: "Kill Collector",
+                description: "Eliminate enemies in the field",
+                type: "milestone",
+                value: 250,
+                iconUrl: "assets/textures/crosshairs.png",
+                progress: {
+                    current: 75,
+                    max: 100
+                }
+            };
+            
+            enhancedAchievement.showAchievement(progressAchievement);
+            standardAchievement.showAchievement(progressAchievement);
+            updateStats();
+        });
+        
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            EventManager.emit('game:paused', {});
+            updateStats();
+        });
+        
+        document.getElementById('resume-btn').addEventListener('click', () => {
+            EventManager.emit('game:resumed', {});
+            updateStats();
+        });
+        
+        document.getElementById('dismiss-btn').addEventListener('click', () => {
+            enhancedAchievement.dismissCurrent();
+            standardAchievement.dismissCurrent();
+            updateStats();
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            // Dispose and recreate components
+            enhancedAchievement.dispose();
+            standardAchievement.dispose();
+            
+            enhancedAchievement = new EnhancedAchievementDisplay({
+                container: enhancedContainer,
+                id: 'enhanced-achievement-display',
+                displayDuration: 5000,
+                initialPoolSize: 5,
+                maxPoolSize: 30
+            });
+            
+            standardAchievement = new AchievementDisplay({
+                container: standardContainer,
+                id: 'standard-achievement-display',
+                displayDuration: 5000
+            });
+            
+            enhancedAchievement.init();
+            standardAchievement.init();
+            
+            updateStats();
+        });
+        
+        // Switch components between left and right containers
+        document.getElementById('switch-components-btn').addEventListener('click', () => {
+            // Dispose current components
+            enhancedAchievement.dispose();
+            standardAchievement.dispose();
+            
+            // Clear containers
+            enhancedContainer.innerHTML = '';
+            standardContainer.innerHTML = '';
+            
+            // Swap the containers
+            enhancedOnLeft = !enhancedOnLeft;
+            
+            // Update labels
+            document.getElementById('left-label').textContent = enhancedOnLeft ? 'Enhanced (ElementPool)' : 'Standard';
+            document.getElementById('right-label').textContent = enhancedOnLeft ? 'Standard' : 'Enhanced (ElementPool)';
+            
+            // Create new instances with swapped containers
+            if (enhancedOnLeft) {
+                enhancedAchievement = new EnhancedAchievementDisplay({
+                    container: enhancedContainer,
+                    id: 'enhanced-achievement-display',
+                    displayDuration: 5000,
+                    initialPoolSize: 5,
+                    maxPoolSize: 30
+                });
+                
+                standardAchievement = new AchievementDisplay({
+                    container: standardContainer,
+                    id: 'standard-achievement-display',
+                    displayDuration: 5000
+                });
+            } else {
+                enhancedAchievement = new EnhancedAchievementDisplay({
+                    container: standardContainer,
+                    id: 'enhanced-achievement-display',
+                    displayDuration: 5000,
+                    initialPoolSize: 5,
+                    maxPoolSize: 30
+                });
+                
+                standardAchievement = new AchievementDisplay({
+                    container: enhancedContainer,
+                    id: 'standard-achievement-display',
+                    displayDuration: 5000
+                });
+            }
+            
+            // Initialize components
+            enhancedAchievement.init();
+            standardAchievement.init();
+            
+            updateStats();
+        });
+        
+        // Toggle stats panel
+        document.getElementById('toggle-stats-btn').addEventListener('click', () => {
+            const statsPanel = document.getElementById('stats-panel');
+            statsPanel.style.display = statsPanel.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Stress test
+        document.getElementById('stress-test-btn').addEventListener('click', () => {
+            runStressTest();
+        });
+        
+        // Update stats display
+        function updateStats() {
+            const poolStats = enhancedAchievement.getPoolStats();
+            document.getElementById('pool-stats').textContent = JSON.stringify(poolStats, null, 2);
+        }
+        
+        // Initially update stats
+        updateStats();
+        
+        // Stress Test function
+        async function runStressTest() {
+            const progressBar = document.getElementById('progress-bar');
+            const totalTests = 100;
+            const achievementTypes = ['achievement', 'challenge', 'unlock', 'milestone'];
+            const startTime = performance.now();
+            
+            // Clear any existing achievements
+            document.getElementById('clear-btn').click();
+            
+            // Sample achievement template
+            const createRandomAchievement = (index) => {
+                const type = achievementTypes[Math.floor(Math.random() * achievementTypes.length)];
+                return {
+                    title: `Test Achievement ${index}`,
+                    description: `This is a test achievement for stress testing (${index})`,
+                    type: type,
+                    value: Math.floor(Math.random() * 500) + 50,
+                    iconUrl: "assets/textures/crosshairs.png",
+                    duration: 4000,
+                    progress: Math.random() > 0.5 ? {
+                        current: Math.floor(Math.random() * 100),
+                        max: 100
+                    } : null
+                };
+            };
+            
+            for (let i = 1; i <= totalTests; i++) {
+                const achievement = createRandomAchievement(i);
+                
+                // Update progress bar
+                progressBar.style.width = `${(i / totalTests) * 100}%`;
+                
+                // Show achievements
+                enhancedAchievement.showAchievement(achievement);
+                standardAchievement.showAchievement(achievement);
+                
+                // Update stats
+                updateStats();
+                
+                // Small delay between achievements to prevent overwhelming the UI
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            const endTime = performance.now();
+            const totalTime = endTime - startTime;
+            
+            alert(`Stress test completed!\n${totalTests} achievements shown in ${(totalTime/1000).toFixed(2)} seconds`);
+            
+            // Final stats update
+            updateStats();
+        }
+    </script>
+</body>
+</html>

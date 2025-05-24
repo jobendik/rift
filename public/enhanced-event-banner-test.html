@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Event Banner Test | RIFT FPS</title>
+    <link rel="icon" href="rift_logo.ico">
+    <link rel="stylesheet" href="styles/core/_reset.css">
+    <link rel="stylesheet" href="styles/core/_typography.css">
+    <link rel="stylesheet" href="styles/core/_variables.css">
+    <link rel="stylesheet" href="styles/core/_layout.css">
+    <link rel="stylesheet" href="styles/core/_animations.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+    <link rel="stylesheet" href="styles/components/notifications/_event-banner.css">
+    <link rel="stylesheet" href="styles/components/notifications/_enhanced-kill-feed.css">
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            padding: 20px;
+            font-family: var(--rift-font-body);
+        }
+        
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-panel {
+            background-color: rgba(20, 20, 30, 0.8);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-label {
+            font-weight: bold;
+            color: #aaa;
+        }
+        
+        button {
+            background-color: #204060;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--rift-font-body);
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #306090;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stats-box {
+            background-color: rgba(30, 30, 40, 0.8);
+            border-radius: 4px;
+            padding: 15px;
+        }
+        
+        .performance-metrics {
+            margin-top: 20px;
+        }
+        
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .metrics-table th, .metrics-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .metrics-table th {
+            background-color: #204060;
+        }
+        
+        h1 {
+            color: var(--rift-primary);
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: var(--rift-secondary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .timer-options {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .timer-options label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        input[type="text"], input[type="number"] {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            padding: 5px 8px;
+            border-radius: 3px;
+        }
+        
+        .event-simulator {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .payload-editor {
+            width: 100%;
+            height: 80px;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            border: 1px solid #333;
+            padding: 8px;
+            font-family: monospace;
+            margin-top: 5px;
+        }
+        
+        .component-version {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .component-version button {
+            padding: 10px 15px;
+        }
+        
+        .component-version button.active {
+            background-color: var(--rift-secondary);
+            box-shadow: 0 0 8px rgba(100, 200, 255, 0.5);
+        }
+        
+        .game-scenario {
+            margin-top: 20px;
+        }
+        
+        .scenario-desc {
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .banner-count {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .stress-test-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-panel">
+            <h1>Enhanced Event Banner Test</h1>
+            
+            <div class="component-version">
+                <button id="useEnhanced" class="active">Use Enhanced EventBanner (with Element Pooling)</button>
+                <button id="useOriginal">Use Original EventBanner</button>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <span class="control-label">Standard Banners</span>
+                    <button id="defaultBanner">Default Banner</button>
+                    <button id="objectiveBanner">Objective Banner</button>
+                    <button id="alertBanner">Alert Banner</button>
+                    <button id="successBanner">Success Banner</button>
+                    <button id="dangerBanner">Danger Banner</button>
+                </div>
+                
+                <div class="control-group">
+                    <span class="control-label">Timed Objective</span>
+                    <div class="timer-options">
+                        <label>Time (sec): <input type="number" id="timerDuration" value="10" min="1" max="60"></label>
+                    </div>
+                    <button id="timedObjective">Timed Objective Banner</button>
+                </div>
+                
+                <div class="control-group">
+                    <span class="control-label">Round Outcome</span>
+                    <button id="victoryOutcome">Victory</button>
+                    <button id="defeatOutcome">Defeat</button>
+                    <button id="drawOutcome">Draw</button>
+                </div>
+                
+                <div class="control-group">
+                    <span class="control-label">Controls</span>
+                    <button id="clearAll">Clear All Banners</button>
+                    <button id="pauseGame">Pause Game</button>
+                    <button id="resumeGame">Resume Game</button>
+                </div>
+            </div>
+            
+            <div class="game-scenario">
+                <h2>Game Scenario Simulation</h2>
+                <p class="scenario-desc">Simulate game events that would trigger notifications</p>
+                <button id="objectiveCompleted">Objective Completed</button>
+                <button id="achievementUnlocked">Achievement Unlocked</button>
+                <button id="missionUpdated">Mission Updated</button>
+                <button id="roundEnd">Round End</button>
+            </div>
+            
+            <div class="event-simulator">
+                <h2>Custom Event Payload</h2>
+                <textarea id="eventPayload" class="payload-editor">{
+  "name": "Custom Event",
+  "description": "This is a custom event with custom data",
+  "type": "objective"
+}</textarea>
+                <button id="sendCustomEvent">Send Custom Event</button>
+            </div>
+            
+            <div class="stress-test">
+                <h2>Performance Testing</h2>
+                <div class="banner-count">
+                    <label for="bannerCount">Number of banners: </label>
+                    <input type="number" id="bannerCount" value="20" min="1" max="100">
+                </div>
+                <div class="stress-test-options">
+                    <button id="stressTest">Quick Succession Test</button>
+                    <button id="staggeredTest">Staggered Test (1 per sec)</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-panel">
+            <h2>Element Pool Statistics</h2>
+            <div class="stats-container">
+                <div class="stats-box" id="bannerStats">
+                    <h3>Banner Pool Stats</h3>
+                    <pre id="bannerStatsContent">No data available</pre>
+                </div>
+                <div class="stats-box" id="outcomeStats">
+                    <h3>Outcome Pool Stats</h3>
+                    <pre id="outcomeStatsContent">No data available</pre>
+                </div>
+            </div>
+            
+            <div class="performance-metrics">
+                <h2>Performance Comparison</h2>
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Original</th>
+                            <th>Enhanced</th>
+                            <th>Improvement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Elements Created</td>
+                            <td id="originalElementsCreated">-</td>
+                            <td id="enhancedElementsCreated">-</td>
+                            <td id="elementsImprovement">-</td>
+                        </tr>
+                        <tr>
+                            <td>DOM Operations</td>
+                            <td id="originalDOMOps">-</td>
+                            <td id="enhancedDOMOps">-</td>
+                            <td id="domOpsImprovement">-</td>
+                        </tr>
+                        <tr>
+                            <td>Memory Usage (est.)</td>
+                            <td id="originalMemory">-</td>
+                            <td id="enhancedMemory">-</td>
+                            <td id="memoryImprovement">-</td>
+                        </tr>
+                        <tr>
+                            <td>Avg. Creation Time (ms)</td>
+                            <td id="originalCreationTime">-</td>
+                            <td id="enhancedCreationTime">-</td>
+                            <td id="creationTimeImprovement">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { EventManager } from '../src/core/EventManager.js';
+        import { EventBanner } from '../src/components/ui/notifications/EventBanner.js';
+        import { EnhancedEventBanner } from '../src/components/ui/notifications/EnhancedEventBanner.js';
+        
+        // Set up event banner
+        let eventBanner;
+        let metrics = {
+            original: {
+                elementsCreated: 0,
+                domOperations: 0,
+                creationTime: []
+            },
+            enhanced: {
+                elementsCreated: 0,
+                domOperations: 0,
+                creationTime: []
+            },
+            currentMode: 'enhanced'
+        };
+        
+        // Initialize with enhanced version by default
+        initializeEnhancedBanner();
+        
+        function initializeEnhancedBanner() {
+            if (eventBanner) {
+                eventBanner.dispose();
+            }
+            
+            console.log("Initializing EnhancedEventBanner");
+            const startTime = performance.now();
+            
+            eventBanner = new EnhancedEventBanner({
+                displayDuration: 3000,
+                fadeDuration: 500,
+                poolSize: 10,
+                maxPoolSize: 50
+            });
+            
+            eventBanner.init();
+            
+            const endTime = performance.now();
+            console.log(`EnhancedEventBanner initialized in ${endTime - startTime}ms`);
+            
+            document.getElementById('useEnhanced').classList.add('active');
+            document.getElementById('useOriginal').classList.remove('active');
+            metrics.currentMode = 'enhanced';
+            
+            updateStats();
+        }
+        
+        function initializeOriginalBanner() {
+            if (eventBanner) {
+                eventBanner.dispose();
+            }
+            
+            console.log("Initializing original EventBanner");
+            const startTime = performance.now();
+            
+            eventBanner = new EventBanner({
+                displayDuration: 3000,
+                fadeDuration: 500
+            });
+            
+            eventBanner.init();
+            
+            const endTime = performance.now();
+            console.log(`Original EventBanner initialized in ${endTime - startTime}ms`);
+            
+            document.getElementById('useEnhanced').classList.remove('active');
+            document.getElementById('useOriginal').classList.add('active');
+            metrics.currentMode = 'original';
+            
+            updateStats();
+        }
+        
+        // Helper to track metrics
+        function trackBannerCreation(startTime) {
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            if (metrics.currentMode === 'enhanced') {
+                metrics.enhanced.elementsCreated++;
+                metrics.enhanced.domOperations += 1; // Element pool operations are optimized
+                metrics.enhanced.creationTime.push(duration);
+            } else {
+                metrics.original.elementsCreated++;
+                metrics.original.domOperations += 5; // Rough estimate for original implementation
+                metrics.original.creationTime.push(duration);
+            }
+            
+            updateMetricsDisplay();
+        }
+        
+        function updateStats() {
+            if (eventBanner instanceof EnhancedEventBanner) {
+                const stats = eventBanner.getStats();
+                
+                if (stats.banners) {
+                    document.getElementById('bannerStatsContent').textContent = 
+                        JSON.stringify(stats.banners, null, 2);
+                }
+                
+                if (stats.outcomes) {
+                    document.getElementById('outcomeStatsContent').textContent = 
+                        JSON.stringify(stats.outcomes, null, 2);
+                }
+            } else {
+                // Original EventBanner doesn't have element pooling stats
+                document.getElementById('bannerStatsContent').textContent = 
+                    "Original EventBanner doesn't use element pooling";
+                document.getElementById('outcomeStatsContent').textContent = 
+                    "Original EventBanner doesn't use element pooling";
+            }
+        }
+        
+        function updateMetricsDisplay() {
+            document.getElementById('originalElementsCreated').textContent = 
+                metrics.original.elementsCreated;
+            document.getElementById('enhancedElementsCreated').textContent = 
+                metrics.enhanced.elementsCreated;
+            
+            document.getElementById('originalDOMOps').textContent = 
+                metrics.original.domOperations;
+            document.getElementById('enhancedDOMOps').textContent = 
+                metrics.enhanced.domOperations;
+            
+            // Calculate average creation time
+            const origAvg = metrics.original.creationTime.length > 0 ? 
+                metrics.original.creationTime.reduce((a, b) => a + b, 0) / metrics.original.creationTime.length : 0;
+                
+            const enhAvg = metrics.enhanced.creationTime.length > 0 ?
+                metrics.enhanced.creationTime.reduce((a, b) => a + b, 0) / metrics.enhanced.creationTime.length : 0;
+                
+            document.getElementById('originalCreationTime').textContent = 
+                origAvg.toFixed(2);
+            document.getElementById('enhancedCreationTime').textContent = 
+                enhAvg.toFixed(2);
+            
+            // Memory usage estimate (very rough)
+            const origMemory = metrics.original.elementsCreated * 2;  // kilobytes
+            const enhMemory = eventBanner instanceof EnhancedEventBanner ? 
+                (eventBanner.getStats().banners?.total || 0) * 2 : 0;
+                
+            document.getElementById('originalMemory').textContent = 
+                `~${origMemory} KB`;
+            document.getElementById('enhancedMemory').textContent = 
+                `~${enhMemory} KB`;
+                
+            // Calculate improvements
+            if (metrics.original.elementsCreated > 0 && metrics.enhanced.elementsCreated > 0) {
+                const elemImprovement = 100 - ((metrics.enhanced.elementsCreated / metrics.original.elementsCreated) * 100);
+                document.getElementById('elementsImprovement').textContent = 
+                    `${elemImprovement.toFixed(1)}%`;
+            }
+            
+            if (metrics.original.domOperations > 0 && metrics.enhanced.domOperations > 0) {
+                const domImprovement = 100 - ((metrics.enhanced.domOperations / metrics.original.domOperations) * 100);
+                document.getElementById('domOpsImprovement').textContent = 
+                    `${domImprovement.toFixed(1)}%`;
+            }
+            
+            if (origMemory > 0 && enhMemory > 0) {
+                const memImprovement = 100 - ((enhMemory / origMemory) * 100);
+                document.getElementById('memoryImprovement').textContent = 
+                    `${memImprovement.toFixed(1)}%`;
+            }
+            
+            if (origAvg > 0 && enhAvg > 0) {
+                const timeImprovement = 100 - ((enhAvg / origAvg) * 100);
+                document.getElementById('creationTimeImprovement').textContent = 
+                    `${timeImprovement.toFixed(1)}%`;
+            }
+        }
+        
+        // Button click handlers
+        document.getElementById('useEnhanced').addEventListener('click', initializeEnhancedBanner);
+        document.getElementById('useOriginal').addEventListener('click', initializeOriginalBanner);
+        
+        document.getElementById('defaultBanner').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showBanner("Default Banner Example", "default", {
+                subtitle: "This is a standard notification"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('objectiveBanner').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showBanner("Objective Secured", "objective", {
+                title: "Zone B",
+                subtitle: "+150 XP"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('alertBanner').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showBanner("Enemy UAV Detected", "alert", {
+                subtitle: "Nearby aircraft scanning the area"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('successBanner').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showBanner("Double Kill", "success", {
+                title: "Kill Streak",
+                subtitle: "+25 Kill Streak Bonus"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('dangerBanner').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showBanner("Low Health", "danger", {
+                subtitle: "Find cover to regenerate health"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('timedObjective').addEventListener('click', () => {
+            const duration = parseInt(document.getElementById('timerDuration').value, 10) * 1000;
+            const startTime = performance.now();
+            eventBanner.showBanner("Defend the Point", "objective", {
+                title: "Objective",
+                subtitle: "Hold position until reinforcements arrive",
+                timer: {
+                    duration: duration,
+                    remaining: duration,
+                    displayTime: true
+                }
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('victoryOutcome').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showRoundOutcome("victory", "Mission Accomplished");
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('defeatOutcome').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showRoundOutcome("defeat", "Better luck next time");
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('drawOutcome').addEventListener('click', () => {
+            const startTime = performance.now();
+            eventBanner.showRoundOutcome("draw", "Stalemate - Neither side gained advantage");
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('clearAll').addEventListener('click', () => {
+            eventBanner.clearAll(true);
+            updateStats();
+        });
+        
+        document.getElementById('pauseGame').addEventListener('click', () => {
+            EventManager.emit('game:paused');
+            updateStats();
+        });
+        
+        document.getElementById('resumeGame').addEventListener('click', () => {
+            EventManager.emit('game:resumed');
+            updateStats();
+        });
+        
+        // Game scenario event handlers
+        document.getElementById('objectiveCompleted').addEventListener('click', () => {
+            const startTime = performance.now();
+            EventManager.emit('objective:completed', {
+                name: "Clear the Area",
+                description: "Eliminated all hostiles in the zone",
+                reward: 250
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('achievementUnlocked').addEventListener('click', () => {
+            const startTime = performance.now();
+            EventManager.emit('achievement:unlocked', {
+                name: "Sharpshooter",
+                description: "Achieve 10 headshots in a single mission",
+                points: 50
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('missionUpdated').addEventListener('click', () => {
+            const startTime = performance.now();
+            EventManager.emit('mission:updated', {
+                title: "New Intel",
+                message: "HVT Spotted",
+                description: "High Value Target has been identified near Checkpoint Alpha",
+                category: "alert",
+                timer: {
+                    total: 120000,
+                    remaining: 120000
+                }
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('roundEnd').addEventListener('click', () => {
+            const startTime = performance.now();
+            EventManager.emit('round:end', {
+                outcome: "victory",
+                message: "Eliminated all opposition forces"
+            });
+            trackBannerCreation(startTime);
+            updateStats();
+        });
+        
+        document.getElementById('sendCustomEvent').addEventListener('click', () => {
+            try {
+                const payload = JSON.parse(document.getElementById('eventPayload').value);
+                const startTime = performance.now();
+                
+                if (payload.type === "objective") {
+                    EventManager.emit('objective:completed', payload);
+                } else if (payload.type === "achievement") {
+                    EventManager.emit('achievement:unlocked', payload);
+                } else if (payload.type === "mission") {
+                    EventManager.emit('mission:updated', payload);
+                } else if (payload.type === "round") {
+                    EventManager.emit('round:end', payload);
+                } else {
+                    eventBanner.showBanner(payload.name || "Custom Event", 
+                                           payload.category || "default", 
+                                           payload);
+                }
+                
+                trackBannerCreation(startTime);
+                updateStats();
+            } catch (e) {
+                console.error("Error parsing JSON:", e);
+                alert("Invalid JSON payload");
+            }
+        });
+        
+        document.getElementById('stressTest').addEventListener('click', async () => {
+            const count = parseInt(document.getElementById('bannerCount').value, 10);
+            const startTime = performance.now();
+            
+            for (let i = 0; i < count; i++) {
+                eventBanner.showBanner(`Stress Test Banner ${i+1}`, 
+                                      i % 5 === 0 ? "success" : 
+                                      i % 4 === 0 ? "danger" :
+                                      i % 3 === 0 ? "alert" :
+                                      i % 2 === 0 ? "objective" : "default", {
+                    subtitle: `Testing performance with many banners`
+                });
+                
+                if (i === 0 || i === count - 1) {
+                    trackBannerCreation(startTime);
+                }
+                
+                // Small delay to allow DOM to update
+                if (i % 5 === 0) {
+                    await new Promise(r => setTimeout(r, 5));
+                }
+            }
+            
+            const totalTime = performance.now() - startTime;
+            console.log(`Created ${count} banners in ${totalTime.toFixed(2)}ms`);
+            updateStats();
+        });
+        
+        document.getElementById('staggeredTest').addEventListener('click', () => {
+            const count = parseInt(document.getElementById('bannerCount').value, 10);
+            let current = 0;
+            
+            const interval = setInterval(() => {
+                if (current >= count) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                const startTime = performance.now();
+                eventBanner.showBanner(`Staggered Test Banner ${current+1}`, 
+                                      current % 5 === 0 ? "success" : 
+                                      current % 4 === 0 ? "danger" :
+                                      current % 3 === 0 ? "alert" :
+                                      current % 2 === 0 ? "objective" : "default", {
+                    subtitle: `Banner ${current+1} of ${count}`
+                });
+                
+                if (current === 0 || current === count - 1) {
+                    trackBannerCreation(startTime);
+                }
+                
+                current++;
+                updateStats();
+            }, 1000);
+        });
+        
+        // Update stats periodically to reflect any changes
+        setInterval(updateStats, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+/**
+ * RIFT FPS UI - Combat System Component
+ * 
+ * Base styles for the CombatSystem container that holds all combat-related UI elements.
+ * This container needs to cover the full screen to properly position its children.
+ */
+
+.rift-combat-system {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Allow interaction with elements behind */
+    z-index: var(--rift-z-index-hud);
+}
+
+/* Allow pointer events for child elements that need interaction */
+.rift-combat-system > * {
+    pointer-events: auto;
+}

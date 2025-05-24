@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIFT - Crosshair System Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #ffffff;
+            overflow: hidden;
+        }
+        
+        #test-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cccccc;
+            font-size: 12px;
+        }
+        
+        .control-group button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .control-group button:hover {
+            background: #444;
+        }
+        
+        .control-group button.active {
+            background: #0088cc;
+        }
+        
+        #debug-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 1000;
+            font-size: 11px;
+            color: #cccccc;
+            max-width: 300px;
+        }
+        
+        #test-scene {
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, #2a2a2a 0%, #1a1a1a 100%);
+            position: relative;
+        }
+        
+        .target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #ff6666;
+            border: 2px solid #ff0000;
+            border-radius: 50%;
+            cursor: crosshair;
+        }
+        
+        .target.enemy {
+            background: #ff6666;
+            border-color: #ff0000;
+        }
+        
+        .target.friendly {
+            background: #66ff66;
+            border-color: #00ff00;
+        }
+        
+        .target.interactive {
+            background: #6666ff;
+            border-color: #0000ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="test-scene">
+        <!-- Crosshair will be injected here -->
+    </div>
+    
+    <div id="test-controls">
+        <h3>Crosshair Test Controls</h3>
+        
+        <div class="control-group">
+            <label>Weapon Fire Test</label>
+            <button onclick="testWeaponFire()">Fire Shot</button>
+            <button onclick="testRapidFire()">Rapid Fire (5x)</button>
+            <button onclick="resetSpread()">Reset Spread</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Crosshair States</label>
+            <button onclick="setCrosshairState('default')">Default</button>
+            <button onclick="setCrosshairState('enemy')">Enemy</button>
+            <button onclick="setCrosshairState('friendly')">Friendly</button>
+            <button onclick="setCrosshairState('interactive')">Interactive</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Weapon Types</label>
+            <button onclick="setWeaponType('pistol')">Pistol</button>
+            <button onclick="setWeaponType('rifle')">Rifle</button>
+            <button onclick="setWeaponType('shotgun')">Shotgun</button>
+            <button onclick="setWeaponType('sniper')">Sniper</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Hit Markers</label>
+            <button onclick="showHitMarker('normal')">Normal Hit</button>
+            <button onclick="showHitMarker('critical')">Critical Hit</button>
+            <button onclick="showHitMarker('headshot')">Headshot</button>
+            <button onclick="showHitMarker('kill')">Kill</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Special Tests</label>
+            <button onclick="testCriticalZone()">Critical Zone</button>
+            <button onclick="testMultiKill()">Multi-Kill</button>
+            <button onclick="testReload()">Reload</button>
+        </div>
+    </div>
+    
+    <div id="debug-info">
+        <h4>Debug Info</h4>
+        <div id="debug-content">
+            Crosshair system loading...
+        </div>
+    </div>
+
+    <script type="module">
+        import { UIManager } from '../src/core/UIManager.js';
+        import { EventManager } from '../src/core/EventManager.js';
+        import { CombatSystem } from '../src/components/ui/combat/CombatSystem.js';
+        
+        let combatSystem;
+        let crosshairSystem;
+        
+        // Initialize the systems
+        async function init() {
+            try {
+                console.log('Initializing crosshair test...');
+                
+                // Create combat system (which includes the crosshair)
+                combatSystem = new CombatSystem({
+                    container: document.getElementById('test-scene')
+                });
+                
+                // Get reference to the crosshair system
+                crosshairSystem = combatSystem.crosshairSystem;
+                
+                console.log('Crosshair test initialized successfully');
+                updateDebugInfo();
+                
+                // Set up periodic debug updates
+                setInterval(updateDebugInfo, 500);
+                
+            } catch (error) {
+                console.error('Failed to initialize crosshair test:', error);
+                document.getElementById('debug-content').innerHTML = `
+                    <div style="color: #ff6666;">
+                        Error: ${error.message}<br>
+                        Check console for details.
+                    </div>
+                `;
+            }
+        }
+        
+        function updateDebugInfo() {
+            if (!crosshairSystem) return;
+            
+            const info = document.getElementById('debug-content');
+            info.innerHTML = `
+                <strong>Spread Factor:</strong> ${crosshairSystem.spreadFactor.toFixed(2)}<br>
+                <strong>Base Spread:</strong> ${crosshairSystem.baseSpread}px<br>
+                <strong>Max Spread:</strong> ${crosshairSystem.maxSpread}px<br>
+                <strong>Current State:</strong> ${crosshairSystem.currentState}<br>
+                <strong>Weapon State:</strong> ${crosshairSystem.weaponState}<br>
+                <strong>Recovery Timer:</strong> ${crosshairSystem.recoveryTimer ? 'Active' : 'None'}<br>
+                <strong>Element Classes:</strong><br>
+                <div style="font-size: 9px; margin-left: 10px; word-break: break-all;">
+                    ${crosshairSystem.element ? crosshairSystem.element.className : 'No element'}
+                </div>
+            `;
+        }
+        
+        // Test functions
+        window.testWeaponFire = function() {
+            console.log('Testing weapon fire...');
+            EventManager.emitEvent('weapon:fired', {
+                weapon: { type: 'rifle' },
+                timestamp: performance.now()
+            });
+        };
+        
+        window.testRapidFire = function() {
+            console.log('Testing rapid fire...');
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    EventManager.emitEvent('weapon:fired', {
+                        weapon: { type: 'rifle' },
+                        timestamp: performance.now()
+                    });
+                }, i * 100);
+            }
+        };
+        
+        window.resetSpread = function() {
+            console.log('Resetting spread...');
+            if (crosshairSystem) {
+                crosshairSystem.spreadFactor = 1.0;
+                crosshairSystem._applyCrosshairSpread();
+                // Clear recovery timer
+                if (crosshairSystem.recoveryTimer) {
+                    clearTimeout(crosshairSystem.recoveryTimer);
+                    crosshairSystem.recoveryTimer = null;
+                }
+            }
+        };
+        
+        window.setCrosshairState = function(state) {
+            console.log('Setting crosshair state to:', state);
+            const target = state === 'interactive' ? { action: 'Press F to interact' } : null;
+            EventManager.emitEvent('target:change', {
+                target: state === 'default' ? null : { type: state, action: target?.action }
+            });
+        };
+        
+        window.setWeaponType = function(type) {
+            console.log('Setting weapon type to:', type);
+            EventManager.emitEvent('weapon:switch', {
+                weaponType: type,
+                duration: 0.3
+            });
+        };
+        
+        window.showHitMarker = function(type) {
+            console.log('Showing hit marker:', type);
+            if (crosshairSystem) {
+                const damage = type === 'critical' ? 150 : type === 'headshot' ? 200 : 100;
+                crosshairSystem.showHitMarker(type, damage);
+            }
+        };
+        
+        window.testCriticalZone = function() {
+            console.log('Testing critical zone...');
+            EventManager.emitEvent('target:change', {
+                target: {
+                    type: 'enemy',
+                    critZone: {
+                        isTargeted: true,
+                        type: 'headshot'
+                    }
+                }
+            });
+        };
+        
+        window.testMultiKill = function() {
+            console.log('Testing multi-kill...');
+            if (crosshairSystem) {
+                crosshairSystem.showMultiKillFeedback(3); // Triple kill
+            }
+        };
+        
+        window.testReload = function() {
+            console.log('Testing reload...');
+            EventManager.emitEvent('weapon:reload', {
+                duration: 2.0
+            });
+        };
+        
+        // Start initialization
+        init();
+    </script>
+</body>
+</html>

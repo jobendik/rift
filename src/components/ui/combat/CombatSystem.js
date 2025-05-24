@@ -15,6 +15,7 @@
  */
 
 import UIComponent from '../UIComponent.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 import { HitIndicator } from './HitIndicator.js';
 import { DamageIndicator } from './DamageIndicator.js';
 import { EnhancedDamageIndicator } from './EnhancedDamageIndicator.js';
@@ -40,10 +41,8 @@ class CombatSystem extends UIComponent {
             container: options.container || document.body,
             autoInit: false,
             ...options
-        });
-
-        this.world = world;
-        this.config = this.config.combat || {};
+        });        this.world = world;
+        this.config = UIConfig;
 
         // Component references
         this.hitIndicator = null;
@@ -218,11 +217,11 @@ class CombatSystem extends UIComponent {
             this.damageIndicator.init();
             this.addChild(this.damageIndicator);
         }
-        
-        // Check if enhanced crosshair system is enabled in UIConfig
+          // Check if enhanced crosshair system is enabled in UIConfig
         const useEnhancedCrosshair = this.config.enhancedCombat && this.config.enhancedCombat.crosshair;
         
         if (useEnhancedCrosshair) {
+            console.log('[CombatSystem] Initializing enhanced crosshair system');
             // Initialize dynamic crosshair system
             this.dynamicCrosshair = new DynamicCrosshairSystem({
                 container: this.element
@@ -230,6 +229,9 @@ class CombatSystem extends UIComponent {
             });
             this.dynamicCrosshair.init();
             this.addChild(this.dynamicCrosshair);
+            console.log('[CombatSystem] Enhanced crosshair system initialized:', this.dynamicCrosshair.isInitialized);
+        } else {
+            console.log('[CombatSystem] Enhanced crosshair not enabled in config');
         }
         
         // Initialize damage numbers

@@ -12,6 +12,7 @@
  */
 
 /* Import all combat component styles */
+@import url('./combat/_combat-system.css');
 @import url('./combat/_hit-indicator.css');
 @import url('./combat/_damage-indicator.css');
 @import url('./combat/_enhanced-damage-indicator.css');

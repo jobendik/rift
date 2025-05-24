@@ -468,11 +468,45 @@ The event system now includes comprehensive performance monitoring:
    - Filtering and sorting capabilities
    - Export functionality for sharing/analysis
 
-4. **Developer Tools Integration**
+4. **Performance Monitoring Implementation**
+   ```javascript
+   // Inside EventManager
+   _trackEventPerformance(eventType, startTime) {
+     const executionTime = performance.now() - startTime;
+     
+     // Update event metrics
+     if (!this._eventMetrics.has(eventType)) {
+       this._eventMetrics.set(eventType, {
+         count: 0,
+         totalExecutionTime: 0,
+         avgExecutionTime: 0,
+         minExecutionTime: Infinity,
+         maxExecutionTime: 0,
+         lastTimestamp: performance.now()
+       });
+     }
+     
+     const metrics = this._eventMetrics.get(eventType);
+     metrics.count++;
+     metrics.totalExecutionTime += executionTime;
+     metrics.avgExecutionTime = metrics.totalExecutionTime / metrics.count;
+     metrics.minExecutionTime = Math.min(metrics.minExecutionTime, executionTime);
+     metrics.maxExecutionTime = Math.max(metrics.maxExecutionTime, executionTime);
+     metrics.lastTimestamp = performance.now();
+   }
+   ```
+
+5. **Developer Tools Integration**
    - Accessible via keyboard shortcut (Ctrl+Shift+D)
    - Integrated with other development tools
    - Performance recommendations
    - Visual indicators for problematic events
+
+6. **Identifying Optimization Opportunities**
+   - High-frequency events (> 60/sec)
+   - Slow event handlers (> 1ms avg execution)
+   - High-impact events (both frequent and slow)
+   - Event chains that cause cascading updates
 
 ### Event Usage Pattern in Components
 
@@ -635,23 +669,10 @@ function updateMultipleElements() {
 
 ### Element Pooling
 
-For frequently created and destroyed elements, use element pooling to minimize DOM operations and reduce garbage collection. The enhanced ElementPool utility significantly improves UI performance:
+For frequently created and destroyed elements, use the ElementPool utility to minimize DOM operations and reduce garbage collection:
 
 ```javascript
 class ElementPool {
-  /**
-   * Create an element pool
-   * @param {Object} options - Pool configuration
-   * @param {string} options.elementType - Type of element to create ('div', 'span', etc.)
-   * @param {HTMLElement} options.container - Parent container for elements
-   * @param {string} [options.className] - Class to apply to all elements
-   * @param {number} [options.initialSize=10] - Initial pool size
-   * @param {number} [options.maxSize=100] - Maximum pool size
-   * @param {Function} [options.createFn] - Custom element creation function
-   * @param {Function} [options.resetFn] - Custom element reset function
-   * @param {boolean} [options.useBlocks=true] - Use block containers for better performance
-   * @param {number} [options.blockSize=10] - Elements per block container
-   */
   constructor(options = {}) {
     // Configuration
     this.elementType = options.elementType || 'div';
@@ -659,201 +680,88 @@ class ElementPool {
     this.className = options.className || '';
     this.initialSize = options.initialSize || 10;
     this.maxSize = options.maxSize || 100;
-    this.createFn = options.createFn || null;
-    this.resetFn = options.resetFn || null;
-    this.useBlocks = options.useBlocks !== false;
+    this.createFn = options.createFn || this._defaultCreateFn.bind(this);
+    this.resetFn = options.resetFn || this._defaultResetFn.bind(this);
+    this.useBlocks = options.useBlocks !== false; // Default to true
     this.blockSize = options.blockSize || 10;
     
-    // State
-    this.pool = [];
-    this.inUse = new Set();
-    this.totalCreated = 0;
-    this.blocks = [];
+    // State tracking
+    this.pool = [];          // Available elements
+    this.inUse = new Set();  // Currently active elements
+    this.blocks = [];        // Container blocks when using block system
+    
+    // Statistics
     this.stats = {
       created: 0,
       acquired: 0,
       released: 0,
-      peak: 0
+      maxUsed: 0,
+      outOfPoolCount: 0
     };
     
-    // Initialize pool
-    this._initializePool();
+    // Initialize the pool
+    this._initialize();
   }
   
-  /**
-   * Acquire an element from the pool
-   * @returns {Object} Object containing element and release function
-   */
-  acquire() {
-    // Track stats
+  // Acquire an element from the pool
+  acquire(options = {}) {
+    // Update stats
     this.stats.acquired++;
-    this.stats.peak = Math.max(this.stats.peak, this.inUse.size + 1);
     
-    // Get element from pool or create new one
-    let element;
+    // Get element from pool or create new ones if needed
     if (this.pool.length === 0) {
-      // Grow pool if below max size
-      if (this.totalCreated < this.maxSize) {
-        this._growPool(Math.min(10, this.maxSize - this.totalCreated));
-        element = this.pool.pop();
+      if (this.inUse.size < this.maxSize) {
+        this._growPool(this.growSize);
       } else {
-        console.warn(`ElementPool: Maximum size of ${this.maxSize} reached.`);
-        return { element: null, release: () => {} };
+        this.stats.outOfPoolCount++;
+        console.warn(`ElementPool warning: Pool exhausted`);
+        // Create temporary element if pool is exhausted
+        // ...
       }
-    } else {
-      element = this.pool.pop();
     }
     
-    // Track usage
+    const element = this.pool.pop();
     this.inUse.add(element);
     
-    // Create release function bound to this element
+    // Return element with release function
     const release = () => this.release(element);
-    
     return { element, release };
   }
   
-  /**
-   * Release an element back to the pool
-   * @param {HTMLElement} element - Element to release
-   */
+  // Release an element back to the pool
   release(element) {
-    if (!element || !this.inUse.has(element)) return;
+    if (!this.inUse.has(element)) return false;
+    
+    // Update stats
+    this.stats.released++;
     
     // Reset element state
-    if (this.resetFn) {
-      this.resetFn(element);
-    } else {
-      this._resetElement(element);
-    }
+    this.resetFn(element);
     
     // Return to pool
     this.inUse.delete(element);
     this.pool.push(element);
-    this.stats.released++;
-  }
-  
-  /**
-   * Get usage statistics
-   * @returns {Object} Pool statistics
-   */
-  getStats() {
-    return {
-      ...this.stats,
-      available: this.pool.length,
-      inUse: this.inUse.size,
-      total: this.totalCreated
-    };
-  }
-  
-  /**
-   * Clean up resources
-   */
-  dispose() {
-    // Release all elements
-    this.inUse.forEach(element => this.release(element));
     
-    // Remove all blocks from the DOM
-    if (this.useBlocks) {
+    return true;
+  }
+  
+  // Clean up resources
+  dispose(removeElements = true) {
+    // Release all elements
+    this.releaseAll();
+    
+    if (removeElements) {
+      // Remove block containers
       this.blocks.forEach(block => {
         if (block.parentNode) {
           block.parentNode.removeChild(block);
         }
       });
+      
+      // Clear arrays
+      this.pool = [];
+      this.inUse.clear();
       this.blocks = [];
-    } else {
-      // Remove all individual elements
-      this.pool.forEach(element => {
-        if (element.parentNode) {
-          element.parentNode.removeChild(element);
-        }
-      });
-    }
-    
-    // Clear arrays
-    this.pool = [];
-    this.inUse.clear();
-  }
-  
-  // Private methods
-  
-  /**
-   * Initialize the element pool
-   * @private
-   */
-  _initializePool() {
-    this._growPool(this.initialSize);
-  }
-  
-  /**
-   * Grow the pool by creating new elements
-   * @param {number} size - Number of elements to add
-   * @private
-   */
-  _growPool(size) {
-    let block = null;
-    let blockCount = 0;
-    
-    for (let i = 0; i < size; i++) {
-      // Create a block container if using blocks
-      if (this.useBlocks && (!block || blockCount >= this.blockSize)) {
-        block = document.createElement('div');
-        block.className = 'rift-element-pool-block';
-        this.container.appendChild(block);
-        this.blocks.push(block);
-        blockCount = 0;
-      }
-      
-      // Create element
-      let element;
-      if (this.createFn) {
-        element = this.createFn();
-      } else {
-        element = document.createElement(this.elementType);
-        if (this.className) {
-          element.className = this.className;
-        }
-      }
-      
-      // Add to appropriate container
-      if (this.useBlocks && block) {
-        block.appendChild(element);
-      } else {
-        this.container.appendChild(element);
-      }
-      
-      this.pool.push(element);
-      this.totalCreated++;
-      this.stats.created++;
-      blockCount++;
-    }
-  }
-  
-  /**
-   * Reset an element to its initial state
-   * @param {HTMLElement} element - Element to reset
-   * @private
-   */
-  _resetElement(element) {
-    // Reset standard properties
-    element.textContent = '';
-    element.className = this.className || '';
-    
-    // Clear inline styles except display
-    const displayStyle = element.style.display;
-    element.removeAttribute('style');
-    if (displayStyle === 'none') {
-      element.style.display = 'none';
-    }
-    
-    // Clear data attributes
-    Array.from(element.attributes)
-      .filter(attr => attr.name.startsWith('data-'))
-      .forEach(attr => element.removeAttribute(attr.name));
-    
-    // Remove all child elements
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
     }
   }
 }
@@ -861,13 +769,19 @@ class ElementPool {
 
 ### ElementPool Usage Pattern
 
-The most effective way to use ElementPool is to integrate it with UIComponents:
+Components using ElementPool follow this pattern:
 
 ```javascript
-class OptimizedUIComponent extends UIComponent {
+class EnhancedDamageNumbers extends UIComponent {
   constructor(options = {}) {
-    super(options);
-    this.activeElements = [];
+    super({
+      id: options.id || 'damage-numbers',
+      className: 'rift-damage-numbers',
+      container: options.container || document.body,
+      ...options
+    });
+    
+    this.activeNumbers = [];
     this.pool = null;
   }
   
@@ -875,111 +789,158 @@ class OptimizedUIComponent extends UIComponent {
     super.init();
     
     // Initialize element pool
+    this._initElementPool();
+    this._registerEventListeners();
+    
+    return this;
+  }
+  
+  _initElementPool() {
+    // Create the element pool
     this.pool = new ElementPool({
       elementType: 'div',
       container: this.element,
-      className: 'rift-component-element',
-      initialSize: 20,
-      useBlocks: true,  // Use block containers for better performance
-      blockSize: 10     // Elements per block
+      className: 'rift-damage-number',
+      initialSize: this.maxNumbers,
+      maxSize: this.maxNumbers * 1.5,
+      useBlocks: true,
+      blockSize: 10
     });
   }
   
-  createDynamicElement() {
+  showDamageNumber(options = {}) {
     // Get element from pool
     const { element, release } = this.pool.acquire();
-    if (!element) return null;
+    if (!element) return this;
     
     // Configure element
     element.style.display = 'block';
-    element.classList.add('rift-component-element--active');
+    element.style.left = `${options.position.x}px`;
+    element.style.top = `${options.position.y}px`;
+    element.textContent = String(Math.round(options.damage));
+    element.className = `rift-damage-number ${damageClass}`;
     
-    // Store reference with release function
-    this.activeElements.push({ element, release });
+    // Add to active numbers
+    const number = {
+      startTime: performance.now(),
+      duration: options.duration || this.duration,
+      element,
+      release
+    };
+    this.activeNumbers.push(number);
     
-    return element;
+    // Enforce maximum
+    if (this.activeNumbers.length > this.maxNumbers) {
+      // Remove oldest number
+      const oldestNumber = this.activeNumbers.shift();
+      if (oldestNumber.element) {
+        oldestNumber.element.style.display = 'none';
+      }
+      if (oldestNumber.release) {
+        oldestNumber.release();
+      }
+    }
+    
+    return this;
   }
   
-  removeDynamicElement(index) {
-    if (index < 0 || index >= this.activeElements.length) return;
+  update(delta) {
+    // Remove expired numbers
+    const now = performance.now();
+    const numbersToRemove = [];
     
-    // Get element and release function
-    const { element, release } = this.activeElements[index];
-    
-    // Release back to pool
-    release();
-    
-    // Remove from active elements
-    this.activeElements.splice(index, 1);
-  }
-  
-  update(deltaTime) {
-    super.update(deltaTime);
-    
-    // Update active elements
-    // Mark elements for removal when no longer needed
-    const toRemove = [];
-    this.activeElements.forEach((item, index) => {
-      // Logic to determine if element should be removed
-      if (/* condition */) {
-        toRemove.push(index);
+    this.activeNumbers.forEach((number, index) => {
+      const elapsed = now - number.startTime;
+      if (elapsed >= number.duration) {
+        numbersToRemove.push(index);
+        number.element.style.display = 'none';
       }
     });
     
-    // Remove elements in reverse order to avoid index shifting
-    for (let i = toRemove.length - 1; i >= 0; i--) {
-      this.removeDynamicElement(toRemove[i]);
+    // Release elements in reverse order
+    for (let i = numbersToRemove.length - 1; i >= 0; i--) {
+      const index = numbersToRemove[i];
+      const number = this.activeNumbers[index];
+      if (number.release) {
+        number.release();
+      }
+      this.activeNumbers.splice(index, 1);
     }
   }
   
   dispose() {
-    // Dispose the element pool to clean up resources
+    // Clean up pooled elements
     if (this.pool) {
       this.pool.dispose();
       this.pool = null;
     }
     
-    // Clear active elements array
-    this.activeElements = [];
-    
     super.dispose();
+    return this;
   }
 }
 ```
 
-This pattern is implemented in components like EnhancedDamageNumbers, EnhancedHitIndicator, EnhancedDamageIndicator, and EnhancedKillFeed, which handle frequent visual indicators with minimal DOM operations.
-
 ### Block Container Strategy
 
-For improved performance when using ElementPool, the block container approach groups elements under parent containers:
+The block container approach optimizes DOM operations by grouping elements under container elements:
 
 ```javascript
-// Benefits of block container strategy
-// 1. Reduced parent-child relationship tracking overhead
-// 2. Better memory locality for DOM operations
-// 3. Fewer individual insertions into the document
-// 4. Improved rendering pipeline efficiency
-
-// Implementation in ElementPool
-const useBlocks = true;
-const blockSize = 10; // Elements per block
-
-// When growing the pool with blocks
-if (useBlocks && (!block || blockCount >= blockSize)) {
-  block = document.createElement('div');
+// Inside ElementPool
+_createBlock() {
+  const block = document.createElement('div');
   block.className = 'rift-element-pool-block';
+  block.style.display = 'contents'; // No visual impact
   this.container.appendChild(block);
   this.blocks.push(block);
-  blockCount = 0;
+  return block;
 }
 
-// Adding elements to blocks instead of directly to container
-if (useBlocks && block) {
-  block.appendChild(element);
-} else {
-  this.container.appendChild(element);
+_growPool(count) {
+  // Calculate how many we can add within maxSize limit
+  const actualCount = Math.min(count, this.maxSize - (this.pool.length + this.inUse.size));
+  
+  if (actualCount <= 0) return;
+  
+  // Determine which block to use
+  let targetBlock;
+  if (this.useBlocks) {
+    const lastBlock = this.blocks[this.blocks.length - 1];
+    if (!lastBlock || lastBlock.childNodes.length >= this.blockSize) {
+      targetBlock = this._createBlock();
+    } else {
+      targetBlock = lastBlock;
+    }
+  }
+  
+  // Create elements
+  for (let i = 0; i < actualCount; i++) {
+    const element = this.createFn();
+    
+    // Add to appropriate container
+    if (this.useBlocks) {
+      targetBlock.appendChild(element);
+      
+      // Create new block if current one is full
+      if (targetBlock.childNodes.length >= this.blockSize && i < actualCount - 1) {
+        targetBlock = this._createBlock();
+      }
+    } else {
+      this.container.appendChild(element);
+    }
+    
+    this.pool.push(element);
+    this.stats.created++;
+  }
 }
 ```
+
+Benefits of the block container strategy:
+1. Reduces parent-child relationship tracking overhead
+2. Improves memory locality for DOM operations
+3. Minimizes layout recalculations
+4. Better leverages browser's internal optimizations
+5. Reduces individual insertions into the document
 
 ### Hardware-Accelerated Animations
 
@@ -988,47 +949,4 @@ Prefer CSS properties that are hardware-accelerated:
 ```css
 /* Instead of */
 .element {
-  animation: move 500ms;
-}
-
-@keyframes move {
-  from { left: 0; top: 0; }
-  to { left: 100px; top: 100px; }
-}
-
-/* Use */
-.element {
-  animation: move 500ms;
-}
-
-@keyframes move {
-  from { transform: translate(0, 0); }
-  to { transform: translate(100px, 100px); }
-}
-```
-
-### Event Debouncing
-
-For high-frequency events, use debouncing:
-
-```javascript
-function debounce(func, wait) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-
-// Usage
-this.onResize = debounce(this._handleResize.bind(this), 100);
-window.addEventListener('resize', this.onResize);
-```
-
-## Animation Patterns
-
-### Animation System
-
-The `UIComponent` base class provides animation utilities:
-
-```javascript
+  animation

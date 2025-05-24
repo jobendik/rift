@@ -7,6 +7,7 @@
 
 import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
 import { HealthDisplay } from './HealthDisplay.js';
 import { AmmoDisplay } from './AmmoDisplay.js';
@@ -164,15 +165,18 @@ class HUDSystem extends UIComponent {
                 showIcon: true,
                 showValue: true
             });
-            this.addChild(this.components.ammo);
-            
-            // Crosshair system (center)
-            this.components.crosshair = new CrosshairSystem({
-                container: this.containers.center,
-                dynamic: true,
-                showDot: true
-            });
-            this.addChild(this.components.crosshair);
+            this.addChild(this.components.ammo);              // Crosshair system (center) - only if enhanced crosshair is not enabled
+            const useEnhancedCrosshair = UIConfig.enhancedCombat && UIConfig.enhancedCombat.crosshair;
+            if (!useEnhancedCrosshair) {
+                this.components.crosshair = new CrosshairSystem({
+                    container: this.containers.center,
+                    dynamic: true,
+                    showDot: true
+                });
+                this.addChild(this.components.crosshair);
+            } else {
+                console.log('[HUDSystem] Enhanced crosshair enabled - skipping basic crosshair initialization');
+            }
             
             // Minimap system (bottom left)
             this.components.minimap = new MinimapSystem(this.world, {
@@ -284,8 +288,7 @@ class HUDSystem extends UIComponent {
                     this.components.ammo.updateMagSize(magSize);
                     this.components.ammo.updateWeaponType(weaponType);
                 }
-                
-                // Update crosshair spread
+                  // Update crosshair spread (only if basic crosshair is active)
                 if (this.components.crosshair && typeof this.components.crosshair.updateSpread === 'function') {
                     const spread = weapon.getSpread ? weapon.getSpread() : 0;
                     this.components.crosshair.updateSpread(spread);

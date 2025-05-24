@@ -14,10 +14,10 @@
  */
 
 import UIComponent from '../UIComponent.js';
-import { NotificationManager } from './NotificationManager.js';
+import { EnhancedNotificationManager } from './EnhancedNotificationManager.js';
 import { EnhancedKillFeed } from './EnhancedKillFeed.js';
-import { EventBanner } from './EventBanner.js';
-import { AchievementDisplay } from './AchievementDisplay.js';
+import { EnhancedEventBanner } from './EnhancedEventBanner.js';
+import { EnhancedAchievementDisplay } from './EnhancedAchievementDisplay.js';
 import { EventManager } from '../../../core/EventManager.js';
 
 class NotificationSystem extends UIComponent {
@@ -142,13 +142,14 @@ class NotificationSystem extends UIComponent {
      * @private
      */
     _initComponents() {
-        // Create Notification Manager
-        this.notificationManager = new NotificationManager({
+        // Create Enhanced Notification Manager with element pooling for better performance
+        this.notificationManager = new EnhancedNotificationManager({
             container: this.element,
             displayDuration: this.config.displayDuration || 4000,
             fadeDuration: this.config.fadeDuration || 500,
             cooldown: this.config.cooldown || 500,
-            spacingDelay: this.config.spacingDelay || 500
+            spacingDelay: this.config.spacingDelay || 500,
+            maxNotifications: this.config.maxNotifications || 5
         });
         this.notificationManager.init();
         this.addChild(this.notificationManager);
@@ -164,21 +165,26 @@ class NotificationSystem extends UIComponent {
         this.killFeed.init();
         this.addChild(this.killFeed);
         
-        // Create Event Banner
+        // Create Enhanced Event Banner with element pooling for better performance
         const eventConfig = this.config.events || {};
-        this.eventBanner = new EventBanner({
+        this.eventBanner = new EnhancedEventBanner({
             container: this.element,
             displayDuration: eventConfig.displayDuration || 3000,
-            fadeDuration: eventConfig.fadeDuration || 1000
+            fadeDuration: eventConfig.fadeDuration || 1000,
+            poolSize: eventConfig.poolSize || 10,
+            maxPoolSize: eventConfig.maxPoolSize || 30
         });
         this.eventBanner.init();
         this.addChild(this.eventBanner);
         
-        // Create Achievement Display
-        this.achievementDisplay = new AchievementDisplay({
+        // Create Enhanced Achievement Display with element pooling for better performance
+        const achievementConfig = this.config.achievements || {};
+        this.achievementDisplay = new EnhancedAchievementDisplay({
             container: this.element,
             displayDuration: this.config.achievementDuration || 5000,
-            fadeDuration: this.config.fadeDuration || 500
+            fadeDuration: this.config.fadeDuration || 500,
+            initialPoolSize: achievementConfig.initialPoolSize || 5,
+            maxPoolSize: achievementConfig.maxPoolSize || 20
         });
         this.achievementDisplay.init();
         this.addChild(this.achievementDisplay);

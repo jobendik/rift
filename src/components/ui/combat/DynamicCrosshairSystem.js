@@ -19,6 +19,7 @@
 import UIComponent from '../UIComponent.js';
 import { EventManager } from '../../../core/EventManager.js';
 import { DOMFactory } from '../../../utils/DOMFactory.js';
+import { UIConfig } from '../../../core/UIConfig.js';
 
 export class DynamicCrosshairSystem extends UIComponent {
     /**
@@ -31,11 +32,10 @@ export class DynamicCrosshairSystem extends UIComponent {
             className: 'rift-dynamic-crosshair',
             container: options.container,
             autoInit: false, // Prevent auto-initialization
-            ...options
-        });
+            ...options        });
         
         // Configuration
-        this.config = this.config.enhancedCombat?.crosshair || {};
+        this.config = UIConfig.enhancedCombat?.crosshair || {};
         
         // State tracking
         this.spreadFactor = 1.0;
@@ -72,12 +72,14 @@ export class DynamicCrosshairSystem extends UIComponent {
         // Initialize manually after all properties are set
         this.init();
     }
-    
-    /**
+      /**
      * Initialize the component
-     */
-    init() {
+     */    init() {
         if (this.isInitialized) return this;
+        
+        console.log('[DynamicCrosshairSystem] Starting initialization...');
+        console.log('[DynamicCrosshairSystem] Config:', this.config);
+        console.log('[DynamicCrosshairSystem] Container:', this.container);
         
         // Call parent init
         super.init();
@@ -92,6 +94,12 @@ export class DynamicCrosshairSystem extends UIComponent {
         this._setCrosshairState('default');
         
         this.isInitialized = true;
+        console.log('[DynamicCrosshairSystem] Initialization complete. Element:', this.element);
+        console.log('[DynamicCrosshairSystem] Element classes:', this.element.className);
+        console.log('[DynamicCrosshairSystem] Element parent:', this.element.parentElement);
+        console.log('[DynamicCrosshairSystem] Element position styles:', window.getComputedStyle(this.element).position);
+        console.log('[DynamicCrosshairSystem] Element visibility:', window.getComputedStyle(this.element).visibility);
+        console.log('[DynamicCrosshairSystem] Element opacity:', window.getComputedStyle(this.element).opacity);
         return this;
     }
     
@@ -174,35 +182,48 @@ export class DynamicCrosshairSystem extends UIComponent {
                 });
             }
         });
-    }
-    
-    /**
+    }    /**
      * Update crosshair spread
      * @private
      * @param {Number} delta - Time elapsed since last frame in seconds
      */
     _updateSpread(delta) {
+        // Only recover if recovery timer has expired (or doesn't exist)
+        if (this.recoveryTimer) {
+            return; // Don't recover during delay period
+        }
+        
         // Get recovery rate from config
         const spreadRecoveryRate = this.config.spread?.recoveryRate || 0.2; // Per second
+        
+        const oldSpreadFactor = this.spreadFactor;
         
         // Gradually reduce spread over time
         this.spreadFactor = Math.max(1.0, this.spreadFactor - (spreadRecoveryRate * delta));
         
-        // Apply updated spread to crosshair
-        this._applyCrosshairSpread();
+        // Only apply and log if there was an actual change
+        if (oldSpreadFactor !== this.spreadFactor) {
+            console.log(`[DynamicCrosshairSystem] Spread recovery - ${oldSpreadFactor} -> ${this.spreadFactor} (delta: ${delta}, rate: ${spreadRecoveryRate})`);
+            
+            // Apply updated spread to crosshair
+            this._applyCrosshairSpread();
+        }
     }
-    
-    /**
+      /**
      * Apply current spread factor to crosshair
      * @private
      */
     _applyCrosshairSpread() {
         // Calculate current spread amount
+        // spreadFactor ranges from 1.0 (min) to 5.0 (max), so we normalize it to 0-1 range
+        const normalizedSpread = (this.spreadFactor - 1.0) / (5.0 - 1.0); // 0 to 1
         const currentSpread = this.baseSpread + 
-            (this.maxSpread - this.baseSpread) * (this.spreadFactor - 1) / 4;
+            (this.maxSpread - this.baseSpread) * normalizedSpread;
         
         // Update CSS variable for spread
         this.element.style.setProperty('--crosshair-spread', `${currentSpread}px`);
+        
+        console.log(`[DynamicCrosshairSystem] Spread update - Factor: ${this.spreadFactor}, Normalized: ${normalizedSpread}, Current: ${currentSpread}px`);
     }
     
     /**
@@ -435,8 +456,7 @@ export class DynamicCrosshairSystem extends UIComponent {
             }
         }, 1500); // 1.5 seconds
     }
-    
-    /**
+      /**
      * Handler for weapon fired event
      * @private
      * @param {Object} event - Event data
@@ -457,6 +477,8 @@ export class DynamicCrosshairSystem extends UIComponent {
             }
         }
         
+        const oldSpreadFactor = this.spreadFactor;
+        
         // Increase spread
         this.spreadFactor += spreadIncrease;
         
@@ -465,6 +487,8 @@ export class DynamicCrosshairSystem extends UIComponent {
         
         // Update last shot time
         this.lastShotTime = now;
+        
+        console.log(`[DynamicCrosshairSystem] Weapon fired - Spread: ${oldSpreadFactor} -> ${this.spreadFactor} (increase: ${spreadIncrease})`);
         
         // Apply spread immediately
         this._applyCrosshairSpread();
@@ -478,6 +502,7 @@ export class DynamicCrosshairSystem extends UIComponent {
         const recoverDelay = (this.config.spread?.recoverDelay || 0.1) * 1000; // Convert to ms
         this.recoveryTimer = setTimeout(() => {
             this.recoveryTimer = null;
+            console.log(`[DynamicCrosshairSystem] Recovery timer expired, spread recovery enabled`);
         }, recoverDelay);
     }
     
